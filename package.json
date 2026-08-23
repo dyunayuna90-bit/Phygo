@@ -1,0 +1,22 @@
+{
+  "name": "phygo-app",
+  "version": "1.0.0",
+  "description": "Phygo App Android Build",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "katex": "^0.16.9",
+    "sweetalert2": "^11",
+    "gsap": "^3.12.5",
+    "@fontsource-variable/roboto": "^5",
+    "@fontsource-variable/roboto-mono": "^5"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/assets": "^3.0.0"
+  }
+}
