@@ -80,7 +80,7 @@ function spawnDustAdv(stage, x) {
 function explodeSplash(stage, x, y, color) {
     for(let i=0; i<15; i++) {
         const p = document.createElement('div');
-        p.style.cssText = `position:absolute; left:${x}px; bottom:${y}px; width:6px; height:6px; border-radius:50%; background:${color}; z-index:5; box-shadow:0 0 10px ${color};`;
+        p.style.cssText = `position:absolute; left:${x}px; bottom:${y}px; width:6px; height:6px; border-radius:50%; background:${color}; z-index:5;`;
         stage.appendChild(p);
         const ang = Math.random() * Math.PI; 
         const vel = 30 + Math.random() * 80;
