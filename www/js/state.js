@@ -12,6 +12,7 @@ const els = {
   wizBack: document.getElementById('wizBack'),
   wizExit: document.getElementById('wizExit'),
   wizPrimary: document.getElementById('wizPrimary'),
+  quizLivesFloat: document.getElementById('quizLivesFloat'),
 };
 
 const app = {
