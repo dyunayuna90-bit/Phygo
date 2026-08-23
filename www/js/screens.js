@@ -76,7 +76,7 @@ function drawJourneyLines() {
     
     const d = `M ${x1},${y1} Q ${(x1+x2)/2},${(y1+y2)/2 + 30} ${x2},${y2}`; 
     
-    pathsHTML += `<path d="${d}" fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="24" stroke-linecap="round" transform="translate(0, 10)" filter="blur(4px)"/>`;
+    pathsHTML += `<path d="${d}" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="26" stroke-linecap="round" transform="translate(0, 10)"/>`;
     pathsHTML += `<path d="${d}" fill="none" stroke="var(--surface-c)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>`;
     
     const targetLevel = parseInt(nodes[i+1].dataset.id);
@@ -150,7 +150,7 @@ function setFooter(cfg){
   els.wizPrimary.disabled = !!cfg.primaryDisabled; els.wizPrimary.onclick = cfg.onPrimary || (()=>{});
 }
 
-function showQuizFeedback(type, title, desc, buttonsHtml) {
+function showQuizFeedback(type, title, desc, buttonsHtml, ctxExtra) {
   const bg = document.getElementById('quizFbBackdrop');
   const fb = document.getElementById('quizFb');
   const t = document.getElementById('qfTitle');
@@ -167,6 +167,13 @@ function showQuizFeedback(type, title, desc, buttonsHtml) {
   t.innerHTML = svgIcon(icon) + ' ' + title;
   d.innerHTML = desc;
   acts.innerHTML = buttonsHtml;
+
+  // Simpan konteks sheet ini + tandai "terbuka" dengan nge-push 1 history
+  // entry dummy, supaya tombol back Android nutup SHEET ini dulu (lewat
+  // popstate di router.js), bukan langsung mundur ke wizard step sebelumnya.
+  window.quizFbCtx = Object.assign({ type: type }, ctxExtra || {});
+  window.quizFbOpen = true;
+  history.pushState({ quizFbSheet: true }, '', location.hash);
 }
 
 function hideQuizFeedback() {
@@ -174,27 +181,85 @@ function hideQuizFeedback() {
   document.getElementById('quizFb').classList.remove('show');
 }
 
+// Dipanggil tombol2 di dalam sheet (Klaim Pencapaian / Coba Lagi / Ulangi / Menyerah).
+// Nge-pop dulu history entry dummy milik sheet, baru eksekusi aksinya di
+// handleQuizFbHistoryPop() (lihat router.js) supaya history tetap konsisten
+// dan tombol back Android tidak "nyangkut".
 window.qfBtnAction = function(actionType, param) {
-  if(actionType === 'next') {
+  if(actionType === 'next') closeQuizFeedback({ action:'next', level: param });
+  else if(actionType === 'retry') closeQuizFeedback({ action:'retry' });
+  else if(actionType === 'restart') closeQuizFeedback({ action:'restart' });
+  else if(actionType === 'giveup') closeQuizFeedback({ action:'giveup' });
+};
+
+function closeQuizFeedback(pendingAction) {
+  window.quizFbPendingAction = pendingAction || null;
+  if(window.quizFbOpen) {
+    history.back(); // -> memicu popstate -> handleQuizFbHistoryPop()
+  } else {
     hideQuizFeedback();
-    const wasCompleted = app.completed.has(param);
-    app.completed.add(param); 
+    if(pendingAction) runQuizFbAction(pendingAction);
+  }
+}
+
+// Dipanggil dari router.js SETELAH history entry dummy sheet berhasil di-pop,
+// baik itu karena tombol di dalam sheet DIKLIK, maupun karena user menekan
+// tombol back Android secara native.
+function handleQuizFbHistoryPop() {
+  hideQuizFeedback();
+  const pending = window.quizFbPendingAction;
+  window.quizFbPendingAction = null;
+  if(pending) {
+    runQuizFbAction(pending);
+  } else {
+    forceCloseQuizFeedback();
+  }
+}
+
+// Eksekusi efek "resmi" dari tiap tombol (dipanggil setelah history bersih).
+function runQuizFbAction(pending) {
+  if(pending.action === 'next') {
+    const wasCompleted = app.completed.has(pending.level);
+    app.completed.add(pending.level);
     localStorage.setItem('phygo_completed', JSON.stringify([...app.completed]));
-    if(!wasCompleted) { app.justUnlockedLevel = param + 1; }
-    navigate('home', {}, false); 
-  } else if(actionType === 'retry') {
-    hideQuizFeedback();
-    const selectedEl = document.querySelector('.quiz-opt.wrong');
-    if(selectedEl) selectedEl.classList.remove('wrong');
-    setFooter({ backVisible:false, primaryLabel:'Pilih Jawaban Dulu', primaryDisabled:true });
-    window.quizIsAnswered = false;
-  } else if(actionType === 'restart') {
-    hideQuizFeedback();
-    wizardGoStep(-wizard.step); 
-  } else if(actionType === 'giveup') {
+    if(!wasCompleted) { app.justUnlockedLevel = pending.level + 1; }
+    navigate('home', {}, false);
+  } else if(pending.action === 'retry') {
+    resetQuizForRetry();
+  } else if(pending.action === 'restart') {
+    wizardGoStep(-wizard.step);
+  } else if(pending.action === 'giveup') {
     playSadAnimationAndExit();
   }
-};
+}
+
+// User menekan tombol back Android/browser SAAT sheet ijo/merah masih aktif.
+// Sheet-nya yang ditutup (bukan wizard-nya yang mundur):
+// - error  : nyawa memang sudah berkurang saat jawaban salah tadi, jadi di
+//            sini cukup reset opsi & biarkan user pilih jawaban lain.
+// - success: jangan otomatis lanjut ke level berikutnya tanpa aksi eksplisit
+//            dari user, ubah tombol utama jadi "Akhiri Level" biar user yang
+//            memutuskan kapan klaim pencapaiannya.
+// - fatal  : nyawa sudah habis, tidak ada opsi lanjut yang logis -> keluar
+//            sama seperti menekan "Menyerah Saja".
+function resetQuizForRetry() {
+  const selectedEl = document.querySelector('.quiz-opt.wrong');
+  if(selectedEl) selectedEl.classList.remove('wrong');
+  setFooter({ backVisible:false, primaryLabel:'Pilih Jawaban Dulu', primaryDisabled:true });
+  window.quizIsAnswered = false;
+}
+
+function forceCloseQuizFeedback() {
+  const ctx = window.quizFbCtx || {};
+  if(ctx.type === 'error') {
+    resetQuizForRetry();
+  } else if(ctx.type === 'success') {
+    setFooter({ backVisible:false, primaryLabel:'Akhiri Level', primaryDisabled:false,
+      onPrimary: ()=> runQuizFbAction({ action:'next', level: ctx.level }) });
+  } else if(ctx.type === 'fatal') {
+    playSadAnimationAndExit();
+  }
+}
 
 function playSadAnimationAndExit() {
   hideQuizFeedback();
@@ -269,7 +334,7 @@ function renderQuizStep(body, cfg){
      if (isCorrect) {
        selectedEl.classList.remove('selected');
        selectedEl.classList.add('correct');
-       showQuizFeedback('success', 'Tepat Sekali!', cfg.explainCorrect, `<button class="btn btn-block ripple-host" style="background:#fff; color:var(--success-container); font-size:16px; font-weight:900;" onclick="window.qfBtnAction('next', ${cfg.level})">Klaim Pencapaian</button>`);
+       showQuizFeedback('success', 'Tepat Sekali!', cfg.explainCorrect, `<button class="btn btn-block ripple-host" style="background:#fff; color:var(--success-container); font-size:16px; font-weight:900;" onclick="window.qfBtnAction('next', ${cfg.level})">Klaim Pencapaian</button>`, { level: cfg.level });
      } else {
        selectedEl.classList.remove('selected');
        selectedEl.classList.add('wrong');
@@ -336,7 +401,7 @@ function buildRoadStageHTML(carColor, wheelColor, isL2=false, includeGhost=false
         <div class="track-scale" id="stgScale"></div>
         
         ${includeGhost ? `
-          <div style="position:absolute; top:16px; left:16px; font-size:13px; font-weight:800; color:#fff; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:8px; z-index:10; backdrop-filter:blur(4px); box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);" id="ghostLbl">Mobil GLB (Stabil)</div>
+          <div style="position:absolute; top:16px; left:16px; font-size:13px; font-weight:800; color:#fff; background:rgba(20,20,20,0.85); padding:6px 14px; border-radius:8px; z-index:10; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);" id="ghostLbl">Mobil GLB (Stabil)</div>
           <div class="car-shadow ghost" id="ghostShadow"></div>
           <div class="car ghost" id="ghostCar">
              <div class="car-svg-wrap">
