@@ -12,8 +12,21 @@
 <link rel="stylesheet" href="libs/katex/katex.min.css">
 <link rel="stylesheet" href="libs/sweetalert2/sweetalert2.min.css">
 <link rel="stylesheet" href="css/style.css">
+
+<!-- Critical CSS loading screen — inline & gak nunggu style.css/font eksternal,
+     jadi langsung muncul begitu HTML diparse, gak ada jeda "blank/ngelag" di awal. -->
+<style>
+  #appLoader{ position:fixed; inset:0; z-index:9999; background:#0E1416; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .35s ease-out; }
+  #appLoader.hide{ opacity:0; pointer-events:none; }
+  #appLoader .al-ring{ width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.12); border-top-color:#4DD0E1; animation:alSpin .8s linear infinite; }
+  #appLoader .al-title{ font-family:-apple-system,Roboto,sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+  @keyframes alSpin{ to{ transform:rotate(360deg); } }
+</style>
 </head>
 <body>
+
+<!-- Loading screen awal — dibuang otomatis oleh app.js begitu dashboard siap -->
+<div id="appLoader"><div class="al-ring"></div><div class="al-title">Phygo</div></div>
 
 <div id="app">
   <main id="main">
