@@ -285,9 +285,8 @@ function renderQuizStep(body, cfg){
   let lives = 3;
   
   body.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div style="margin-bottom:16px;">
       <span class="eyebrow-pill" style="margin:0;">Kuis Ujian Akhir</span>
-      <div class="quiz-lives" id="quizLives"></div>
     </div>
     <h2 style="margin-bottom:12px;">Uji Konsep Mandiri</h2>
     ${cfg.visualHtml ? `<div class="quiz-visual-box" id="quizVisualBox">${cfg.visualHtml}</div>` : ''}
@@ -302,8 +301,12 @@ function renderQuizStep(body, cfg){
     </div>
   `;
   
-  const livesContainer = body.querySelector('#quizLives');
+  // Pill nyawa dipindah ke elemen mengambang di luar area scroll, jadi tetap
+  // kelihatan terus walau konten soal di-scroll ke bawah.
+  const livesContainer = els.quizLivesFloat;
   function updateLives() {
+    if(!livesContainer) return;
+    livesContainer.classList.add('show');
     livesContainer.innerHTML = Array(3).fill(0).map((_, i) => `<div class="heart-icon ${i >= lives ? 'lost' : ''}">${svgIcon('heart')}</div>`).join('');
   }
   updateLives();
@@ -357,6 +360,10 @@ function renderWizardStep(isInitial = false){
   const count=STEP_COUNTS[wizard.level]; let html='';
   for(let i=0;i<count;i++) html += `<div class="step-dot ${i===wizard.step?'current':(i<wizard.step?'done':'')}"></div>`;
   els.wizardProgress.innerHTML = html;
+
+  // Reset pill nyawa mengambang tiap pindah step — hanya renderQuizStep yang
+  // akan mengisi & menampilkannya lagi kalau step ini memang kuis.
+  if(els.quizLivesFloat){ els.quizLivesFloat.classList.remove('show'); els.quizLivesFloat.innerHTML = ''; }
   
   smoothUpdate(els.wizardBody, () => {
     els.wizardBody.innerHTML = '';
@@ -421,7 +428,7 @@ function buildRoadStageHTML(carColor, wheelColor, isL2=false, includeGhost=false
             <svg viewBox="0 0 70 40" width="70" height="40">
               <path d="${carBody}" fill="${carColor}"/>
               <rect x="24" y="12" width="18" height="6" rx="2" fill="#0E1416" opacity="0.8"/>
-              <path d="M58 20 L64 22 L64 26 L56 26 Z" fill="#fff" opacity="0.7" filter="drop-shadow(5px 0 5px #fff)"/>
+              <path d="M58 20 L64 22 L64 26 L56 26 Z" fill="#fff" opacity="0.7"/>
               <circle class="wheel" cx="18" cy="30" r="8" fill="var(--bg)" stroke="${wheelColor}" stroke-width="3"/>
               <circle class="wheel" cx="52" cy="30" r="8" fill="var(--bg)" stroke="${wheelColor}" stroke-width="3"/>
               <circle class="wheel" cx="18" cy="30" r="3" fill="${carColor}"/>
@@ -618,7 +625,7 @@ function renderResultStep(body, cfg){
       <h2>${cfg.success ? 'Berhasil Tepat Sasaran!' : 'Belum Tepat Sasaran'}</h2>
     </div>
     <div class="result-row"><span>Tingkat Akurasi Hitungan</span><b style="color:${cfg.success?'var(--success)':'var(--error)'}; font-size:24px;">${fmt(cfg.accuracy,0)}%</b></div>
-    <div class="accuracy-bar-track"><div class="accuracy-bar-fill" id="accBar" style="width:0%; background: ${cfg.success?'var(--success)':'var(--error)'}; box-shadow: 0 0 10px ${cfg.success?'var(--success)':'var(--error)'};"></div></div>
+    <div class="accuracy-bar-track"><div class="accuracy-bar-fill" id="accBar" style="width:0%; background: ${cfg.success?'var(--success)':'var(--error)'};"></div></div>
     <div style="margin-top:24px; background:var(--surface-c); border-radius:var(--r-l); padding:8px 20px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);">
       ${cfg.given.map(g=>`<div class="result-row"><span>${g[0]}</span><b>${g[1]}</b></div>`).join('')}
       <div class="result-row"><span>${cfg.computedLabel}</span><b style="color:var(--primary)">${cfg.computed}</b></div>
