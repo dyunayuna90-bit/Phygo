@@ -295,6 +295,19 @@ input{ font-family:inherit; }
 .quiz-feedback.error { background: linear-gradient(135deg, var(--error-container), #5A0005); color: var(--on-error-container); border-top: 2px solid var(--error); }
 .quiz-fb-title { font-size: 22px; font-weight: 900; display:flex; align-items:center; gap:12px; }
 .quiz-fb-desc { font-size: 15px; line-height: 1.6; opacity: 0.9; }
+
+/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) — bisa digeser, ga kepotong */
+.quiz-fb-desc .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 6px 2px 10px;
+  margin: 8px 0;
+}
+.quiz-fb-desc .katex-display > .katex {
+  white-space: nowrap;
+}
 .quiz-feedback.success .btn { background: #fff; color: var(--success-container); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 .quiz-feedback.error .btn { background: #fff; color: var(--error-container); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
