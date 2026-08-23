@@ -45,14 +45,14 @@ input{ font-family:inherit; }
 .home-hero p { font-size:16px; color:var(--on-surface-var); line-height:1.6; max-width:440px; margin:0 auto; }
 
 .journey-map { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 85px; padding: 40px 0 120px; position: relative; z-index: 1; perspective: 1200px; }
-.j-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25)); }
+.j-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 
 .j-node-wrap { display: flex; align-items: center; position: relative; z-index: 2; width: fit-content; transform-style: preserve-3d; }
 .j-node-wrap.left { align-self: flex-start; margin-left: 12%; flex-direction: row; }
 .j-node-wrap.right { align-self: flex-end; margin-right: 12%; flex-direction: row-reverse; }
 
 .j-node { width: 84px; height: 84px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: #fff; z-index: 3; transform: rotateX(25deg); border: 4px solid rgba(255,255,255,0.1); }
-.j-node svg { width: 38px; height: 38px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); }
+.j-node svg { width: 38px; height: 38px; }
 .j-node.completed { background: linear-gradient(145deg, var(--success), #4CAF50); color: var(--success-container); box-shadow: 0 12px 0 var(--success-container), 0 10px 16px rgba(0,0,0,0.4), inset 0 4px 8px rgba(255,255,255,0.4); }
 .j-node.completed:active { transform: translateY(8px) rotateX(15deg); box-shadow: 0 4px 0 var(--success-container), 0 6px 10px rgba(0,0,0,0.4); }
 .j-node.active-node { background: linear-gradient(145deg, var(--primary), #26C6DA); color: var(--on-primary); box-shadow: 0 12px 0 var(--primary-container), 0 10px 16px rgba(0,0,0,0.4), inset 0 4px 8px rgba(255,255,255,0.5); animation: pulseNode 2.5s infinite cubic-bezier(0.36, 0, 0.66, -0.56); }
@@ -63,7 +63,7 @@ input{ font-family:inherit; }
 .j-node-label { font-size: 16px; font-weight: 800; color: var(--on-surface); margin: 0 20px; text-shadow: 0 4px 12px rgba(0,0,0,1), 0 2px 4px rgba(0,0,0,0.8); }
 
 .gami-card { background: linear-gradient(145deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-xl); padding: 24px; display: flex; align-items: center; gap: 24px; margin: 0 auto 30px; width: 100%; max-width: 400px; box-shadow: 0 10px 0 var(--surface), var(--shadow-lg); border: 1px solid rgba(255,255,255,0.05); transform: rotateX(10deg); z-index: 10; }
-.g-chart { width: 72px; height: 72px; position: relative; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)); }
+.g-chart { width: 72px; height: 72px; position: relative; flex-shrink: 0; }
 .g-chart svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .g-chart circle { fill: none; stroke-width: 5; stroke-linecap: round; }
 .g-chart .bg { stroke: var(--surface); }
@@ -176,14 +176,14 @@ input{ font-family:inherit; }
 
 .car-shadow { position: absolute; bottom: 35px; width: 64px; height: 14px; left: 10px; z-index: 2; background: radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 55%, transparent 80%); border-radius: 50%; transition: transform 0.2s; }
 .car { position: absolute; bottom: 44px; left: 10px; width: 72px; height: 42px; z-index: 4; }
-.car-svg-wrap { width: 100%; height: 100%; transform-origin: 20% 80%; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); } 
+.car-svg-wrap { width: 100%; height: 100%; transform-origin: 20% 80%; } 
 .car.ghost { bottom: 95px; z-index: 3; opacity: 0.4; filter: grayscale(1) brightness(1.2); }
 .car-shadow.ghost { bottom: 85px; opacity: 0.3; }
 
 .wheel { transform-box: fill-box; transform-origin: 50% 50%; animation: spin 0s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.dust { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(200,200,200,0.35) 0%, rgba(200,200,200,0.12) 45%, transparent 75%); z-index: 3; pointer-events: none; }
-.exhaust-fire { position: absolute; border-radius: 50%; background: radial-gradient(circle, #fff 8%, #FFB871 35%, rgba(255,184,113,0.15) 65%, transparent 80%); z-index: 3; pointer-events: none; mix-blend-mode: screen; }
+.dust { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(200,200,200,0.4) 0%, rgba(200,200,200,0.4) 40%, transparent 65%); z-index: 3; pointer-events: none; }
+.exhaust-fire { position: absolute; border-radius: 50%; background: radial-gradient(circle, #fff 0%, #FFB871 45%, transparent 70%); z-index: 3; pointer-events: none; mix-blend-mode: screen; }
 
 .sim-side-panel{ display:flex; flex-direction:column; gap:16px; }
 .panel-label{ font-size:13px; font-weight:900; color:var(--on-surface-var); text-transform:uppercase; letter-spacing:1px; margin-bottom: -4px;}
@@ -289,7 +289,7 @@ input{ font-family:inherit; }
 .quiz-opt-text { font-size: 15px; line-height: 1.5; color: var(--on-surface); font-weight: 600; flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px;}
 .quiz-opt-label { flex: 1; }
 
-.quiz-feedback { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 50; display:flex; flex-direction:column; gap:12px; box-shadow: 0 -10px 40px rgba(0,0,0,0.6); }
+.quiz-feedback { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; transform: translateY(100%); transition: transform 0.3s ease-out; z-index: 50; display:flex; flex-direction:column; gap:12px; box-shadow: 0 -6px 20px rgba(0,0,0,0.5); }
 .quiz-feedback.show { transform: translateY(0); }
 .quiz-feedback.success { background: linear-gradient(135deg, var(--success-container), #0A4B29); color: var(--on-success-container); border-top: 2px solid var(--success); }
 .quiz-feedback.error { background: linear-gradient(135deg, var(--error-container), #5A0005); color: var(--on-error-container); border-top: 2px solid var(--error); }
@@ -312,9 +312,15 @@ input{ font-family:inherit; }
 .quiz-feedback.error .btn { background: #fff; color: var(--error-container); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
 .quiz-lives { display: flex; gap: 6px; align-items: center; }
-.heart-icon { width: 24px; height: 24px; color: var(--error); filter: drop-shadow(0 2px 4px rgba(255,180,171,0.5)); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.heart-icon { width: 22px; height: 22px; color: var(--error); transition: all 0.3s ease-out; }
 .heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
 .quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
+/* Pill nyawa mengambang di atas footer wizard — posisinya absolute relatif ke
+   .wizard-shell (bukan di dalam scroll-pane), jadi tetap kelihatan mau di-scroll
+   atau tidak. */
+.quiz-lives-float { position: absolute; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 16px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); border: 1px solid rgba(255,255,255,0.08); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
+.quiz-lives-float.show { opacity: 1; }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -326,16 +332,13 @@ input{ font-family:inherit; }
 .quiz-fb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.72); z-index: 49; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
 .quiz-fb-backdrop.show { opacity: 1; pointer-events: auto; }
 .quiz-feedback.fatal { background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); color: var(--on-surface); border-top: 2px solid var(--outline); }
-.quiz-feedback.fatal .btn-primary { background: var(--error); color: var(--bg); border:none; box-shadow: 0 4px 12px rgba(255,180,171,0.3); }
+.quiz-feedback.fatal .btn-primary { background: var(--error); color: var(--bg); border:none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
 .quiz-feedback.fatal .btn-ghost { background: transparent; border: 1px solid var(--error); color: var(--error); }
 
 .sad-overlay { position:absolute; inset:0; background:var(--bg); z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.5s; }
 .sad-overlay.show { opacity:1; pointer-events:auto; }
 
-.quiz-lives { display: flex; gap: 6px; align-items: center; }
-.heart-icon { width: 24px; height: 24px; color: var(--error); filter: drop-shadow(0 2px 4px rgba(255,180,171,0.5)); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
-.quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+
 
 /* ===== Safe-area (notch/status-bar/nav-bar) — WAJIB buat mode fullscreen immersive ===== */
 #app{
