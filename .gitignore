@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Capacitor — di-generate otomatis pas GitHub Action build
+android/
+www/libs/
