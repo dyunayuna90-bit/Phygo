@@ -77,7 +77,7 @@ function l3Form(body){
 function l3Con(body){
   body.innerHTML = `<span class="eyebrow-pill">Konsep Matematika</span><h2>Mekanisme Akar Kuadrat</h2><p class="step-text">Karena eksistensi pangkat dua pada (${texi(String.raw`t^2`)}), sistem mengharuskan penggunaan <b>Akar Kuadrat</b> (<span style="font-size:1.5em; display:inline-flex; vertical-align:middle; color:var(--primary); font-weight:800;">${texi(String.raw`\sqrt{\phantom{x}}`)}</span>) untuk mereduksi efeknya ke tingkat dasar.</p>
   <div class="sqrt-demo-box">
-    <svg id="sqrtGrid" width="132" height="132" viewBox="0 0 132 132" style="filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));"></svg>
+    <svg id="sqrtGrid" width="132" height="132" viewBox="0 0 132 132"></svg>
     <div class="sqrt-readout">
       <div class="sqrt-readout-item"><span class="lbl">Luas Awal</span><span class="val" id="sqrtArea">16</span></div>
       <div class="sqrt-arrow">${texi(String.raw`\sqrt{\phantom{x}}`)}</div>
@@ -128,7 +128,7 @@ function l3Alg(body){
     title: 'Isolasi Variabel Durasi (t)',
     terms: {
       h: `<i>h</i>`, eq: `=`, h1: `1`, hl: `<div style="height:3px; background:currentColor; width:100%;"></div>`, h2: `2`, g: `<i>g</i>`, t2: `<i>t</i><sup>2</sup>`, ll: `<div style="height:3px; background:currentColor; width:100%;"></div>`, t: `<i>t</i>`,
-      root: `<svg viewBox="0 0 160 70" preserveAspectRatio="none" style="width:100%;height:100%; display:block; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><path d="M0,45 L15,45 L32,65 L50,5 L160,5" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      root: `<svg viewBox="0 0 160 70" preserveAspectRatio="none" style="width:100%;height:100%; display:block;"><path d="M0,45 L15,45 L32,65 L50,5 L160,5" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
       mul1: `<span style="opacity:.4;">&times;</span>`, mul2: `<span style="opacity:.4;">&times;</span>`,
       hNum: `<b style="color:var(--lvl3);">${H}</b>`, gNum: `<b style="color:var(--lvl3);">9,8</b>`
     },
