@@ -1,6 +1,12 @@
 "use strict";
 
 function showScreen(name, opts){
+  // FIX LAG: kalau user KELUAR dari wizard (bukan sekadar pindah step di
+  // dalamnya), pastikan semua tween GSAP yang masih nempel di konten wizard
+  // dimatiin juga. Ini jaga-jaga selain fix utama di renderWizardStep().
+  if(name !== 'simulasi' && els.wizardBody){
+    gsap.killTweensOf(els.wizardBody.querySelectorAll('*'));
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
   if(name==='home') { renderHome(); requestAnimationFrame(()=>animateIn(document.getElementById('homeScroll'))); }
