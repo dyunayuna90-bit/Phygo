@@ -316,10 +316,10 @@ input{ font-family:inherit; }
 .heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
 .quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-/* Pill nyawa mengambang di atas footer wizard — posisinya absolute relatif ke
-   .wizard-shell (bukan di dalam scroll-pane), jadi tetap kelihatan mau di-scroll
+/* Pill nyawa mengambang — absolute relatif ke .wizard-shell (bukan di dalam
+   scroll-pane), nempel di pojok kanan atas, jadi tetap kelihatan mau di-scroll
    atau tidak. */
-.quiz-lives-float { position: absolute; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 16px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); border: 1px solid rgba(255,255,255,0.08); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
+.quiz-lives-float { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); border: 1px solid rgba(255,255,255,0.08); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
 .quiz-lives-float.show { opacity: 1; }
 
 @keyframes shake {
