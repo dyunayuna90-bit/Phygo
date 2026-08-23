@@ -311,6 +311,22 @@ function renderQuizStep(body, cfg){
   }
   updateLives();
 
+  // Sejajarin posisi pill nyawa PERSIS ke tinggi capsule "Kuis Ujian Akhir"
+  // (bukan tebak-tebak jarak lewat CSS, tapi diukur langsung dari posisi
+  // asli elemennya di layar, jadi presisi di device manapun).
+  requestAnimationFrame(() => {
+    const eyebrow = body.querySelector('.eyebrow-pill');
+    const shell = livesContainer ? livesContainer.closest('.wizard-shell') : null;
+    if(eyebrow && shell && livesContainer){
+      const eyebrowRect = eyebrow.getBoundingClientRect();
+      const shellRect = shell.getBoundingClientRect();
+      const floatRect = livesContainer.getBoundingClientRect();
+      const eyebrowCenterY = eyebrowRect.top + eyebrowRect.height / 2;
+      const topPx = (eyebrowCenterY - shellRect.top) - (floatRect.height / 2);
+      livesContainer.style.top = topPx + 'px';
+    }
+  });
+
   if(cfg.setupVisual) {
     requestAnimationFrame(() => cfg.setupVisual(body.querySelector('#quizVisualBox')));
   }
