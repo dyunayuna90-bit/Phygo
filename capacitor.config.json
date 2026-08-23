@@ -1,0 +1,7 @@
+{
+  "appId": "com.phygo.app",
+  "appName": "Phygo",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#0E1416"
+}
