@@ -17,5 +17,17 @@ function showScreen(name, opts){
 }
 
 function navigate(name, opts, replace){ const state = Object.assign({screen:name}, opts||{}); if(replace) history.replaceState(state, '', '#'+name); else history.pushState(state, '', '#'+name); showScreen(name, opts); }
-window.addEventListener('popstate', (e)=> showScreen(e.state?e.state.screen:'home', e.state));
+
+window.addEventListener('popstate', (e)=>{
+  // Kalau sheet kuis (ijo/merah) lagi aktif, history entry yang baru saja
+  // "dimakan" oleh tombol back adalah entry dummy milik sheet itu sendiri.
+  // Jadi cukup tutup sheet-nya lewat handleQuizFbHistoryPop() dan JANGAN
+  // pindah screen — layar di baliknya (wizard step) tidak berubah sama sekali.
+  if(window.quizFbOpen){
+    window.quizFbOpen = false;
+    handleQuizFbHistoryPop();
+    return;
+  }
+  showScreen(e.state?e.state.screen:'home', e.state);
+});
 
