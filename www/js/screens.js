@@ -366,6 +366,12 @@ function renderWizardStep(isInitial = false){
   if(els.quizLivesFloat){ els.quizLivesFloat.classList.remove('show'); els.quizLivesFloat.innerHTML = ''; }
   
   smoothUpdate(els.wizardBody, () => {
+    // FIX LAG: matiin semua tween/timeline GSAP yang masih nempel di konten
+    // step SEBELUMNYA sebelum kontennya dibuang. Tanpa ini, animasi infinite
+    // (repeat:-1) di preview kuis dsb tetap jalan selamanya di background
+    // walau elemennya udah gak ada di layar — makin sering pindah step,
+    // makin numpuk, makin berat. Ini akar masalah "makin lama makin ngelag".
+    gsap.killTweensOf(els.wizardBody.querySelectorAll('*'));
     els.wizardBody.innerHTML = '';
     const newContent = document.createElement('div');
     newContent.className = 'wizard-step-content';
