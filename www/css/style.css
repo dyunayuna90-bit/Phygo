@@ -319,7 +319,7 @@ input{ font-family:inherit; }
 /* Pill nyawa mengambang — absolute relatif ke .wizard-shell (bukan di dalam
    scroll-pane), nempel di pojok kanan atas, jadi tetap kelihatan mau di-scroll
    atau tidak. */
-.quiz-lives-float { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); border: 1px solid rgba(255,255,255,0.08); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
+.quiz-lives-float { position: absolute; top: calc(52px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); border: 1px solid rgba(255,255,255,0.08); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
 .quiz-lives-float.show { opacity: 1; }
 
 @keyframes shake {
