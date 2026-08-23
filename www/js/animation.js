@@ -38,7 +38,7 @@ function smoothUpdate(container, updateCallback) {
 
 function spawnSpeedLine(stage) {
     const line = document.createElement('div');
-    line.style.cssText = `position:absolute; top:${Math.random()*60 + 10}px; left:100%; width:${Math.random()*150 + 50}px; height:2px; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent); z-index:5; pointer-events:none; filter:blur(1px);`;
+    line.style.cssText = `position:absolute; top:${Math.random()*60 + 10}px; left:100%; width:${Math.random()*150 + 50}px; height:3px; border-radius:2px; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); z-index:5; pointer-events:none;`;
     stage.appendChild(line);
     gsap.to(line, {
         x: - (stage.clientWidth + 300),
