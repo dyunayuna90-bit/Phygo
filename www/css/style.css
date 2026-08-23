@@ -162,11 +162,11 @@ input{ font-family:inherit; }
 .layer-3 { background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3; }
 .layer-2 { background: linear-gradient(to top, rgba(255,255,255,0.03) 0%, transparent 100%); bottom: 80px; height: 150px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .sky-deco { position: absolute; inset: 0; z-index: 0; }
-.cloud { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border-radius: 50px; filter: blur(2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+.cloud { position: absolute; background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.01)); border-radius: 50px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
 
 .road-container { position: absolute; bottom: 30px; left: 0; right: 0; height: 70px; z-index: 2; perspective: 800px; }
 .road { position: absolute; inset: 0; background: #111; transform-origin: bottom; transform: rotateX(40deg) scaleX(1.1); box-shadow: 0 -10px 20px rgba(0,0,0,0.8), inset 0 10px 20px rgba(0,0,0,0.9); border-top: 3px solid var(--outline-var); }
-.road::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 6px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, #fff 0 40px, transparent 40px 80px); opacity: 0.4; filter: blur(0.5px); }
+.road::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 4px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, #fff 0 40px, transparent 40px 80px); opacity: 0.35; }
 .road::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,0.8) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.8) 100%); }
 
 .track-scale { position: absolute; left: 0; right: 0; bottom: 8px; height: 16px; display: flex; justify-content: space-between; padding: 0 12px; font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: var(--on-surface-var); z-index: 4; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
@@ -174,16 +174,16 @@ input{ font-family:inherit; }
 .finish-gate::after { content:''; position:absolute; bottom:0; left:-16px; width:40px; height:10px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, transparent 70%); z-index:-1;}
 .finish-label { position: absolute; bottom: 130px; transform: translateX(-50%); z-index: 4; font-size: 13px; font-weight: 900; color: var(--error-container); background: var(--error); padding: 6px 14px; border-radius: var(--r-pill); white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 2px solid #fff; }
 
-.car-shadow { position: absolute; bottom: 35px; width: 64px; height: 14px; left: 10px; z-index: 2; background: rgba(0,0,0,0.8); border-radius: 50%; filter: blur(4px); transition: transform 0.2s; }
+.car-shadow { position: absolute; bottom: 35px; width: 64px; height: 14px; left: 10px; z-index: 2; background: radial-gradient(ellipse at center, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 55%, transparent 80%); border-radius: 50%; transition: transform 0.2s; }
 .car { position: absolute; bottom: 44px; left: 10px; width: 72px; height: 42px; z-index: 4; }
 .car-svg-wrap { width: 100%; height: 100%; transform-origin: 20% 80%; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3)); } 
-.car.ghost { bottom: 95px; z-index: 3; opacity: 0.4; filter: grayscale(1) brightness(1.2) blur(1px); }
+.car.ghost { bottom: 95px; z-index: 3; opacity: 0.4; filter: grayscale(1) brightness(1.2); }
 .car-shadow.ghost { bottom: 85px; opacity: 0.3; }
 
 .wheel { transform-box: fill-box; transform-origin: 50% 50%; animation: spin 0s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.dust { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(200,200,200,0.5), transparent 70%); z-index: 3; pointer-events: none; filter: blur(2px); }
-.exhaust-fire { position: absolute; border-radius: 50%; background: radial-gradient(circle, #fff 10%, #FFB871 40%, transparent 80%); z-index: 3; pointer-events: none; mix-blend-mode: screen; filter: blur(1px); }
+.dust { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(200,200,200,0.35) 0%, rgba(200,200,200,0.12) 45%, transparent 75%); z-index: 3; pointer-events: none; }
+.exhaust-fire { position: absolute; border-radius: 50%; background: radial-gradient(circle, #fff 8%, #FFB871 35%, rgba(255,184,113,0.15) 65%, transparent 80%); z-index: 3; pointer-events: none; mix-blend-mode: screen; }
 
 .sim-side-panel{ display:flex; flex-direction:column; gap:16px; }
 .panel-label{ font-size:13px; font-weight:900; color:var(--on-surface-var); text-transform:uppercase; letter-spacing:1px; margin-bottom: -4px;}
@@ -257,7 +257,7 @@ input{ font-family:inherit; }
 .ruler .tick{ position:absolute; left:-12px; width:24px; height:2px; background:var(--on-surface-var); box-shadow: 0 1px 2px rgba(0,0,0,0.8); }
 .ruler .tick span{ position:absolute; left:32px; top:-10px; font-size:14px; font-family:var(--font-mono); color:#ffffff; white-space:nowrap; font-weight:900; text-shadow: 0 1px 3px rgba(0,0,0,0.8); background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px;}
 .fall-ball{ position:absolute; left:50%; width:36px; height:36px; border-radius:50%; z-index:3; background:radial-gradient(circle at 30% 30%, #fff 0%, var(--lvl3) 40%, #1A2166 100%); box-shadow: 0 15px 25px rgba(0,0,0,0.6), inset -4px -4px 10px rgba(0,0,0,0.7); margin-left: -18px; transform-origin: bottom center; }
-.motion-blur-tail { position: absolute; left: 50%; width: 24px; margin-left: -12px; background: linear-gradient(to top, color-mix(in srgb, var(--lvl3) 80%, transparent), transparent); z-index: 2; border-radius: 12px; filter: blur(2px); transform-origin: bottom; opacity: 0; }
+.motion-blur-tail { position: absolute; left: 50%; width: 14px; margin-left: -7px; background: linear-gradient(to top, color-mix(in srgb, var(--lvl3) 65%, transparent), transparent); z-index: 2; border-radius: 7px; transform-origin: bottom; opacity: 0; }
 .ground-hit { position: absolute; bottom: 10px; left: 10%; right: 10%; height: 20px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, transparent 70%); z-index: 1; border-top: 2px solid rgba(255,255,255,0.1); }
 
 .result-hero{ text-align:center; padding:20px 0 24px; }
@@ -323,7 +323,7 @@ input{ font-family:inherit; }
 }
 
 /* ===== TAMBAHAN STYLES BACKDROP & SAD OVERLAY ===== */
-.quiz-fb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 49; opacity: 0; pointer-events: none; transition: opacity 0.4s; backdrop-filter: blur(2px); }
+.quiz-fb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.72); z-index: 49; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
 .quiz-fb-backdrop.show { opacity: 1; pointer-events: auto; }
 .quiz-feedback.fatal { background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); color: var(--on-surface); border-top: 2px solid var(--outline); }
 .quiz-feedback.fatal .btn-primary { background: var(--error); color: var(--bg); border:none; box-shadow: 0 4px 12px rgba(255,180,171,0.3); }
