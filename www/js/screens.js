@@ -1,6 +1,8 @@
 "use strict";
 
 function renderHome(){
+  renderActivityNotif();
+
   const mapEl = document.getElementById('journeyMap');
   Array.from(mapEl.children).forEach(c => { if(c.id !== 'jPathSvg') c.remove(); });
 
@@ -53,6 +55,58 @@ function renderHome(){
   apply3DTilt(card, 10, 0); 
 
   setTimeout(drawJourneyLines, 50);
+}
+
+// ===== Notifikasi Aktivitas =====
+// Menampilkan kartu pengingat di dashboard kalau ada level yang sudah
+// dimulai (masuk wizard/simulasi) tapi belum diselesaikan — datanya diambil
+// dari getLastProgress() (localStorage), jadi tetap akurat walaupun user
+// baru saja buka ulang app dari kondisi ke-close paksa.
+function renderActivityNotif(){
+  const holder = document.getElementById('activityNotifCard');
+  if(!holder) return;
+
+  const lp = getLastProgress();
+  const L = lp ? LEVELS[lp.level] : null;
+
+  if(!lp || !L || app.completed.has(lp.level)){
+    holder.classList.remove('show');
+    holder.innerHTML = '';
+    return;
+  }
+
+  holder.classList.add('show');
+  holder.innerHTML = `
+    <button class="activity-notif ripple-host" id="activityNotifBtn" aria-label="Lanjutkan Level ${lp.level}: ${L.title}">
+      <div class="an-icon">${svgIcon(L.icon)}</div>
+      <div class="an-info">
+        <span class="an-eyebrow">Pengingat Belajar</span>
+        <h4>Kamu belum menyelesaikan Level ${lp.level}: ${L.title}</h4>
+        <p>Yuk lanjutkan perjalananmu dan selesaikan tantangan ini!</p>
+      </div>
+      <span class="btn btn-primary an-btn">Lanjutkan</span>
+    </button>
+  `;
+  document.getElementById('activityNotifBtn').onclick = resumeLastActivity;
+}
+
+// Tombol "Sakti" — satu-satunya pintu masuk untuk melanjutkan progres.
+// Karena hasil kalkulasi antar-step (app.calc/app.locked/app.calcChain/
+// app.lastResult) cuma hidup di memory dan ikut hilang kalau app sempat
+// di-close, di sini kita regenerate parameter soal-nya persis seperti saat
+// user pertama kali membuka halaman materi level tsb (lihat renderMateri()).
+// Wizard tetap diarahkan ke step terakhir yang tersimpan — dan itu AMAN,
+// karena tiap step renderer di level1/2/3.js sudah otomatis mundur sendiri
+// (wizardGoStep(-1)) kalau ada data hitungan yang belum tersedia, sehingga
+// user tidak akan pernah nyangkut di step yang rusak/kosong maupun harus
+// mengulang dari awal wizard.
+function resumeLastActivity(){
+  const lp = getLastProgress();
+  if(!lp || !LEVELS[lp.level]) return;
+  const L = LEVELS[lp.level];
+  app.params[lp.level] = L.genParams();
+  app.attempts[lp.level] = 0;
+  navigate('simulasi', { level: lp.level, step: lp.step });
 }
 
 function drawJourneyLines() {
@@ -223,6 +277,7 @@ function runQuizFbAction(pending) {
     app.completed.add(pending.level);
     localStorage.setItem('phygo_completed', JSON.stringify([...app.completed]));
     if(!wasCompleted) { app.justUnlockedLevel = pending.level + 1; }
+    clearLastProgress();
     navigate('home', {}, false);
   } else if(pending.action === 'retry') {
     resetQuizForRetry();
