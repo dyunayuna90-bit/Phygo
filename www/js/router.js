@@ -14,6 +14,10 @@ function showScreen(name, opts){
   else if(name==='simulasi'){
     wizard.level = opts.level; wizard.step = opts.step || 0; wizard.previousStep = wizard.step;
     if(wizard.step === 0){ app.calc[opts.level]=undefined; app.locked[opts.level]=undefined; app.calcChain[opts.level]={}; }
+    // Simpan posisi wizard ini (khusus level yg belum selesai) supaya tombol
+    // "Lanjutkan" di dashboard selalu tahu harus balik ke sini — termasuk
+    // kalau app-nya ke-close paksa / out tiba-tiba di step manapun.
+    if(!app.completed.has(wizard.level)){ saveLastProgress(wizard.level, wizard.step); }
     renderWizardStep(true); 
     requestAnimationFrame(()=>{
        gsap.fromTo(els.wizardBody, {opacity:0, y:20}, {opacity:1, y:0, duration:0.5, ease:'back.out(1.2)'});
