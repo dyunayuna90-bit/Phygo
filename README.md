@@ -1,2 +1,2 @@
-# Phygo
-Aplikasi Pembelajaran Fisika Interaktif 
+# wawe sindikat ragunan
+-dinduy 2026
