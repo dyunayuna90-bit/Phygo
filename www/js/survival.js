@@ -170,7 +170,8 @@ function renderSurvivalCard(holder){
   if(!holder) return;
   const hs = survGetHighScore();
   holder.innerHTML = `
-    <button class="survival-card ripple-host" id="survivalCardBtn">
+    <button class="survival-card home-card ripple-host" id="survivalCardBtn">
+      <div class="home-card-icon-bg">${svgIcon('fire')}</div>
       <div class="survival-icon-box">${svgIcon('fire')}</div>
       <div class="survival-info">
         <h3>Mode Survival</h3>
