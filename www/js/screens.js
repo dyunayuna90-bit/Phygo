@@ -36,10 +36,9 @@ function renderHomeQuote(){
       <div class="home-card-icon-bg">${svgIcon('quote')}</div>
       <div class="quote-mark">${svgIcon('quote')}</div>
       <p class="quote-text">${q.text}</p>
-      <span class="quote-by">— ${q.by}${q.year ? ', ' + q.year : ''}</span>
+      <span class="quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
     </div>
   `;
-  apply3DTilt(holder.querySelector('.quote-card'), 10, 0);
 }
 
 // ===== Tombol "Lanjutkan Main" — arahkan ke posisi paling logis =====
