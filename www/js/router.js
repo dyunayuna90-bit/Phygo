@@ -9,7 +9,19 @@ function showScreen(name, opts){
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
+
+  // Bottom nav hanya untuk 3 tab dashboard (home/level/settings); disembunyikan
+  // saat masuk mode belajar (materi/simulasi/survival) supaya lebih fokus.
+  const TAB_SCREENS = ['home', 'level', 'settings'];
+  const bottomNav = document.getElementById('bottomNav');
+  if(bottomNav){
+    bottomNav.classList.toggle('hide', !TAB_SCREENS.includes(name));
+    document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+  }
+
   if(name==='home') { renderHome(); requestAnimationFrame(()=>animateIn(document.getElementById('homeScroll'))); }
+  else if(name==='level') { renderLevelMap(); requestAnimationFrame(()=>animateIn(document.getElementById('levelScroll'))); }
+  else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
   else if(name==='survival'){
     startSurvivalGame();
