@@ -2,9 +2,9 @@
 
 function renderHome(){
   renderHomeAchievement();
-  renderHomeQuote();
-  renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderActivityNotif();
+  renderSurvivalCard(document.getElementById('homeSurvivalCard'));
+  renderHomeQuote();
 }
 
 function renderHomeAchievement(){
@@ -12,7 +12,8 @@ function renderHomeAchievement(){
   if(!holder) return;
   const pct = Math.round((app.completed.size / 3) * 100);
   holder.innerHTML = `
-    <div class="gami-card">
+    <div class="gami-card home-card">
+      <div class="home-card-icon-bg">${svgIcon('trophy')}</div>
       <div class="g-chart">
         <svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15"/><circle class="prog" cx="18" cy="18" r="15" stroke-dasharray="${pct}, 100"/></svg>
         <div class="g-val">${app.completed.size}/3</div>
@@ -31,12 +32,14 @@ function renderHomeQuote(){
   if(!holder) return;
   const q = PHYSICS_QUOTES[getQuoteIndex() % PHYSICS_QUOTES.length];
   holder.innerHTML = `
-    <div class="quote-card">
+    <div class="quote-card home-card">
+      <div class="home-card-icon-bg">${svgIcon('quote')}</div>
       <div class="quote-mark">${svgIcon('quote')}</div>
       <p class="quote-text">${q.text}</p>
       <span class="quote-by">— ${q.by}${q.year ? ', ' + q.year : ''}</span>
     </div>
   `;
+  apply3DTilt(holder.querySelector('.quote-card'), 6, 0);
 }
 
 // ===== Tombol "Lanjutkan Main" — arahkan ke posisi paling logis =====
@@ -178,19 +181,19 @@ function importDataJson(file){
   reader.readAsText(file);
 }
 
-function showAppInfo(){
-  const teamHtml = APP_INFO.team.map(n => `<li>${n}</li>`).join('');
-  Swal.fire({
-    title: 'Tentang Phygo',
-    html: `
-      <p style="text-align:left; line-height:1.6; margin-bottom:14px;">${APP_INFO.purpose}</p>
-      <p style="text-align:left; font-weight:800; margin-bottom:6px;">Anggota Kelompok:</p>
-      <ul style="text-align:left; margin:0 0 16px 18px; padding:0; line-height:1.8;">${teamHtml}</ul>
-      <a href="${APP_INFO.repoUrl}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:700; text-decoration:underline;">Lihat Repository GitHub</a>
-    `,
-    background: '#1C2426', color: '#E3E3E6',
-    confirmButtonColor: 'var(--primary)', confirmButtonText: 'Tutup'
-  });
+// ===== Halaman "Tentang Aplikasi" — halaman penuh (bukan pop-up) =====
+function renderAppInfo(){
+  document.getElementById('appInfoPurpose').textContent = APP_INFO.purpose;
+  document.getElementById('appInfoTeam').innerHTML = APP_INFO.team.map(n => `
+    <div class="appinfo-team-item">
+      <div class="appinfo-team-avatar">${n.trim().charAt(0)}</div>
+      <span>${n}</span>
+    </div>
+  `).join('');
+  document.getElementById('appInfoRepoUrl').textContent = APP_INFO.repoUrl.replace(/^https?:\/\//,'');
+  const repoLink = document.getElementById('appInfoRepoLink');
+  repoLink.href = APP_INFO.repoUrl;
+  repoLink.querySelector('.appinfo-repo-icon').innerHTML = svgIcon('code');
 }
 
 // ===== Notifikasi Aktivitas =====
@@ -213,7 +216,8 @@ function renderActivityNotif(){
 
   holder.classList.add('show');
   holder.innerHTML = `
-    <button class="activity-notif ripple-host" id="activityNotifBtn" aria-label="Lanjutkan Level ${lp.level}: ${L.title}">
+    <button class="activity-notif home-card ripple-host" id="activityNotifBtn" aria-label="Lanjutkan Level ${lp.level}: ${L.title}">
+      <div class="home-card-icon-bg">${svgIcon('bell')}</div>
       <div class="an-icon">${svgIcon(L.icon)}</div>
       <div class="an-info">
         <span class="an-eyebrow">Pengingat Belajar</span>
