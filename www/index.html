@@ -98,6 +98,44 @@
         </div>
       </div>
     </section>
+
+    <!-- ===== SURVIVAL MODE ===== -->
+    <section class="screen" id="screen-survival">
+      <div class="surv-shell">
+        <div class="surv-header">
+          <div class="surv-lives" id="survLives"></div>
+          <div class="surv-timerwrap">
+            <div class="surv-timer" id="survTimerVal">40.0</div>
+            <div class="surv-progress-track"><div class="surv-progress-fill" id="survProgressFill"></div></div>
+          </div>
+          <div class="surv-score" id="survScoreVal">0</div>
+        </div>
+        <div class="scroll-pane surv-scroll" id="survScroll">
+          <div class="surv-question-box">
+            <p class="step-text" id="survQuestionText" style="font-size:16px; font-weight:600;"></p>
+          </div>
+          <div class="quiz-options" id="survOpts"></div>
+        </div>
+      </div>
+
+      <!-- Overlay countdown intro -->
+      <div class="surv-countdown-overlay" id="survCountdownOverlay">
+        <div class="surv-countdown-num" id="survCountdownNum">3</div>
+      </div>
+
+      <!-- Pop-up Game Over -->
+      <div class="surv-gameover-backdrop" id="survGameoverBackdrop"></div>
+      <div class="surv-gameover-modal" id="survGameoverModal">
+        <div class="surv-go-icon">💥</div>
+        <h2>Game Over!</h2>
+        <div class="surv-go-score"><span>Skor Akhir</span><b id="survGoScore">0</b></div>
+        <p class="surv-go-correction" id="survGoCorrection"></p>
+        <div class="surv-go-actions">
+          <button class="btn btn-primary btn-block ripple-host" id="survBtnRetry">Ulangi</button>
+          <button class="btn btn-ghost btn-block ripple-host" id="survBtnHome">Beranda</button>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -114,6 +152,7 @@
 <script src="js/state.js"></script>
 <script src="js/router.js"></script>
 <script src="js/screens.js"></script>
+<script src="js/survival.js"></script>
 <script src="js/level1.js"></script>
 <script src="js/level2.js"></script>
 <script src="js/level3.js"></script>
