@@ -35,7 +35,7 @@ function l3Ex(body){
       onComplete: () => {
          if(tm) tm.textContent = fmt(t,2)+' dtk';
          gsap.set(tail, {opacity:0});
-         explodeSplash(stg, stg.clientWidth/2, 20, 'var(--lvl3)');
+         explodeSplash(stg, stg.clientWidth/2, 20, 'var(--primary)');
          
          const bounceTl = gsap.timeline();
          bounceTl.to(b, { scaleX: 1.4, scaleY: 0.4, y: fSpan + 10, duration: 0.08, ease: "power2.inOut" })
@@ -52,7 +52,7 @@ function l3Ex(body){
 }
 function l3Gr(body){
   body.innerHTML = `<span class="eyebrow-pill">Konsep Inti</span><h2>Gravitasi = Percepatan Abstrak</h2><p class="step-text">Gravitasi Bumi adalah mesin pendorong tak terlihat yang selalu memberikan daya sebesar <b>9,8 m/s²</b> ke arah bawah. Mengingat sifatnya yang berupa "percepatan", rumus jarak GLBB sebelumnya sangat valid digunakan.</p>
-  <div style="position:relative;height:240px;background:radial-gradient(circle at 50% 0%, var(--surface-c-high), var(--bg));border-radius:24px;overflow:hidden;margin-top:24px; border:1px solid rgba(255,255,255,0.05); box-shadow: inset 0 10px 20px rgba(0,0,0,0.5);"><div id="gDot" style="position:absolute;left:50%;top:20px;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff, var(--lvl3));transform:translateX(-50%); box-shadow: 0 5px 15px rgba(0,0,0,0.5);"></div></div>
+  <div style="position:relative;height:240px;background:radial-gradient(circle at 50% 0%, var(--surface-c-high), var(--bg));border-radius:24px;overflow:hidden;margin-top:24px; border:1px solid rgba(255,255,255,0.05); box-shadow: inset 0 10px 20px rgba(0,0,0,0.5);"><div id="gDot" style="position:absolute;left:50%;top:20px;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff, var(--primary));transform:translateX(-50%); box-shadow: 0 5px 15px rgba(0,0,0,0.5);"></div></div>
   <button class="btn btn-ghost ripple-host btn-sm" id="btnR" style="margin-top:20px;">Uji Tarikan</button>`;
   
   const d=body.querySelector('#gDot');
@@ -270,7 +270,7 @@ function runL3(pred, H){
       drawSeries(gr.ctx,gr.w,gr.h,aPts,xMEnd,H*1.05,'#B7C0FF',false);
       hud.classList.add('show'); hud.innerHTML=texi(String.raw`h = \tfrac{1}{2} g t^2 = \tfrac{1}{2} \times 9{,}8 \times ${fmt(cT,1)}^2 = ${fmt(H,1)}\text{ m}`);
       gsap.set(tail, {opacity:0});
-      explodeSplash(stg, stg.clientWidth/2, 20, 'var(--lvl3)');
+      explodeSplash(stg, stg.clientWidth/2, 20, 'var(--primary)');
 
       const bounceTl = gsap.timeline();
       bounceTl.to(b, { scaleX: 1.4, scaleY: 0.4, y: fSpan + 10, duration: 0.08, ease: "power2.inOut" })
@@ -309,7 +309,7 @@ function l3Quiz(body) {
          <div style="position:absolute; left:calc(50% + 20px); top:10px; font-family:var(--font-mono); font-size:13px; color:var(--on-surface-var); font-weight:800;">${texi(String.raw`v_0 = 0`)}</div>
          <div style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-family:var(--font-mono); font-size:13px; color:var(--error); font-weight:800;">${texi(String.raw`g = 10 \text{ m/s}^2`)}</div>
          
-         <div id="q3Ball" style="position:absolute; left:50%; top:10px; transform:translateX(-50%); width:24px; height:24px; border-radius:50%; background:var(--lvl3); box-shadow:0 4px 8px rgba(0,0,0,0.5);"></div>
+         <div id="q3Ball" style="position:absolute; left:50%; top:10px; transform:translateX(-50%); width:24px; height:24px; border-radius:50%; background:var(--primary); box-shadow:0 4px 8px rgba(0,0,0,0.5);"></div>
          
          <div id="q3Label" style="position:absolute; left:calc(50% + 20px); top:80px; background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.1); padding:6px 12px; border-radius:8px; opacity:0; transform:translateY(-10px);">
             <div style="font-family:var(--font-mono); font-size:14px; color:var(--on-surface); font-weight:900;">${texi(String.raw`t = 3 \text{ s}`)}</div>
