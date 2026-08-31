@@ -166,23 +166,23 @@ function survGenerateQuestion(lastTopic){
 // ===== State & Alur Permainan =====
 const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, answering: false };
 
-function renderSurvivalCard(mapEl){
+function renderSurvivalCard(holder){
+  if(!holder) return;
   const hs = survGetHighScore();
-  const card = document.createElement('button');
-  card.className = 'survival-card ripple-host';
-  card.innerHTML = `
-    <div class="survival-icon-box">🔥</div>
-    <div class="survival-info">
-      <h3>Mode Survival</h3>
-      <p>Ayo, uji kecepatan berpikirmu!</p>
-    </div>
-    <div class="survival-badge">
-      <span class="sv-trophy">🏆</span>
-      <span>${hs} poin</span>
-    </div>
+  holder.innerHTML = `
+    <button class="survival-card ripple-host" id="survivalCardBtn">
+      <div class="survival-icon-box">${svgIcon('fire')}</div>
+      <div class="survival-info">
+        <h3>Mode Survival</h3>
+        <p>Ayo, uji kecepatan berpikirmu!</p>
+      </div>
+      <div class="survival-badge">
+        <span class="sv-trophy">${svgIcon('trophy')}</span>
+        <span>${hs} poin</span>
+      </div>
+    </button>
   `;
-  card.addEventListener('click', ()=> navigate('survival', {}));
-  mapEl.appendChild(card);
+  document.getElementById('survivalCardBtn').addEventListener('click', ()=> navigate('survival', {}));
 }
 
 function startSurvivalGame(){
