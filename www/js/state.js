@@ -44,3 +44,12 @@ function getLastProgress(){
 function clearLastProgress(){
   try{ localStorage.removeItem(LAST_PROGRESS_KEY); }catch(e){}
 }
+
+// ===== Indeks Kutipan Fisika di Home — berganti tiap app dibuka & tiap naik level =====
+const QUOTE_CTR_KEY = 'phygo_quote_ctr';
+function getQuoteIndex(){ try{ return parseInt(localStorage.getItem(QUOTE_CTR_KEY) || '0', 10) || 0; }catch(e){ return 0; } }
+function bumpQuoteIndex(){
+  const n = getQuoteIndex() + 1;
+  try{ localStorage.setItem(QUOTE_CTR_KEY, String(n)); }catch(e){}
+  return n;
+}
