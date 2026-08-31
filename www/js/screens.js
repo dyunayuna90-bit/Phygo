@@ -1,25 +1,81 @@
 "use strict";
 
 function renderHome(){
+  renderHomeAchievement();
+  renderHomeQuote();
+  renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderActivityNotif();
+}
 
+function renderHomeAchievement(){
+  const holder = document.getElementById('homeAchievementCard');
+  if(!holder) return;
+  const pct = Math.round((app.completed.size / 3) * 100);
+  holder.innerHTML = `
+    <div class="gami-card">
+      <div class="g-chart">
+        <svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15"/><circle class="prog" cx="18" cy="18" r="15" stroke-dasharray="${pct}, 100"/></svg>
+        <div class="g-val">${app.completed.size}/3</div>
+      </div>
+      <div class="g-info">
+        <h3>Pencapaian</h3>
+        <p>Selesaikan semua tantangan dasar fisika.</p>
+      </div>
+    </div>
+  `;
+  apply3DTilt(holder.querySelector('.gami-card'), 10, 0);
+}
+
+function renderHomeQuote(){
+  const holder = document.getElementById('homeQuoteCard');
+  if(!holder) return;
+  const q = PHYSICS_QUOTES[getQuoteIndex() % PHYSICS_QUOTES.length];
+  holder.innerHTML = `
+    <div class="quote-card">
+      <div class="quote-mark">${svgIcon('quote')}</div>
+      <p class="quote-text">${q.text}</p>
+      <span class="quote-by">— ${q.by}${q.year ? ', ' + q.year : ''}</span>
+    </div>
+  `;
+}
+
+// ===== Tombol "Lanjutkan Main" — arahkan ke posisi paling logis =====
+// 1) Kalau ada wizard yang belum selesai -> lanjutkan persis di step itu.
+// 2) Kalau tidak, arahkan ke materi level pertama yang belum diselesaikan.
+// 3) Kalau ketiga level sudah selesai semua -> ajak main Mode Survival.
+function handleContinuePlay(){
+  const lp = getLastProgress();
+  if(lp && LEVELS[lp.level] && !app.completed.has(lp.level)){
+    resumeLastActivity();
+    return;
+  }
+  const nextLevel = [1,2,3].find(id => !app.completed.has(id));
+  if(nextLevel){
+    navigate('materi', {level: nextLevel});
+    return;
+  }
+  navigate('survival', {});
+}
+
+// ===== Halaman "Level" — peta zig-zag (tidak diubah tampilannya) =====
+function renderLevelMap(){
   const mapEl = document.getElementById('journeyMap');
   Array.from(mapEl.children).forEach(c => { if(c.id !== 'jPathSvg') c.remove(); });
 
   let highestCompleted = Math.max(0, ...Array.from(app.completed));
-  
+
   [3,2,1].forEach(id=>{
     const L = LEVELS[id], done = app.completed.has(id);
     const locked = !done && id > highestCompleted + 1;
     const active = !locked && !done;
-    
+
     const wrap = document.createElement('div');
     wrap.className = `j-node-wrap ${id%2===0 ? 'right' : 'left'}`;
     wrap.dataset.id = id;
-    
+
     const btn = document.createElement('button');
     btn.className = `j-node ripple-host`;
-    
+
     if (app.justUnlockedLevel === id) {
       btn.classList.add('locked'); 
       btn.innerHTML = `<div class="icon-wrap" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%;">${svgIcon('lock')}</div>`;
@@ -27,36 +83,114 @@ function renderHome(){
       btn.classList.add(done ? 'completed' : (active ? 'active-node' : 'locked'));
       btn.innerHTML = `<div class="icon-wrap" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%;">${locked ? svgIcon('lock') : (done ? svgIcon('check') : svgIcon(L.icon))}</div>`;
     }
-    
+
     if(!locked) btn.addEventListener('click', ()=> navigate('materi', {level:id}));
-    
+
     const lbl = document.createElement('div');
     lbl.className = 'j-node-label';
     lbl.textContent = `Lvl ${id}: ${L.title.split(' ')[0]}`; 
-    
+
     wrap.appendChild(btn); wrap.appendChild(lbl); mapEl.appendChild(wrap);
     apply3DTilt(btn, 25, 0); 
   });
 
-  const pct = Math.round((app.completed.size / 3) * 100);
-  const card = document.createElement('div');
-  card.className = 'gami-card';
-  card.innerHTML = `
-    <div class="g-chart">
-      <svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15"/><circle class="prog" cx="18" cy="18" r="15" stroke-dasharray="${pct}, 100"/></svg>
-      <div class="g-val">${app.completed.size}/3</div>
-    </div>
-    <div class="g-info">
-      <h3>Pencapaian</h3>
-      <p>Selesaikan semua tantangan dasar fisika.</p>
-    </div>
-  `;
-  mapEl.appendChild(card);
-  apply3DTilt(card, 10, 0); 
-
-  renderSurvivalCard(mapEl);
-
   setTimeout(drawJourneyLines, 50);
+}
+
+// ===== Halaman "Pengaturan" =====
+function renderSettingsScreen(){
+  const activeTheme = getTheme();
+  document.querySelectorAll('#themeGrid .theme-swatch').forEach(el=>{
+    el.classList.toggle('active', el.dataset.theme === activeTheme);
+  });
+}
+
+function resetAllData(){
+  Swal.fire({
+    icon:'warning',
+    title:'Reset Semua Data?',
+    text:'Seluruh pencapaian, skor tertinggi, dan progres yang tersimpan akan dihapus permanen dan tidak bisa dikembalikan.',
+    showCancelButton:true,
+    confirmButtonText:'Ya, Hapus Semua',
+    cancelButtonText:'Batal',
+    background:'#1C2426', color:'#E3E3E6',
+    confirmButtonColor:'var(--error)',
+    cancelButtonColor:'var(--surface-c-high)'
+  }).then(res=>{
+    if(!res.isConfirmed) return;
+    ['phygo_completed','phygo_last_progress','phygo_survival_highscore','phygo_quote_ctr'].forEach(k=>{
+      try{ localStorage.removeItem(k); }catch(e){}
+    });
+    app.completed = new Set();
+    app.justUnlockedLevel = null;
+    app.params = {}; app.attempts = {1:0,2:0,3:0}; app.calc = {}; app.calcChain = {1:{},2:{},3:{}}; app.locked = {};
+    navigate('home', {}, true);
+    Swal.fire({ icon:'success', title:'Data berhasil direset', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' });
+  });
+}
+
+function exportDataJson(){
+  const data = {
+    version: 1,
+    completed: [...app.completed],
+    lastProgress: getLastProgress(),
+    survivalHighScore: survGetHighScore(),
+    quoteCtr: getQuoteIndex(),
+    theme: getTheme(),
+    exportedAt: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'phygo-backup.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=> URL.revokeObjectURL(url), 2000);
+  Swal.fire({ icon:'success', title:'Data berhasil diekspor', text:'File phygo-backup.json telah diunduh.', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' });
+}
+
+function importDataJson(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data || !Array.isArray(data.completed)) throw new Error('format tidak valid');
+
+      app.completed = new Set(data.completed.filter(n => [1,2,3].includes(n)));
+      try{ localStorage.setItem('phygo_completed', JSON.stringify([...app.completed])); }catch(err){}
+
+      if(data.lastProgress && typeof data.lastProgress.level === 'number' && typeof data.lastProgress.step === 'number'){
+        saveLastProgress(data.lastProgress.level, data.lastProgress.step);
+      } else {
+        clearLastProgress();
+      }
+
+      if(typeof data.survivalHighScore === 'number') survSaveHighScore(data.survivalHighScore);
+      if(typeof data.quoteCtr === 'number'){ try{ localStorage.setItem('phygo_quote_ctr', String(data.quoteCtr)); }catch(err){} }
+      if(data.theme) setTheme(data.theme);
+
+      Swal.fire({ icon:'success', title:'Data berhasil dipulihkan', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' })
+        .then(()=>{ renderSettingsScreen(); navigate('home', {}, true); });
+    }catch(err){
+      Swal.fire({ icon:'error', title:'Impor Gagal', text:'File JSON tidak valid atau rusak.', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--error)' });
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showAppInfo(){
+  const teamHtml = APP_INFO.team.map(n => `<li>${n}</li>`).join('');
+  Swal.fire({
+    title: 'Tentang Phygo',
+    html: `
+      <p style="text-align:left; line-height:1.6; margin-bottom:14px;">${APP_INFO.purpose}</p>
+      <p style="text-align:left; font-weight:800; margin-bottom:6px;">Anggota Kelompok:</p>
+      <ul style="text-align:left; margin:0 0 16px 18px; padding:0; line-height:1.8;">${teamHtml}</ul>
+      <a href="${APP_INFO.repoUrl}" target="_blank" rel="noopener" style="color:var(--primary); font-weight:700; text-decoration:underline;">Lihat Repository GitHub</a>
+    `,
+    background: '#1C2426', color: '#E3E3E6',
+    confirmButtonColor: 'var(--primary)', confirmButtonText: 'Tutup'
+  });
 }
 
 // ===== Notifikasi Aktivitas =====
@@ -278,7 +412,7 @@ function runQuizFbAction(pending) {
     const wasCompleted = app.completed.has(pending.level);
     app.completed.add(pending.level);
     localStorage.setItem('phygo_completed', JSON.stringify([...app.completed]));
-    if(!wasCompleted) { app.justUnlockedLevel = pending.level + 1; }
+    if(!wasCompleted) { app.justUnlockedLevel = pending.level + 1; bumpQuoteIndex(); }
     clearLastProgress();
     navigate('home', {}, false);
   } else if(pending.action === 'retry') {
