@@ -175,7 +175,6 @@ function renderSurvivalCard(holder){
       <div class="survival-icon-box">${svgIcon('fire')}</div>
       <div class="survival-info">
         <h3>Mode Survival</h3>
-        <p>Ayo, uji kecepatan berpikirmu!</p>
       </div>
       <div class="survival-badge">
         <span class="sv-trophy">${svgIcon('trophy')}</span>
