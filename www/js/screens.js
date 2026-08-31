@@ -54,6 +54,8 @@ function renderHome(){
   mapEl.appendChild(card);
   apply3DTilt(card, 10, 0); 
 
+  renderSurvivalCard(mapEl);
+
   setTimeout(drawJourneyLines, 50);
 }
 
