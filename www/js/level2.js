@@ -4,7 +4,7 @@ function renderLevel2Step(step, body){ const f = [l2Ex,l2AccIntro,l2Data,l2Form,
 
 function l2Ex(body){
   const a=4, t=3, s=0.5*a*t*t;
-  body.innerHTML = `<span class="example-tag">${svgIcon('accel')} Observasi Fenomena</span><h2>Perbandingan GLB vs GLBB</h2>${buildRoadStageHTML('#FFB871','#3D2B00', true, true)}<p class="step-text">Mobil berbayang stabil (GLB). Mobil kamu (Oranye) memulai dari diam, namun <b>mesin terus mendorongnya</b>, membuatnya melaju semakin agresif (GLBB).</p><button class="btn btn-ghost ripple-host btn-sm" id="btnReplay">Putar Ulang Observasi</button>`;
+  body.innerHTML = `<span class="example-tag">${svgIcon('accel')} Observasi Fenomena</span><h2>Perbandingan GLB vs GLBB</h2>${buildRoadStageHTML('var(--primary)','var(--primary-container)', true, true)}<p class="step-text">Mobil berbayang stabil (GLB). Mobil kamu (Oranye) memulai dari diam, namun <b>mesin terus mendorongnya</b>, membuatnya melaju semakin agresif (GLBB).</p><button class="btn btn-ghost ripple-host btn-sm" id="btnReplay">Putar Ulang Observasi</button>`;
   const mToPx=layoutRoadStage(s, s*1.4);
   document.getElementById('stgGate').style.opacity='.4'; document.getElementById('stgGateLabel').textContent='';
   const car=document.getElementById('stgCar'), carWrap=document.getElementById('stgCarWrap'), sh=document.getElementById('stgShadow'), tm=document.getElementById('stgTimer');
@@ -64,7 +64,7 @@ function l2AccIntro(body){
 function l2Data(body){
   const { S, T } = app.params[2];
   body.innerHTML = `<span class="eyebrow-pill">Misi Berikutnya</span><h2>Target Parameter GLBB</h2><p class="step-text">Mobil harus mencapai garis finis tepat pada waktu yang ditentukan. Titik krusial: Mobil dimulai dari <b>keadaan statis (diam)</b>.</p>
-  ${buildRoadStageHTML('#FFB871','#3D2B00', true)}
+  ${buildRoadStageHTML('var(--primary)','var(--primary-container)', true)}
   <div class="stat-chip-row"><div class="stat-chip"><span class="lbl">Jarak Eksekusi</span><span class="val">${S} m</span></div><div class="stat-chip"><span class="lbl">Batas Waktu</span><span class="val">${T} dtk</span></div><div class="stat-chip"><span class="lbl">V₀ (Awal)</span><span class="val">0 m/s</span></div></div>`;
   layoutRoadStage(S, S*1.2);
   setFooter({ backVisible:true, primaryLabel:'Akses Rumus GLBB', onPrimary:()=> wizardGoStep(1) });
@@ -191,7 +191,7 @@ function l2Setel(body){
 function l2Run(body){
   const { S, T } = app.params[2], a = app.locked[2]; if(a===undefined) return wizardGoStep(-1);
   const mMax=Math.max(S*1.5,S+40);
-  body.innerHTML = `<div class="sim-layout">${buildRoadStageHTML('#FFB871','#3D2B00', true)}<div class="sim-side-panel"><span class="panel-label">Daya Dorong (Percepatan)</span><div style="font-family:var(--font-mono);font-weight:900;font-size:36px;color:var(--lvl2); text-shadow:0 2px 8px rgba(255,184,113,0.3);">${fmt(a,1)} <span style="font-size:16px;color:var(--on-surface-var);">m/s²</span></div><span class="panel-label">Grafik Eksponensial GLBB</span><canvas class="mini-graph" id="graphCanvas"></canvas><div class="graph-legend"><span><i style="background:#FFB871"></i>Kurva Jarak</span><span><i style="background:#FFB4AB;opacity:.8"></i>Batas Target</span></div></div></div>`;
+  body.innerHTML = `<div class="sim-layout">${buildRoadStageHTML('var(--primary)','var(--primary-container)', true)}<div class="sim-side-panel"><span class="panel-label">Daya Dorong (Percepatan)</span><div style="font-family:var(--font-mono);font-weight:900;font-size:36px;color:var(--lvl2); text-shadow:0 2px 8px rgba(255,184,113,0.3);">${fmt(a,1)} <span style="font-size:16px;color:var(--on-surface-var);">m/s²</span></div><span class="panel-label">Grafik Eksponensial GLBB</span><canvas class="mini-graph" id="graphCanvas"></canvas><div class="graph-legend"><span><i style="background:#FFB871"></i>Kurva Jarak</span><span><i style="background:#FFB4AB;opacity:.8"></i>Batas Target</span></div></div></div>`;
   const mToPx=layoutRoadStage(S, mMax);
   setFooter({ backVisible:true, primaryLabel:'Eksekusi Simulasi GLBB', onPrimary:()=> runL2(a, S, T, mToPx) });
 }
