@@ -22,6 +22,7 @@ function showScreen(name, opts){
   if(name==='home') { renderHome(); requestAnimationFrame(()=>animateIn(document.getElementById('homeScroll'))); }
   else if(name==='level') { renderLevelMap(); requestAnimationFrame(()=>animateIn(document.getElementById('levelScroll'))); }
   else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
+  else if(name==='appinfo') { renderAppInfo(); requestAnimationFrame(()=>animateIn(document.getElementById('appInfoScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
   else if(name==='survival'){
     startSurvivalGame();
