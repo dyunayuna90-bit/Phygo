@@ -39,7 +39,7 @@ function renderHomeQuote(){
       <span class="quote-by">— ${q.by}${q.year ? ', ' + q.year : ''}</span>
     </div>
   `;
-  apply3DTilt(holder.querySelector('.quote-card'), 6, 0);
+  apply3DTilt(holder.querySelector('.quote-card'), 10, 0);
 }
 
 // ===== Tombol "Lanjutkan Main" — arahkan ke posisi paling logis =====
