@@ -18,7 +18,8 @@ document.querySelectorAll('.bn-item').forEach(btn=>{
   btn.addEventListener('click', ()=> navigate(btn.dataset.screen, {}, true));
 });
 
-// ===== Tombol "Lanjutkan Main" di Home =====
+// ===== Tombol "Lanjutkan Main" (mengambang) di Home =====
+document.querySelector('#btnContinuePlay .bcf-icon').innerHTML = svgIcon('play');
 document.getElementById('btnContinuePlay').addEventListener('click', handleContinuePlay);
 
 // ===== Ikon & aksi statis di Pengaturan =====
@@ -30,7 +31,11 @@ document.querySelectorAll('.settings-row-chevron').forEach(el => el.innerHTML = 
 
 document.getElementById('btnExportData').addEventListener('click', exportDataJson);
 document.getElementById('btnResetData').addEventListener('click', resetAllData);
-document.getElementById('btnAppInfo').addEventListener('click', showAppInfo);
+document.getElementById('btnAppInfo').addEventListener('click', ()=> navigate('appinfo', {}, false));
+
+// ===== Halaman "Tentang Aplikasi" =====
+document.getElementById('btnAppInfoBack').innerHTML = svgIcon('arrowBack');
+document.getElementById('btnAppInfoBack').addEventListener('click', ()=> navigate('settings', {}, false));
 
 const importFileInput = document.getElementById('importFileInput');
 document.getElementById('btnImportData').addEventListener('click', ()=> importFileInput.click());
