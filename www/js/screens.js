@@ -222,7 +222,6 @@ function renderActivityNotif(){
       <div class="an-info">
         <span class="an-eyebrow">Pengingat Belajar</span>
         <h4>Kamu belum menyelesaikan Level ${lp.level}: ${L.title}</h4>
-        <p>Yuk lanjutkan perjalananmu dan selesaikan tantangan ini!</p>
       </div>
     </button>
   `;
