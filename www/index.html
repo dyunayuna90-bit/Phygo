@@ -34,15 +34,108 @@
     <section class="screen active" id="screen-home">
       <div class="scroll-pane" id="homeScroll">
         <div class="home-hero">
-          <div class="h-badge">PROGRES BELAJAR</div>
-          <h1>Jelajah Fisika</h1>
-          <p>Selesaikan tantangan dan kuasai konsep dasar gerak serta gravitasi bumi melalui simulasi interaktif.</p>
+          <h1 class="app-brand-title">Phygo</h1>
+          <p>Kuasai konsep dasar gerak dan gravitasi bumi lewat simulasi interaktif.</p>
         </div>
+
+        <!-- Kartu Pencapaian -->
+        <div id="homeAchievementCard"></div>
+
+        <!-- Kartu Kutipan Tokoh Fisika -->
+        <div id="homeQuoteCard"></div>
+
+        <!-- Kartu Mode Survival -->
+        <div id="homeSurvivalCard"></div>
+
         <!-- Notifikasi Aktivitas: pengingat "lanjutkan level yang belum selesai".
              Kosong & disembunyikan secara default, diisi oleh renderActivityNotif() di screens.js -->
         <div id="activityNotifCard"></div>
+
+        <!-- Tombol Lanjutkan Main -->
+        <div class="home-continue-wrap">
+          <button class="btn btn-primary btn-block btn-continue ripple-host" id="btnContinuePlay">Lanjutkan Main</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LEVEL (Peta Zig-zag) ===== -->
+    <section class="screen" id="screen-level">
+      <div class="scroll-pane" id="levelScroll">
+        <div class="level-header">
+          <h1>Peta Level</h1>
+          <p>Selesaikan tantangan secara berurutan untuk membuka level berikutnya.</p>
+        </div>
         <div class="journey-map" id="journeyMap">
           <svg class="j-path-svg" id="jPathSvg"></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PENGATURAN ===== -->
+    <section class="screen" id="screen-settings">
+      <div class="scroll-pane" id="settingsScroll">
+        <div class="level-header">
+          <h1>Pengaturan</h1>
+          <p>Sesuaikan tampilan dan kelola data progres belajarmu.</p>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Tema Tampilan</h3>
+          <div class="theme-grid" id="themeGrid">
+            <button class="theme-swatch ripple-host" data-theme="cyan" aria-label="Tema Cyan Blue">
+              <span class="theme-swatch-preview theme-preview-cyan"></span>
+              <span class="theme-swatch-label">Cyan Blue</span>
+            </button>
+            <button class="theme-swatch ripple-host" data-theme="pink" aria-label="Tema Pink Pastel">
+              <span class="theme-swatch-preview theme-preview-pink"></span>
+              <span class="theme-swatch-label">Pink Pastel</span>
+            </button>
+            <button class="theme-swatch ripple-host" data-theme="coklat" aria-label="Tema Coklat">
+              <span class="theme-swatch-preview theme-preview-coklat"></span>
+              <span class="theme-swatch-label">Coklat</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Data &amp; Progres</h3>
+          <button class="settings-row ripple-host" id="btnExportData">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Ekspor Data</b>
+              <small>Simpan progres ke file JSON</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+          <button class="settings-row ripple-host" id="btnImportData">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Impor Data</b>
+              <small>Pulihkan progres dari file JSON</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+          <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+          <button class="settings-row settings-row-danger ripple-host" id="btnResetData">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Reset Semua Data</b>
+              <small>Hapus seluruh pencapaian dan mulai dari awal</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Tentang</h3>
+          <button class="settings-row ripple-host" id="btnAppInfo">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Tentang Aplikasi</b>
+              <small>Informasi tim dan repositori proyek</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
         </div>
       </div>
     </section>
@@ -126,7 +219,13 @@
       <!-- Pop-up Game Over -->
       <div class="surv-gameover-backdrop" id="survGameoverBackdrop"></div>
       <div class="surv-gameover-modal" id="survGameoverModal">
-        <div class="surv-go-icon">💥</div>
+        <div class="surv-go-icon">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
         <h2>Game Over!</h2>
         <div class="surv-go-score"><span>Skor Akhir</span><b id="survGoScore">0</b></div>
         <p class="surv-go-correction" id="survGoCorrection"></p>
@@ -137,6 +236,22 @@
       </div>
     </section>
   </main>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bn-item active ripple-host" data-screen="home" id="navHome">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Home</span>
+    </button>
+    <button class="bn-item ripple-host" data-screen="level" id="navLevel">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Level</span>
+    </button>
+    <button class="bn-item ripple-host" data-screen="settings" id="navSettings">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Pengaturan</span>
+    </button>
+  </nav>
 </div>
 
 <!-- Libs (lokal) -->
