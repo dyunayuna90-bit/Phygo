@@ -224,7 +224,6 @@ function renderActivityNotif(){
         <h4>Kamu belum menyelesaikan Level ${lp.level}: ${L.title}</h4>
         <p>Yuk lanjutkan perjalananmu dan selesaikan tantangan ini!</p>
       </div>
-      <span class="btn btn-primary an-btn">Lanjutkan</span>
     </button>
   `;
   document.getElementById('activityNotifBtn').onclick = resumeLastActivity;
