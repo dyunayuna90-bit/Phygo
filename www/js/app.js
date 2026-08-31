@@ -1,7 +1,51 @@
 "use strict";
 
+// Terapkan tema tersimpan sedini mungkin (masih ketutup #appLoader, jadi ga ada "flash" warna)
+setTheme(getTheme());
+
+// Kutipan fisika di Home berganti tiap kali aplikasi dibuka (lihat juga
+// bumpQuoteIndex() yang dipanggil tiap naik level, di screens.js)
+bumpQuoteIndex();
+
 // Init tombol exit wizard (butuh els dari state.js + svgIcon dari helpers.js + goToDashboard dari screens.js)
 if(els.wizExit){ els.wizExit.innerHTML = svgIcon('doorExit'); els.wizExit.onclick = goToDashboard; }
+
+// ===== Ikon statis Bottom Navigation =====
+document.getElementById('navHome').querySelector('.bn-icon').innerHTML = svgIcon('home');
+document.getElementById('navLevel').querySelector('.bn-icon').innerHTML = svgIcon('mapRoute');
+document.getElementById('navSettings').querySelector('.bn-icon').innerHTML = svgIcon('gear');
+document.querySelectorAll('.bn-item').forEach(btn=>{
+  btn.addEventListener('click', ()=> navigate(btn.dataset.screen, {}, true));
+});
+
+// ===== Tombol "Lanjutkan Main" di Home =====
+document.getElementById('btnContinuePlay').addEventListener('click', handleContinuePlay);
+
+// ===== Ikon & aksi statis di Pengaturan =====
+document.getElementById('btnExportData').querySelector('.settings-row-icon').innerHTML = svgIcon('download');
+document.getElementById('btnImportData').querySelector('.settings-row-icon').innerHTML = svgIcon('upload');
+document.getElementById('btnResetData').querySelector('.settings-row-icon').innerHTML = svgIcon('trash');
+document.getElementById('btnAppInfo').querySelector('.settings-row-icon').innerHTML = svgIcon('info');
+document.querySelectorAll('.settings-row-chevron').forEach(el => el.innerHTML = svgIcon('chevronRight'));
+
+document.getElementById('btnExportData').addEventListener('click', exportDataJson);
+document.getElementById('btnResetData').addEventListener('click', resetAllData);
+document.getElementById('btnAppInfo').addEventListener('click', showAppInfo);
+
+const importFileInput = document.getElementById('importFileInput');
+document.getElementById('btnImportData').addEventListener('click', ()=> importFileInput.click());
+importFileInput.addEventListener('change', (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if(file) importDataJson(file);
+  importFileInput.value = '';
+});
+
+document.querySelectorAll('#themeGrid .theme-swatch').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    setTheme(btn.dataset.theme);
+    document.querySelectorAll('#themeGrid .theme-swatch').forEach(el => el.classList.toggle('active', el === btn));
+  });
+});
 
 // Entry point — dijalankan setelah semua module lain ke-load
 history.replaceState({screen:'home'}, '', '#home'); showScreen('home');
