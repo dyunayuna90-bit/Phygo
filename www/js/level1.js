@@ -4,7 +4,7 @@ function renderLevel1Step(step, body){ const f = [l1Ex,l1Basics,l1SpeedIntro,l1D
 
 function l1Ex(body){
   const v=10, t=5, s=v*t;
-  body.innerHTML = `<span class="example-tag">${svgIcon('speed')} Mari Perhatikan</span><h2>Mobil melaju stabil 10 m/s selama 5 detik</h2>${buildRoadStageHTML('#5FE1E2','#063B3C',false)}<p class="step-text">Kecepatannya tetap dari awal sampai akhir. Amati pergerakannya yang halus tanpa hentakan.</p><button class="btn btn-ghost ripple-host btn-sm" id="btnReplay">Putar Ulang Simulasi</button>`;
+  body.innerHTML = `<span class="example-tag">${svgIcon('speed')} Mari Perhatikan</span><h2>Mobil melaju stabil 10 m/s selama 5 detik</h2>${buildRoadStageHTML('var(--primary)','var(--primary-container)',false)}<p class="step-text">Kecepatannya tetap dari awal sampai akhir. Amati pergerakannya yang halus tanpa hentakan.</p><button class="btn btn-ghost ripple-host btn-sm" id="btnReplay">Putar Ulang Simulasi</button>`;
   const mToPx=layoutRoadStage(s, s*1.4);
   document.getElementById('stgGate').style.opacity='.4'; document.getElementById('stgGateLabel').textContent='';
   const car=document.getElementById('stgCar'), carWrap=document.getElementById('stgCarWrap'), sh=document.getElementById('stgShadow'), tm=document.getElementById('stgTimer');
@@ -56,7 +56,7 @@ function l1SpeedIntro(body){
 function l1Data(body){
   const { S, T } = app.params[1];
   body.innerHTML = `<span class="eyebrow-pill">Mari Mencoba</span><h2>Tugas Kalkulasi Kamu</h2><p class="step-text">Kendaraan ini harus menyeberangi area tepat pada waktu yang ditentukan. Tidak boleh terlalu cepat, tidak boleh terlambat.</p>
-  ${buildRoadStageHTML('#5FE1E2','#063B3C',false)}
+  ${buildRoadStageHTML('var(--primary)','var(--primary-container)',false)}
   <div class="stat-chip-row"><div class="stat-chip"><span class="lbl">Panjang Trek</span><span class="val">${S} m</span></div><div class="stat-chip"><span class="lbl">Batas Waktu</span><span class="val">${T} dtk</span></div></div>`;
   layoutRoadStage(S, S*1.2);
   setFooter({ backVisible:true, primaryLabel:'Lihat Rumus', onPrimary:()=> wizardGoStep(1) });
@@ -117,7 +117,7 @@ function l1Setel(body){
 function l1Run(body){
   const { S, T } = app.params[1]; const v = app.locked[1]; if(v===undefined) return wizardGoStep(-1);
   const mMax=Math.max(S*1.5,S+40);
-  body.innerHTML = `<div class="sim-layout">${buildRoadStageHTML('#5FE1E2','#063B3C',false)}<div class="sim-side-panel"><span class="panel-label">Kecepatan Dikonfigurasi</span><div style="font-family:var(--font-mono);font-weight:900;font-size:36px;color:var(--primary);">${fmt(v,1)} <span style="font-size:16px;color:var(--on-surface-var);">m/s</span></div><span class="panel-label">Grafik Linier Jarak vs Waktu</span><canvas class="mini-graph" id="graphCanvas"></canvas><div class="graph-legend"><span><i style="background:#5FE1E2"></i>Jarak Tempuh</span><span><i style="background:#FFB4AB;opacity:.8"></i>Batas Target</span></div></div></div>`;
+  body.innerHTML = `<div class="sim-layout">${buildRoadStageHTML('var(--primary)','var(--primary-container)',false)}<div class="sim-side-panel"><span class="panel-label">Kecepatan Dikonfigurasi</span><div style="font-family:var(--font-mono);font-weight:900;font-size:36px;color:var(--primary);">${fmt(v,1)} <span style="font-size:16px;color:var(--on-surface-var);">m/s</span></div><span class="panel-label">Grafik Linier Jarak vs Waktu</span><canvas class="mini-graph" id="graphCanvas"></canvas><div class="graph-legend"><span><i style="background:#5FE1E2"></i>Jarak Tempuh</span><span><i style="background:#FFB4AB;opacity:.8"></i>Batas Target</span></div></div></div>`;
   const mToPx=layoutRoadStage(S, mMax);
   setFooter({ backVisible:true, primaryLabel:'Jalankan Simulasi', onPrimary:()=> runL1(v, S, T, mToPx) });
 }
