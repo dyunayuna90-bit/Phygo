@@ -107,8 +107,8 @@ input{ font-family:inherit; }
   position:absolute; top:0; right:4px; height:100%; width:auto; z-index:1;
   pointer-events:none; background-repeat:no-repeat; background-position:bottom right; background-size:contain;
 }
-.lanjutkan-card .lc-mascot.mascot-lanjutkan{ background-image:url('assets/mascot/otter-lanjutkan.png'); }
-.lanjutkan-card .lc-mascot.mascot-survival{ background-image:url('assets/mascot/otter-survival.png'); }
+.lanjutkan-card .lc-mascot.mascot-lanjutkan{ background-image:url('../assets/mascot/otter-lanjutkan.png'); }
+.lanjutkan-card .lc-mascot.mascot-survival{ background-image:url('../assets/mascot/otter-survival.png'); }
 .lanjutkan-card .lc-label{ position:relative; z-index:2; font-size:17px; font-weight:900; color:var(--on-surface); letter-spacing:-0.2px; }
 .lanjutkan-card:active{ transform:scale(.98); }
 /* ===== Kartu Kutipan Fisika (Home) Ã¢â‚¬â€ menempel langsung di latar, tanpa kotak ===== */
@@ -498,7 +498,7 @@ input{ font-family:inherit; }
   position:absolute; left:50%; bottom:0; transform:translateX(-50%);
   height:135%; width:auto; z-index:2; pointer-events:none;
   background-repeat:no-repeat; background-position:bottom center; background-size:contain;
-  background-image:url('assets/mascot/otter-survival.png');
+  background-image:url('../assets/mascot/otter-survival.png');
 }
 .survival-badge{
   position:absolute; top:10px; right:14px; z-index:3;
