@@ -1,10 +1,128 @@
-radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(--primary-soft)); color:var(--on-primary); font-size:15px; font-weight:800; letter-spacing:0.2px; box-shadow: 0 8px 0 var(--primary-container), var(--shadow-lg); transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+:root{
+  --bg:#0E1416; --surface:#151B1D; --surface-c:#1C2426; --surface-c-high:#283234;
+  --on-surface:#E3E3E6; --on-surface-var:#BFC9CB; --outline:#8B9698; --outline-var:#3B4547;
+  --primary:#57E0E6; --primary-soft:#26C6DA; --on-primary:#00373B; --primary-container:#004F54; --on-primary-container:#83F1F6;
+  --secondary-container:#2B3B3D; --on-secondary-container:#D3E7E9;
+  --error:#FFB4AB; --error-container:#7E0007; --on-error-container:#FFDAD6;
+  --success:#82DBA3; --success-container:#0A4B29; --on-success-container:#A8F5C4;
+  --lvl1:#5FE1E2; --lvl1-c:#063B3C; --lvl1-on-c:#9EF1F1;
+  --lvl2:#FFB871; --lvl2-c:#3D2B00; --lvl2-on-c:#FFDDB3;
+  --lvl3:#B7C0FF; --lvl3-c:#1A2166; --lvl3-on-c:#DEE0FF;
+  
+  --r-xl:32px; --r-l:24px; --r-m:16px; --r-s:12px; --r-pill:999px;
+  --font: 'Roboto Variable', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Roboto Mono Variable', ui-monospace, monospace;
+
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.16);
+  --shadow-md: 0 4px 8px rgba(0,0,0,0.18);
+  --shadow-lg: 0 8px 16px rgba(0,0,0,0.25);
+}
+
+/* ===== Tema Alternatif Ã¢â‚¬â€ Pink Pastel & Coklat (tetap dark mode) ===== */
+html[data-theme="pink"]{
+  --bg:#170F14; --surface:#1E1319; --surface-c:#271A21; --surface-c-high:#35232C;
+  --on-surface:#F3E6EC; --on-surface-var:#D3B8C6; --outline:#A88696; --outline-var:#4A3038;
+  --primary:#F2A6C4; --primary-soft:#D6779E; --on-primary:#4A0026; --primary-container:#6B2142; --on-primary-container:#FFD9E6;
+  --secondary-container:#3D2B34; --on-secondary-container:#F0D8E0;
+}
+html[data-theme="coklat"]{
+  --bg:#160F0A; --surface:#1D1610; --surface-c:#251C14; --surface-c-high:#33271B;
+  --on-surface:#F0E4D6; --on-surface-var:#CBB79E; --outline:#9C8265; --outline-var:#453425;
+  --primary:#D8A468; --primary-soft:#B97F3E; --on-primary:#3B2200; --primary-container:#5C3D14; --on-primary-container:#FFDCB0;
+  --secondary-container:#3A2F22; --on-secondary-container:#EAD9C4;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none !important; user-select:none; -webkit-user-select:none; margin:0; padding:0; }
+html,body{ height:100%; overscroll-behavior:none; }
+body{ font-family:var(--font); background:radial-gradient(1100px 550px at 100% -10%, color-mix(in srgb, var(--primary) 7%, transparent) 0%, transparent 60%), var(--bg); color:var(--on-surface); overflow:hidden; }
+
+button{ font-family:inherit; border:none; background:none; cursor:pointer; color:inherit; }
+input{ font-family:inherit; }
+.katex, .katex *{ color:inherit !important; }
+
+#app{ height:100vh; height:100dvh; max-width:900px; width: 100%; margin:0 auto; display:flex; flex-direction:column; overflow:hidden; position:relative; }
+#main{ flex:1; min-height:0; display:flex; flex-direction:column; padding:0 14px; width: 100%; }
+
+/* ===== Bottom Navigation (Home / Level / Pengaturan) ===== */
+.bottom-nav{ flex-shrink:0; display:flex; align-items:stretch; justify-content:space-around; gap:4px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); background:linear-gradient(to top, var(--surface) 70%, color-mix(in srgb, var(--surface) 85%, transparent)); box-shadow: 0 -4px 16px rgba(0,0,0,0.25); position:relative; z-index:30; transition: transform .3s ease-out, opacity .3s ease-out; }
+.bottom-nav.hide{ transform:translateY(100%); opacity:0; pointer-events:none; position:absolute; left:0; right:0; bottom:0; }
+.bn-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:8px 4px 6px; border-radius:var(--r-l); color:var(--on-surface-var); transition: all .25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.bn-icon{ width:24px; height:24px; display:flex; align-items:center; justify-content:center; }
+.bn-icon svg{ width:24px; height:24px; }
+.bn-label{ font-size:11px; font-weight:800; letter-spacing:0.2px; }
+.bn-item.active{ color:var(--primary); }
+.bn-item.active .bn-icon{ width:auto; height:auto; background:var(--primary-container); border-radius:var(--r-pill); padding:6px 16px; margin-bottom:-2px; }
+.bn-item.active .bn-icon svg{ width:20px; height:20px; display:block; }
+.bn-item:active{ transform:scale(.92); }
+.screen{ display:none; }
+.screen.active{ display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; padding:calc(20px + env(safe-area-inset-top)) 0 0; }
+
+.scroll-pane{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom: 40px; }
+.scroll-pane::-webkit-scrollbar{ display:none; }
+#screen-home .scroll-pane { display: flex; flex-direction: column; perspective: 1200px; }
+
+.ripple-host{ position:relative; overflow:hidden; }
+.ripple{ position:absolute; border-radius:50%; background:currentColor; opacity:.22; transform:scale(0); animation:rippleAnim .6s cubic-bezier(0.2, 0, 0, 1) forwards; pointer-events:none; }
+@keyframes rippleAnim{ to{ transform:scale(3); opacity:0; } }
+
+.home-hero { text-align: center; padding: 20px 20px 0; margin-bottom: 24px; }
+.home-hero .h-badge { display:inline-block; font-size:12px; font-weight:800; background:var(--surface-c-high); color:var(--primary); padding:8px 16px; border-radius:var(--r-pill); letter-spacing:1.5px; margin-bottom:16px; box-shadow: var(--shadow-sm); }
+.home-hero h1, .home-hero .app-brand-title { font-size:44px; font-weight:900; color:var(--primary); margin-bottom:10px; line-height:1.1; letter-spacing:-1px; text-shadow: 0 2px 4px rgba(0,0,0,0.4);}
+.home-hero p { font-size:15px; color:var(--on-surface-var); line-height:1.6; max-width:440px; margin:0 auto; }
+#screen-home{ position:relative; }
+#screen-home .scroll-pane{ padding-bottom:96px; }
+
+/* ===== Halaman "Level" & "Pengaturan" Ã¢â‚¬â€ header seragam ===== */
+.level-header{ text-align:center; padding:20px 20px 24px; }
+.level-header h1{ font-size:32px; font-weight:900; color:var(--on-surface); margin-bottom:8px; letter-spacing:-0.5px; }
+.level-header p{ font-size:15px; color:var(--on-surface-var); line-height:1.5; max-width:440px; margin:0 auto; }
+
+/* ===== Kartu Home (Pencapaian, Pengingat, Survival, Kutipan) Ã¢â‚¬â€ desain seragam ===== */
+.home-card{ position:relative; overflow:hidden; background:linear-gradient(145deg, var(--surface-c-high), var(--surface-c)); border-radius:var(--r-xl); box-shadow: 0 10px 0 var(--surface), var(--shadow-lg); width:100%; max-width:400px; margin:0 auto 20px; }
+.home-card-icon-bg{ position:absolute; top:50%; right:-18px; transform:translateY(-50%); width:96px; height:96px; opacity:0.06; color:var(--on-surface); pointer-events:none; z-index:0; }
+.home-card-icon-bg svg{ width:100%; height:100%; display:block; }
+.home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
+
+/* ===== Kartu Kutipan Fisika (Home) Ã¢â‚¬â€ menempel langsung di latar, tanpa kotak ===== */
+.quote-card{
+  position:relative;
+  background:none; box-shadow:none; border:none;
+  padding:10px 26px 6px;
+  max-width:420px;
+  text-align:center;
+  transform:none;
+}
+.quote-card .home-card-icon-bg{ display:none; }
+.quote-card .quote-mark{ width:30px; height:30px; margin:0 auto 12px; color:var(--primary); opacity:0.55; }
+.quote-card .quote-text{
+  font-size:21px; line-height:1.5;
+  font-weight:800; font-style:italic;
+  letter-spacing:-0.2px;
+  text-align:center;
+  margin-bottom:16px;
+  background:linear-gradient(135deg, var(--on-surface) 30%, var(--primary) 120%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow:none;
+}
+.quote-card .quote-by{
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--on-surface-var); text-align:center;
+}
+.quote-card .quote-by::before, .quote-card .quote-by::after{
+  content:''; display:block; width:20px; height:1px;
+  background:linear-gradient(90deg, transparent, var(--outline-var));
+}
+.quote-card .quote-by::after{ background:linear-gradient(90deg, var(--outline-var), transparent); }
+
+/* ===== Tombol mengambang "Lanjutkan" Ã¢â‚¬â€ hanya tampil di halaman Home ===== */
+.btn-continue-float{ position:absolute; right:16px; bottom:16px; z-index:40; display:inline-flex; align-items:center; gap:10px; padding:15px 22px 15px 18px; border-radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(--primary-soft)); color:var(--on-primary); font-size:15px; font-weight:800; letter-spacing:0.2px; box-shadow: 0 8px 0 var(--primary-container), var(--shadow-lg); transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .btn-continue-float:active{ transform:translateY(4px); box-shadow: 0 3px 0 var(--primary-container), var(--shadow-sm); }
 .btn-continue-float .bcf-icon{ width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .btn-continue-float .bcf-icon svg{ width:22px; height:22px; }
 .btn-continue-float .bcf-label{ white-space:nowrap; }
 
-/* ===== Notifikasi Aktivitas â€” pengingat "lanjutkan level yang belum selesai" ===== */
+/* ===== Notifikasi Aktivitas Ã¢â‚¬â€ pengingat "lanjutkan level yang belum selesai" ===== */
 #activityNotifCard{ display:none; }
 #activityNotifCard.show{ display:block; }
 .activity-notif{ display:flex; align-items:center; gap:14px; text-align:left; padding:16px 18px; cursor:pointer; transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -294,7 +412,7 @@ radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(
 .quiz-fb-title { font-size: 22px; font-weight: 900; display:flex; align-items:center; gap:12px; }
 .quiz-fb-desc { font-size: 15px; line-height: 1.6; opacity: 0.9; }
 
-/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) â€” bisa digeser, ga kepotong */
+/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) Ã¢â‚¬â€ bisa digeser, ga kepotong */
 .quiz-fb-desc .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
@@ -314,7 +432,7 @@ radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(
 .heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
 .quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-/* Pill nyawa mengambang â€” absolute relatif ke .wizard-shell (bukan di dalam
+/* Pill nyawa mengambang Ã¢â‚¬â€ absolute relatif ke .wizard-shell (bukan di dalam
    scroll-pane), nempel di pojok kanan atas, jadi tetap kelihatan mau di-scroll
    atau tidak. */
 .quiz-lives-float { position: absolute; top: calc(52px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
@@ -338,7 +456,7 @@ radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(
 
 
 
-/* ===== Safe-area (notch/status-bar/nav-bar) â€” WAJIB buat mode fullscreen immersive ===== */
+/* ===== Safe-area (notch/status-bar/nav-bar) Ã¢â‚¬â€ WAJIB buat mode fullscreen immersive ===== */
 #app{
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
@@ -407,7 +525,7 @@ radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(
 .surv-go-correction{ font-size:13.5px; color:var(--on-surface-var); margin-bottom:22px; line-height:1.6; font-weight:500; }
 .surv-go-actions{ display:flex; flex-direction:column; gap:10px; }
 
-/* ===== Halaman "Tentang Aplikasi" â€” full page, bukan pop-up ===== */
+/* ===== Halaman "Tentang Aplikasi" Ã¢â‚¬â€ full page, bukan pop-up ===== */
 #screen-appinfo{ position:relative; }
 .appinfo-topbar{ flex-shrink:0; display:flex; align-items:center; gap:12px; padding:0 4px 14px; }
 .appinfo-back{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--surface-c-high); color:var(--on-surface); box-shadow: var(--shadow-sm); transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
