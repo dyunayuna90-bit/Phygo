@@ -99,6 +99,235 @@ function renderLevelMap(){
   setTimeout(drawJourneyLines, 50);
 }
 
+// ===================================================================
+// ===== Halaman "Sejarah" — Tumpukan kartu arsip + wizard konten ====
+// ===================================================================
+
+let historyCardEls = null; // {levelId: HTMLElement} — dibuat sekali, dipakai ulang
+const HIST_PEEK = 22;        // px pergeseran ke atas tiap kartu di belakangnya
+const HIST_SCALE_STEP = 0.045;
+
+function renderHistoryDashboard(){
+  const holder = document.getElementById('historyStackHolder');
+  if(!holder) return;
+  if(!historyCardEls) buildHistoryCards();
+  layoutHistoryStack(false);
+  updateHistoryMundurBtn();
+}
+
+function buildHistoryCards(){
+  const holder = document.getElementById('historyStackHolder');
+  if(!holder || typeof HISTORY_LEVELS === 'undefined') return;
+  holder.innerHTML = '';
+  historyCardEls = {};
+  const ids = Object.keys(HISTORY_LEVELS).map(Number).sort((a,b)=>a-b);
+  ids.forEach(id=>{
+    const L = HISTORY_LEVELS[id];
+    const card = document.createElement('button');
+    card.className = 'history-card ripple-host';
+    card.dataset.level = id;
+    card.setAttribute('aria-label', 'Buka arsip: ' + L.title);
+    card.innerHTML = `
+      <div class="history-card-top">
+        <span class="history-card-eyebrow">${L.eyebrow}</span>
+        <h3 class="history-card-title">${L.title}</h3>
+      </div>
+      <div class="history-card-icon-bg">${svgIcon(L.icon)}</div>
+      <p class="history-card-desc">${L.summary}</p>
+      <div class="history-card-footer">
+        <span class="history-card-count">${L.arsip.length} Arsip Tercatat</span>
+        <span class="history-card-cta">${svgIcon('chevronRight')}</span>
+      </div>
+    `;
+    holder.appendChild(card);
+    historyCardEls[id] = card;
+    attachHistoryCardGestures(card, id);
+  });
+  // Kalau urutan tersimpan sebelumnya sudah tidak sinkron (mis. level baru
+  // ditambahkan di config), regenerasi urutan awal supaya tetap konsisten.
+  if(!app.history.order || app.history.order.length !== ids.length){
+    app.history.order = ids.slice();
+    app.history.swipeCount = 0;
+  }
+}
+
+// Menata ulang posisi visual seluruh kartu berdasarkan `app.history.order`.
+// Hanya 3 kartu terdepan yang ditampilkan; sisanya "diparkir" tersembunyi di
+// bawah supaya bisa muncul mulus dari bawah ke atas begitu naik ke posisi 3.
+function layoutHistoryStack(animate){
+  if(!historyCardEls || !app.history) return;
+  const order = app.history.order;
+  order.forEach((id, idx)=>{
+    const card = historyCardEls[id];
+    if(!card) return;
+    if(idx > 3){ card.style.display = 'none'; return; }
+    card.style.display = '';
+    const visible = idx <= 2;
+    const y = idx <= 2 ? -idx * HIST_PEEK : 70;
+    const scale = idx <= 2 ? 1 - idx * HIST_SCALE_STEP : 1 - 3 * HIST_SCALE_STEP;
+    card.style.zIndex = 30 - idx;
+    card.style.pointerEvents = idx === 0 ? 'auto' : 'none';
+    card.classList.toggle('is-front', idx === 0);
+    if(animate){
+      gsap.to(card, { y, scale, opacity: visible ? 1 : 0, rotate:0, duration:.55, ease:'back.out(1.3)', overwrite:'auto' });
+    } else {
+      gsap.set(card, { y, scale, opacity: visible ? 1 : 0, rotate:0 });
+    }
+  });
+}
+
+function attachHistoryCardGestures(card, id){
+  let startY = 0, startX = 0, dragging = false, moved = false;
+  card.addEventListener('pointerdown', (e)=>{
+    if(card.style.pointerEvents === 'none') return;
+    dragging = true; moved = false; startY = e.clientY; startX = e.clientX;
+    try{ card.setPointerCapture(e.pointerId); }catch(err){}
+    gsap.killTweensOf(card);
+  });
+  card.addEventListener('pointermove', (e)=>{
+    if(!dragging) return;
+    const dy = e.clientY - startY, dx = e.clientX - startX;
+    if(Math.abs(dy) > 6 || Math.abs(dx) > 6) moved = true;
+    if(dy > 0) gsap.set(card, { y: dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
+  });
+  function endDrag(e){
+    if(!dragging) return;
+    dragging = false;
+    const dy = (typeof e.clientY === 'number' ? e.clientY : startY) - startY;
+    if(dy > 100){ commitHistorySwipe(card, id); }
+    else if(moved){ gsap.to(card, { y:0, rotate:0, duration:.4, ease:'back.out(2)' }); }
+    else { openHistoryWizard(id, card); }
+  }
+  card.addEventListener('pointerup', endDrag);
+  card.addEventListener('pointercancel', ()=>{
+    dragging = false;
+    gsap.to(card, { y:0, rotate:0, duration:.3 });
+  });
+}
+
+function commitHistorySwipe(card, id){
+  gsap.to(card, {
+    y:'+=380', opacity:0, rotate:-8, duration:.4, ease:'power2.in',
+    onComplete:()=>{
+      app.history.order.push(app.history.order.shift());
+      app.history.swipeCount++;
+      gsap.set(card, { y:70, opacity:0, rotate:0, scale: 1 - 3 * HIST_SCALE_STEP });
+      layoutHistoryStack(true);
+      updateHistoryMundurBtn();
+    }
+  });
+}
+
+function undoHistorySwipe(){
+  if(!app.history || app.history.swipeCount <= 0) return;
+  app.history.order.unshift(app.history.order.pop());
+  app.history.swipeCount--;
+  layoutHistoryStack(true);
+  updateHistoryMundurBtn();
+}
+
+function updateHistoryMundurBtn(){
+  const btn = document.getElementById('historyMundurBtn');
+  if(!btn) return;
+  btn.classList.toggle('show', !!(app.history && app.history.swipeCount > 0));
+}
+
+// Transisi "morphing" — kartu terdepan melebar selayar penuh menjadi wizard.
+function openHistoryWizard(level, cardEl){
+  const rect = cardEl.getBoundingClientRect();
+  const mainEl = document.getElementById('main');
+  const mainRect = mainEl.getBoundingClientRect();
+
+  const ghost = document.createElement('div');
+  ghost.className = 'history-card history-morph-ghost';
+  ghost.dataset.level = level;
+  ghost.style.position = 'fixed';
+  ghost.style.left = rect.left + 'px';
+  ghost.style.top = rect.top + 'px';
+  ghost.style.width = rect.width + 'px';
+  ghost.style.height = rect.height + 'px';
+  ghost.style.margin = '0';
+  ghost.style.zIndex = '500';
+  ghost.style.pointerEvents = 'none';
+  ghost.innerHTML = cardEl.innerHTML;
+  document.body.appendChild(ghost);
+  cardEl.style.opacity = '0';
+
+  const fadeParts = ghost.querySelectorAll('.history-card-desc, .history-card-footer, .history-card-icon-bg');
+  gsap.to(fadeParts, { opacity:0, duration:.22 });
+
+  gsap.to(ghost, {
+    left: mainRect.left, top: mainRect.top, width: mainRect.width, height: mainRect.height,
+    borderRadius: 0, duration:.55, ease:'power3.inOut',
+    onComplete(){
+      navigate('history-wizard', { level, step:0 });
+      requestAnimationFrame(()=>{ ghost.remove(); cardEl.style.opacity = ''; });
+    }
+  });
+}
+
+function closeHistoryWizard(){ navigate('history', {}, false); }
+
+function hwGoStep(delta){
+  const count = HISTORY_LEVELS[historyWizard.level].arsip.length;
+  const nextStep = historyWizard.step + delta;
+  if(nextStep < 0 || nextStep >= count){ closeHistoryWizard(); return; }
+  historyWizard.previousStep = historyWizard.step;
+  navigate('history-wizard', { level: historyWizard.level, step: clamp(nextStep, 0, count-1) });
+}
+
+function renderHistoryWizardStep(isInitial){
+  const L = HISTORY_LEVELS[historyWizard.level];
+  const step = historyWizard.step;
+  const item = L.arsip[step];
+  const count = L.arsip.length;
+
+  let dotsHtml = '';
+  for(let i=0; i<count; i++) dotsHtml += `<div class="step-dot ${i===step?'current':(i<step?'done':'')}"></div>`;
+  hwEls.progress.innerHTML = dotsHtml;
+
+  smoothUpdate(hwEls.body, ()=>{
+    gsap.killTweensOf(hwEls.body.querySelectorAll('*'));
+    hwEls.body.innerHTML = '';
+    const wrap = document.createElement('div');
+    wrap.className = 'wizard-step-content history-step';
+    wrap.innerHTML = `
+      <span class="eyebrow-pill">${item.tag}</span>
+      <h2>${item.title}</h2>
+      <div class="history-image-frame">
+        <img src="${item.image}" alt="${item.imageAlt || item.title}" loading="lazy"
+             onerror="this.closest('.history-image-frame').classList.add('img-missing'); this.remove();">
+        <div class="history-image-fallback">${svgIcon('image')}</div>
+      </div>
+      ${item.figure ? `
+      <div class="info-card history-figure-card">
+        <div>
+          <span class="lbl">${item.figure.role || ''}</span>
+          <div style="font-weight:900; font-size:16px; margin-top:2px;">${item.figure.name}</div>
+        </div>
+        <span style="font-family:var(--font); font-weight:700; font-size:13px; color:var(--on-surface-var); text-align:right;">${item.figure.years || ''}</span>
+      </div>` : ''}
+      ${item.body.map(p=>`<p class="step-text">${p}</p>`).join('')}
+      ${item.formula ? `<div class="formula-box">${tex(String.raw`${item.formula}`)}</div><p class="formula-note">${item.formulaNote || ''}</p>` : ''}
+    `;
+    hwEls.body.appendChild(wrap);
+    if(!isInitial){
+      const isForward = step > historyWizard.previousStep;
+      gsap.fromTo(wrap,
+        { x: isForward ? 40 : -40, opacity:0 },
+        { x:0, opacity:1, duration:.5, ease:'back.out(1.1)' }
+      );
+    }
+  });
+
+  const isLast = step === count - 1;
+  hwEls.back.style.visibility = step === 0 ? 'hidden' : 'visible';
+  hwEls.back.innerHTML = svgIcon('arrowBack');
+  hwEls.back.onclick = ()=> hwGoStep(-1);
+  hwEls.primary.textContent = isLast ? 'Tutup Arsip' : 'Lanjut';
+  hwEls.primary.onclick = isLast ? closeHistoryWizard : (()=> hwGoStep(1));
+}
+
 // ===== Halaman "Pengaturan" =====
 function renderSettingsScreen(){
   const activeTheme = getTheme();
