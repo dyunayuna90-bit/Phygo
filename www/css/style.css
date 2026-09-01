@@ -497,8 +497,7 @@ input{ font-family:inherit; }
 .survival-mascot{
   position:absolute; left:50%; bottom:0; transform:translateX(-50%);
   height:135%; width:auto; z-index:2; pointer-events:none;
-  background-repeat:no-repeat; background-position:bottom center; background-size:contain;
-  background-image:url('../assets/mascot/otter-survival.png');
+  object-fit:contain;
 }
 .survival-badge{
   position:absolute; top:10px; right:14px; z-index:3;
