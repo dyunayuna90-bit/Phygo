@@ -104,7 +104,7 @@ function renderLevelMap(){
 // ===================================================================
 
 let historyCardEls = null; // {levelId: HTMLElement} — dibuat sekali, dipakai ulang
-const HIST_PEEK = 34;        // px pergeseran ke atas tiap kartu di belakangnya — cukup besar supaya "pucuk" (eyebrow+judul) kartu di belakang kelihatan menyembul
+const HIST_PEEK = 22;        // px pergeseran ke atas tiap kartu di belakangnya
 const HIST_SCALE_STEP = 0.045;
 
 function renderHistoryDashboard(){
@@ -112,6 +112,7 @@ function renderHistoryDashboard(){
   if(!holder) return;
   if(!historyCardEls) buildHistoryCards();
   layoutHistoryStack(false);
+  updateHistoryMundurBtn();
 }
 
 function buildHistoryCards(){
@@ -187,15 +188,13 @@ function attachHistoryCardGestures(card, id){
     if(!dragging) return;
     const dy = e.clientY - startY, dx = e.clientX - startX;
     if(Math.abs(dy) > 6 || Math.abs(dx) > 6) moved = true;
-    // Kartu boleh ditarik ke bawah (lanjut) MAUPUN ke atas (mundur).
-    gsap.set(card, { y: dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
+    if(dy > 0) gsap.set(card, { y: dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
   });
   function endDrag(e){
     if(!dragging) return;
     dragging = false;
     const dy = (typeof e.clientY === 'number' ? e.clientY : startY) - startY;
     if(dy > 100){ commitHistorySwipe(card, id); }
-    else if(dy < -100 && app.history && app.history.swipeCount > 0){ commitHistoryUndo(card); }
     else if(moved){ gsap.to(card, { y:0, rotate:0, duration:.4, ease:'back.out(2)' }); }
     else { openHistoryWizard(id, card); }
   }
@@ -206,9 +205,6 @@ function attachHistoryCardGestures(card, id){
   });
 }
 
-// Swipe ke bawah pada kartu terdepan = "lanjut": kartu itu jatuh & menghilang
-// ke bawah layar, lalu masuk lagi dari bawah untuk mengisi posisi paling
-// belakang tumpukan.
 function commitHistorySwipe(card, id){
   gsap.to(card, {
     y:'+=380', opacity:0, rotate:-8, duration:.4, ease:'power2.in',
@@ -217,41 +213,30 @@ function commitHistorySwipe(card, id){
       app.history.swipeCount++;
       gsap.set(card, { y:70, opacity:0, rotate:0, scale: 1 - 3 * HIST_SCALE_STEP });
       layoutHistoryStack(true);
+      updateHistoryMundurBtn();
     }
   });
 }
 
-// Swipe ke atas pada kartu terdepan = "mundur": kartu paling belakang di
-// tumpukan otomatis "turun" mengisi posisi terdepan (masuk dari atas), dan
-// kartu yang baru saja di-swipe bergeser mundur ke posisi tengah — animasi
-// kebalikan dari commitHistorySwipe di atas.
-function commitHistoryUndo(){
+function undoHistorySwipe(){
   if(!app.history || app.history.swipeCount <= 0) return;
-  const order = app.history.order;
-  const backId = order[order.length - 1];
-  const backCard = historyCardEls[backId];
-  if(backCard){
-    gsap.killTweensOf(backCard);
-    gsap.set(backCard, { y:-380, opacity:0, rotate:8, scale:1 });
-  }
-  order.unshift(order.pop());
+  app.history.order.unshift(app.history.order.pop());
   app.history.swipeCount--;
   layoutHistoryStack(true);
+  updateHistoryMundurBtn();
+}
+
+function updateHistoryMundurBtn(){
+  const btn = document.getElementById('historyMundurBtn');
+  if(!btn) return;
+  btn.classList.toggle('show', !!(app.history && app.history.swipeCount > 0));
 }
 
 // Transisi "morphing" — kartu terdepan melebar selayar penuh menjadi wizard.
-// Warna kartu disinkronkan (blend) ke warna latar wizard sesuai tema level,
-// supaya perpindahan kartu -> wizard tidak terasa tiba-tiba.
 function openHistoryWizard(level, cardEl){
   const rect = cardEl.getBoundingClientRect();
   const mainEl = document.getElementById('main');
   const mainRect = mainEl.getBoundingClientRect();
-
-  // Siapkan atribut level di layar wizard LEBIH DULU supaya CSS latar
-  // belakangnya (var(--histN)) sudah aktif sebelum ghost selesai membesar.
-  const wizardScreen = document.getElementById('screen-history-wizard');
-  if(wizardScreen) wizardScreen.dataset.level = level;
-  const targetBg = getComputedStyle(document.documentElement).getPropertyValue('--hist' + level).trim() || null;
 
   const ghost = document.createElement('div');
   ghost.className = 'history-card history-morph-ghost';
@@ -274,7 +259,6 @@ function openHistoryWizard(level, cardEl){
   gsap.to(ghost, {
     left: mainRect.left, top: mainRect.top, width: mainRect.width, height: mainRect.height,
     borderRadius: 0, duration:.55, ease:'power3.inOut',
-    ...(targetBg ? { backgroundColor: targetBg } : {}),
     onComplete(){
       navigate('history-wizard', { level, step:0 });
       requestAnimationFrame(()=>{ ghost.remove(); cardEl.style.opacity = ''; });
