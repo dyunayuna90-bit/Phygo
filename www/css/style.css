@@ -59,7 +59,7 @@ input{ font-family:inherit; }
 
 .scroll-pane{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom: 40px; }
 .scroll-pane::-webkit-scrollbar{ display:none; }
-#screen-home .scroll-pane { display: flex; flex-direction: column; perspective: 1200px; }
+#screen-home .scroll-pane { display: flex; flex-direction: column; perspective: 1200px; position:relative; z-index:1; }
 
 .ripple-host{ position:relative; overflow:hidden; }
 .ripple{ position:absolute; border-radius:50%; background:currentColor; opacity:.22; transform:scale(0); animation:rippleAnim .6s cubic-bezier(0.2, 0, 0, 1) forwards; pointer-events:none; }
@@ -71,6 +71,52 @@ input{ font-family:inherit; }
 .home-hero p { font-size:15px; color:var(--on-surface-var); line-height:1.6; max-width:440px; margin:0 auto; }
 #screen-home{ position:relative; }
 #screen-home .scroll-pane{ padding-bottom:96px; }
+
+/* ===== Shape latar belakang Home â€” Material 3 Expressive, warna flat samar, tanpa gradasi ===== */
+.home-bg-shapes{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.hbs{ position:absolute; }
+.hbs-1{
+  width:112px; height:112px; top:-16px; right:-26px;
+  border-radius:30px;
+  background: var(--primary);
+  opacity:0.09;
+  animation: hbsMove1 15s ease-in-out infinite alternate;
+}
+.hbs-2{
+  width:86px; height:86px; top:42%; left:-36px;
+  border-radius:50%;
+  border:3px solid var(--primary);
+  opacity:0.16;
+  animation: hbsMove2 17s ease-in-out infinite alternate;
+}
+.hbs-3{
+  width:62px; height:62px; bottom:18%; right:8%;
+  border-radius:18px;
+  background: #FF9F43;
+  opacity:0.11;
+  animation: hbsMove3 19s ease-in-out infinite alternate;
+}
+.hbs-4{
+  width:94px; height:94px; bottom:-16px; left:12%;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  background: var(--primary-soft);
+  opacity:0.08;
+  animation: hbsMove4 21s ease-in-out infinite alternate reverse;
+}
+.hbs-5{
+  width:44px; height:44px; top:16%; right:14%;
+  border-radius:14px;
+  border:3px solid #FF9F43;
+  opacity:0.14;
+  animation: hbsMove2 13s ease-in-out infinite alternate reverse;
+}
+@keyframes hbsMove1{ 0%{ transform:translate(0,0) rotate(0deg); } 100%{ transform:translate(-16px,22px) rotate(20deg); } }
+@keyframes hbsMove2{ 0%{ transform:translate(0,0) rotate(0deg); } 100%{ transform:translate(18px,-16px) rotate(-16deg); } }
+@keyframes hbsMove3{ 0%{ transform:translate(0,0) rotate(0deg); } 100%{ transform:translate(-14px,-18px) rotate(24deg); } }
+@keyframes hbsMove4{ 0%{ transform:translate(0,0) rotate(0deg) scale(1); } 100%{ transform:translate(14px,16px) rotate(-20deg) scale(1.08); } }
+@media (prefers-reduced-motion: reduce){
+  .hbs{ animation:none !important; }
+}
 
 /* ===== Halaman "Level" & "Pengaturan" â€” header seragam ===== */
 .level-header{ text-align:center; padding:20px 20px 24px; }
