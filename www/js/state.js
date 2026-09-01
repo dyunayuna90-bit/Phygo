@@ -30,8 +30,7 @@ const app = {
   justUnlockedLevel: null,
   params: {}, attempts: {1:0,2:0,3:0}, calc: {}, calcChain: {1:{},2:{},3:{}}, locked: {}, running: false,
   // Urutan tumpukan kartu arsip di halaman Sejarah (index 0 = kartu paling
-  // depan). `swipeCount` dipakai untuk menentukan boleh/tidaknya gestur
-  // swipe-ke-atas (mundur) di kartu terdepan mengembalikan kartu sebelumnya.
+  // depan). `swipeCount` dipakai untuk menentukan kapan tombol "Mundur" tampil.
   history: {
     order: (typeof HISTORY_LEVELS !== 'undefined') ? Object.keys(HISTORY_LEVELS).map(Number).sort((a,b)=>a-b) : [],
     swipeCount: 0
