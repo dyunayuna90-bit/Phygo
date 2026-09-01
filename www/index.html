@@ -268,37 +268,6 @@
         </div>
       </div>
     </section>
-
-    <!-- ===== HISTORY (Sejarah Fisika) — Dashboard Card Stack ===== -->
-    <section class="screen" id="screen-history">
-      <div class="scroll-pane" id="historyScroll">
-        <div class="history-header">
-          <h1>Sejarah Fisika</h1>
-          <p>Jelajahi perjalanan panjang pemahaman manusia tentang gerak dan gravitasi.</p>
-        </div>
-        <div class="history-stack-container">
-          <button class="btn btn-secondary btn-capsule" id="historyBtnBackward" aria-label="Kembali">
-            <span class="btn-label">Mundur</span>
-          </button>
-          <div class="history-stack" id="historyStack"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== HISTORY WIZARD (Mode Baca Sejarah — Fullscreen) ===== -->
-    <section class="screen" id="screen-history-wizard">
-      <div class="history-wizard-header">
-        <button class="btn btn-icon btn-ghost ripple-host" id="historyWizExit" aria-label="Tutup"></button>
-        <div class="history-wizard-progress-track">
-          <div class="history-wizard-progress-fill" id="historyWizProgress"></div>
-        </div>
-      </div>
-      <div class="history-wizard-body" id="historyWizardBody"></div>
-      <div class="history-wizard-footer">
-        <button class="btn btn-icon btn-ghost ripple-host" id="historyWizBack" aria-label="Kembali"></button>
-        <button class="btn btn-primary ripple-host" id="historyWizPrimary" style="flex:1;">Lanjut</button>
-      </div>
-    </section>
   </main>
 
   <!-- ===== BOTTOM NAVIGATION ===== -->
@@ -310,10 +279,6 @@
     <button class="bn-item ripple-host" data-screen="level" id="navLevel">
       <span class="bn-icon"></span>
       <span class="bn-label">Level</span>
-    </button>
-    <button class="bn-item ripple-host" data-screen="history" id="navHistory">
-      <span class="bn-icon"></span>
-      <span class="bn-label">Sejarah</span>
     </button>
     <button class="bn-item ripple-host" data-screen="settings" id="navSettings">
       <span class="bn-icon"></span>
@@ -339,7 +304,6 @@
 <script src="js/level1.js"></script>
 <script src="js/level2.js"></script>
 <script src="js/level3.js"></script>
-<script src="js/history.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
