@@ -33,16 +33,14 @@
     <!-- ===== HOME ===== -->
     <section class="screen active" id="screen-home">
       <div class="scroll-pane" id="homeScroll">
-        <div class="home-hero">
-          <h1 class="app-brand-title">Phygo</h1>
+        <!-- Sapaan dinamis (ganti wordmark "Phygo") — diisi renderHomeGreeting() di screens.js -->
+        <div class="home-hero" id="homeGreeting"></div>
+
+        <!-- Row: Kartu "Lanjutkan" (gabungan pengingat + tombol lanjut) + Kartu "Pencapaian" -->
+        <div class="home-row">
+          <div id="homeLanjutkanCard" class="home-row-lanjutkan"></div>
+          <div id="homeAchievementCard" class="home-row-pencapaian"></div>
         </div>
-
-        <!-- Kartu Pencapaian -->
-        <div id="homeAchievementCard"></div>
-
-        <!-- Notifikasi Aktivitas: pengingat "lanjutkan level yang belum selesai".
-             Kosong & disembunyikan secara default, diisi oleh renderActivityNotif() di screens.js -->
-        <div id="activityNotifCard"></div>
 
         <!-- Kartu Mode Survival -->
         <div id="homeSurvivalCard"></div>
@@ -50,12 +48,6 @@
         <!-- Kartu Kutipan Tokoh Fisika -->
         <div id="homeQuoteCard"></div>
       </div>
-
-      <!-- Tombol Lanjutkan Main — mengambang, hanya tampil di halaman Home -->
-      <button class="btn-continue-float ripple-host" id="btnContinuePlay">
-        <span class="bcf-icon"></span>
-        <span class="bcf-label">Lanjutkan</span>
-      </button>
     </section>
 
     <!-- ===== LEVEL (Peta Zig-zag) ===== -->
