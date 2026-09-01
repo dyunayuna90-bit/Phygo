@@ -65,14 +65,12 @@ input{ font-family:inherit; }
 .ripple{ position:absolute; border-radius:50%; background:currentColor; opacity:.22; transform:scale(0); animation:rippleAnim .6s cubic-bezier(0.2, 0, 0, 1) forwards; pointer-events:none; }
 @keyframes rippleAnim{ to{ transform:scale(3); opacity:0; } }
 
-.home-hero { text-align: left; padding: 20px 20px 0; margin-bottom: 20px; }
+.home-hero { text-align: center; padding: 20px 20px 0; margin-bottom: 24px; }
 .home-hero .h-badge { display:inline-block; font-size:12px; font-weight:800; background:var(--surface-c-high); color:var(--primary); padding:8px 16px; border-radius:var(--r-pill); letter-spacing:1.5px; margin-bottom:16px; box-shadow: var(--shadow-sm); }
-.home-hero p { font-size:15px; color:var(--on-surface-var); line-height:1.6; max-width:440px; }
+.home-hero h1, .home-hero .app-brand-title { font-size:44px; font-weight:900; color:var(--primary); margin-bottom:10px; line-height:1.1; letter-spacing:-1px; text-shadow: 0 2px 4px rgba(0,0,0,0.4);}
+.home-hero p { font-size:15px; color:var(--on-surface-var); line-height:1.6; max-width:440px; margin:0 auto; }
 #screen-home{ position:relative; }
-
-/* ===== Sapaan dinamis (pengganti wordmark "Phygo" besar) ===== */
-.home-greeting-line1{ font-size:26px; font-weight:900; color:var(--on-surface); line-height:1.25; letter-spacing:-0.5px; margin:0; }
-.home-greeting-line2{ font-size:15px; font-weight:600; color:var(--on-surface-var); line-height:1.4; margin:2px 0 0; }
+#screen-home .scroll-pane{ padding-bottom:96px; }
 
 /* ===== Halaman "Level" & "Pengaturan" Ã¢â‚¬â€ header seragam ===== */
 .level-header{ text-align:center; padding:20px 20px 24px; }
@@ -85,32 +83,6 @@ input{ font-family:inherit; }
 .home-card-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
 
-
-/* ===== Row: Kartu "Lanjutkan" + Kartu "Pencapaian" berdampingan ===== */
-.home-row{ display:flex; align-items:stretch; gap:12px; width:100%; max-width:400px; margin:0 auto 20px; padding:0 20px; box-sizing:border-box; }
-.home-row-lanjutkan{ flex:0 0 58%; min-width:0; }
-.home-row-pencapaian{ flex:1; min-width:0; }
-.home-row .home-card{ margin:0; max-width:none; height:100%; }
-
-/* --- Kartu "Lanjutkan" -- gabungan pengingat + tombol lanjut, 3 layer bertumpuk --- */
-.lanjutkan-card{
-  display:flex; flex-direction:column; justify-content:flex-end;
-  min-height:190px; padding:18px; text-align:left; cursor:pointer;
-  width:100%;
-}
-.lanjutkan-card .lc-bg-label{
-  position:absolute; top:14px; left:16px; z-index:0;
-  font-size:40px; font-weight:900; line-height:0.95; letter-spacing:-1px;
-  color:var(--on-surface); opacity:0.06; white-space:pre-line; pointer-events:none;
-}
-.lanjutkan-card .lc-mascot{
-  position:absolute; top:0; right:4px; height:100%; width:auto; z-index:1;
-  pointer-events:none; background-repeat:no-repeat; background-position:bottom right; background-size:contain;
-}
-.lanjutkan-card .lc-mascot.mascot-lanjutkan{ background-image:url('../assets/mascot/otter-lanjutkan.png'); }
-.lanjutkan-card .lc-mascot.mascot-survival{ background-image:url('../assets/mascot/otter-survival.png'); }
-.lanjutkan-card .lc-label{ position:relative; z-index:2; font-size:17px; font-weight:900; color:var(--on-surface); letter-spacing:-0.2px; }
-.lanjutkan-card:active{ transform:scale(.98); }
 /* ===== Kartu Kutipan Fisika (Home) Ã¢â‚¬â€ menempel langsung di latar, tanpa kotak ===== */
 .quote-card{
   position:relative;
@@ -142,6 +114,25 @@ input{ font-family:inherit; }
   background:linear-gradient(90deg, transparent, var(--outline-var));
 }
 .quote-card .quote-by::after{ background:linear-gradient(90deg, var(--outline-var), transparent); }
+
+/* ===== Tombol mengambang "Lanjutkan" Ã¢â‚¬â€ hanya tampil di halaman Home ===== */
+.btn-continue-float{ position:absolute; right:16px; bottom:16px; z-index:40; display:inline-flex; align-items:center; gap:10px; padding:15px 22px 15px 18px; border-radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(--primary-soft)); color:var(--on-primary); font-size:15px; font-weight:800; letter-spacing:0.2px; box-shadow: 0 8px 0 var(--primary-container), var(--shadow-lg); transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.btn-continue-float:active{ transform:translateY(4px); box-shadow: 0 3px 0 var(--primary-container), var(--shadow-sm); }
+.btn-continue-float .bcf-icon{ width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.btn-continue-float .bcf-icon svg{ width:22px; height:22px; }
+.btn-continue-float .bcf-label{ white-space:nowrap; }
+
+/* ===== Notifikasi Aktivitas Ã¢â‚¬â€ pengingat "lanjutkan level yang belum selesai" ===== */
+#activityNotifCard{ display:none; }
+#activityNotifCard.show{ display:block; }
+.activity-notif{ display:flex; align-items:center; gap:14px; text-align:left; padding:16px 18px; cursor:pointer; transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.activity-notif:active{ transform:scale(.98); }
+.an-icon{ width:44px; height:44px; border-radius:50%; flex-shrink:0; background:linear-gradient(145deg, var(--primary), var(--primary-soft)); color:var(--on-primary); display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-sm); }
+.an-icon svg{ width:22px; height:22px; }
+.an-info{ flex:1; min-width:0; }
+.an-eyebrow{ display:block; font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--primary); margin-bottom:4px; }
+.an-info h4{ font-size:14px; font-weight:800; color:var(--on-surface); line-height:1.35; margin-bottom:3px; }
+.an-info p{ font-size:12.5px; color:var(--on-surface-var); line-height:1.4; }
 
 .journey-map { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 85px; padding: 40px 0 120px; position: relative; z-index: 1; perspective: 1200px; }
 .j-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
@@ -187,15 +178,15 @@ input{ font-family:inherit; }
 .settings-row-danger .settings-row-icon{ background:var(--error-container); color:var(--on-error-container); }
 .settings-row-danger .settings-row-text b{ color:var(--error); }
 
-/* --- Kartu "Pencapaian" — layout vertikal: label di atas, donut di tengah --- */
-.gami-card { padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; transform:rotateX(10deg); }
-.gami-card h3 { font-size: 15px; font-weight: 900; letter-spacing: -0.2px; margin: 0; }
-.g-chart { width: 90px; height: 90px; position: relative; flex-shrink: 0; }
+.gami-card { padding: 24px; display: flex; align-items: center; gap: 24px; transform:rotateX(10deg); }
+.g-chart { width: 72px; height: 72px; position: relative; flex-shrink: 0; }
 .g-chart svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .g-chart circle { fill: none; stroke-width: 5; stroke-linecap: round; }
 .g-chart .bg { stroke: var(--surface); }
 .g-chart .prog { stroke: var(--primary); transition: stroke-dasharray 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.g-val { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; font-family: var(--font-mono); font-weight: 800; font-size: 19px; color: var(--on-surface); text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+.g-val { position: absolute; inset: 0; display:flex; align-items:center; justify-content:center; font-family: var(--font-mono); font-weight: 800; font-size: 18px; color: var(--on-surface); text-shadow: 0 2px 4px rgba(0,0,0,0.5);}
+.g-info h3 { font-size: 20px; font-weight: 900; margin-bottom: 6px; letter-spacing: -0.5px;}
+.g-info p { font-size: 15px; color: var(--on-surface-var); line-height: 1.5; }
 
 .step-pane{ max-width:620px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:0; position:relative; }
 .step-pane > .master-box{ order:-1; flex-shrink:0 !important; }
@@ -474,13 +465,11 @@ input{ font-family:inherit; }
 
 /* ===== MODE SURVIVAL ===== */
 
-/* --- Kartu dashboard, restyle jadi pill besar: "MODE" / maskot / "SURVIVAL" --- */
+/* --- Kartu dashboard, di bawah kartu Pencapaian --- */
 .survival-card{
-  position:relative;
-  min-height:120px; padding:0 26px;
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:20px;
+  display:flex; align-items:center; gap:16px;
   cursor:pointer; text-align:left;
-  border-radius:var(--r-pill);
   background: linear-gradient(150deg, #FFA24C 0%, #FF7A1A 55%, #FF6A00 100%);
   box-shadow: 0 9px 0 #C4530A, 0 16px 28px rgba(255,106,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
   border: 1px solid rgba(255,255,255,0.16);
@@ -490,24 +479,15 @@ input{ font-family:inherit; }
   transform: translateY(7px);
   box-shadow: 0 2px 0 #C4530A, 0 6px 14px rgba(255,106,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
 }
-.survival-card .home-card-icon-bg{ display:none; }
-.survival-word{ position:relative; z-index:1; font-size:22px; font-weight:900; color:#fff; letter-spacing:-0.5px; text-shadow: 0 2px 6px rgba(0,0,0,0.22); white-space:nowrap; }
-.survival-word.sv-word-left{ text-align:left; }
-.survival-word.sv-word-right{ text-align:right; }
-.survival-mascot{
-  position:absolute; left:50%; bottom:0; transform:translateX(-50%);
-  height:135%; width:auto; z-index:2; pointer-events:none;
-  object-fit:contain;
-}
-.survival-badge{
-  position:absolute; top:10px; right:14px; z-index:3;
-  display:flex; align-items:center; gap:5px;
-  background:rgba(255,255,255,0.22); color:#fff; font-size:11px; font-weight:800; letter-spacing:0.2px;
-  border-radius:var(--r-pill); padding:5px 10px; line-height:1;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
-}
+.survival-card .home-card-icon-bg{ color:#fff; opacity:0.14; }
+.survival-icon-box{ width:52px; height:52px; border-radius:16px; background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.22); }
+.survival-icon-box svg{ width:26px; height:26px; filter: drop-shadow(0 0 6px rgba(255,255,255,0.5)); }
+.survival-info{ flex:1; min-width:0; }
+.survival-info h3{ font-size:17.5px; font-weight:900; color:#fff; margin-bottom:2px; letter-spacing:-0.2px; text-shadow: 0 2px 6px rgba(0,0,0,0.22); }
+.survival-info p{ font-size:13px; color:rgba(255,255,255,0.85); font-weight:500; }
+.survival-badge{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.22); color:#fff; font-size:12.5px; font-weight:800; letter-spacing:0.2px; border-radius:var(--r-pill); padding:8px 14px; text-align:center; flex-shrink:0; line-height:1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
 .survival-badge .sv-trophy{ display:flex; align-items:center; justify-content:center; line-height:1; color:#fff; }
-.survival-badge .sv-trophy svg{ width:12px; height:12px; }
+.survival-badge .sv-trophy svg{ width:15px; height:15px; }
 
 /* --- Layar Gameplay & HUD --- */
 .surv-shell{ display:flex; flex-direction:column; flex:1; min-height:0; width:100%; position:relative; }
