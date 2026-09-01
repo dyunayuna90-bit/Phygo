@@ -172,7 +172,7 @@ function renderSurvivalCard(holder){
   holder.innerHTML = `
     <button class="survival-card home-card ripple-host" id="survivalCardBtn" aria-label="Main Mode Survival">
       <span class="survival-word sv-word-left">MODE</span>
-      <span class="survival-mascot"></span>
+      <img class="survival-mascot" src="assets/mascot/otter-survival.png" alt="">
       <span class="survival-word sv-word-right">SURVIVAL</span>
       <div class="survival-badge">
         <span class="sv-trophy">${svgIcon('trophy')}</span>
