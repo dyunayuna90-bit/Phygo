@@ -8,6 +8,13 @@
   --lvl1:#5FE1E2; --lvl1-c:#063B3C; --lvl1-on-c:#9EF1F1;
   --lvl2:#FFB871; --lvl2-c:#3D2B00; --lvl2-on-c:#FFDDB3;
   --lvl3:#B7C0FF; --lvl3-c:#1A2166; --lvl3-on-c:#DEE0FF;
+
+  /* Warna kartu "Arsip Sejarah" — satu keluarga warna per tema (solid, bukan
+     gradient) supaya tiap kartu terasa nyambung dengan tema aktif & dengan
+     kartu lainnya. Dipakai juga sebagai latar wizard arsip (lihat #screen-history-wizard). */
+  --hist1:#0A3B3E; --hist1-on:#7FEEEF;
+  --hist2:#0E3350; --hist2-on:#7FC9F0;
+  --hist3:#151F52; --hist3-on:#A6B0FF;
   
   --r-xl:32px; --r-l:24px; --r-m:16px; --r-s:12px; --r-pill:999px;
   --font: 'Roboto Variable', system-ui, -apple-system, sans-serif;
@@ -24,12 +31,20 @@ html[data-theme="pink"]{
   --on-surface:#F3E6EC; --on-surface-var:#D3B8C6; --outline:#A88696; --outline-var:#4A3038;
   --primary:#F2A6C4; --primary-soft:#D6779E; --on-primary:#4A0026; --primary-container:#6B2142; --on-primary-container:#FFD9E6;
   --secondary-container:#3D2B34; --on-secondary-container:#F0D8E0;
+
+  --hist1:#4A1730; --hist1-on:#FFB8D4;
+  --hist2:#47123F; --hist2-on:#F0A0DE;
+  --hist3:#391350; --hist3-on:#D6A6F2;
 }
 html[data-theme="coklat"]{
   --bg:#160F0A; --surface:#1D1610; --surface-c:#251C14; --surface-c-high:#33271B;
   --on-surface:#F0E4D6; --on-surface-var:#CBB79E; --outline:#9C8265; --outline-var:#453425;
   --primary:#D8A468; --primary-soft:#B97F3E; --on-primary:#3B2200; --primary-container:#5C3D14; --on-primary-container:#FFDCB0;
   --secondary-container:#3A2F22; --on-secondary-container:#EAD9C4;
+
+  --hist1:#3B2410; --hist1-on:#E8B679;
+  --hist2:#33200E; --hist2-on:#D89A5C;
+  --hist3:#2A1B0F; --hist3-on:#C98F5E;
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none !important; user-select:none; -webkit-user-select:none; margin:0; padding:0; }
@@ -557,25 +572,19 @@ input{ font-family:inherit; }
    ===== Halaman "Sejarah" — Tumpukan Kartu Arsip + Wizard Baca ======
    =================================================================== */
 
-.history-mundur-btn{ display:none; align-items:center; justify-content:center; gap:8px; align-self:center; margin:0 auto 18px; padding:10px 22px; border-radius:var(--r-pill); background:var(--surface-c-high); color:var(--on-surface); font-size:13px; font-weight:800; letter-spacing:0.3px; box-shadow:var(--shadow-sm); opacity:0; transform:translateY(-6px); transition:opacity .3s ease, transform .3s ease; }
-.history-mundur-btn.show{ display:inline-flex; opacity:1; transform:translateY(0); }
-.history-mundur-btn:active{ transform:scale(.94); }
-.history-mundur-icon{ width:16px; height:16px; display:flex; align-items:center; justify-content:center; }
-.history-mundur-icon svg{ width:16px; height:16px; }
+.history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:0 auto; padding-top:78px; padding-bottom:28px; perspective:1200px; }
 
-.history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:0 auto; padding-bottom:28px; perspective:1200px; }
-
-.history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:0 16px 0 var(--surface), var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:linear-gradient(150deg, var(--surface-c-high), var(--surface-c)); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
-.history-card[data-level="1"]{ background:linear-gradient(150deg, var(--lvl1-c), var(--surface-c)); border-color:color-mix(in srgb, var(--lvl1) 30%, transparent); }
-.history-card[data-level="2"]{ background:linear-gradient(150deg, var(--lvl2-c), var(--surface-c)); border-color:color-mix(in srgb, var(--lvl2) 30%, transparent); }
-.history-card[data-level="3"]{ background:linear-gradient(150deg, var(--lvl3-c), var(--surface-c)); border-color:color-mix(in srgb, var(--lvl3) 30%, transparent); }
+.history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:0 16px 0 var(--surface), var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:var(--surface-c-high); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
+.history-card[data-level="1"]{ background:var(--hist1); border-color:color-mix(in srgb, var(--hist1-on) 30%, transparent); }
+.history-card[data-level="2"]{ background:var(--hist2); border-color:color-mix(in srgb, var(--hist2-on) 30%, transparent); }
+.history-card[data-level="3"]{ background:var(--hist3); border-color:color-mix(in srgb, var(--hist3-on) 30%, transparent); }
 .history-card.is-front{ cursor:pointer; }
 .history-card.is-front:active{ cursor:grabbing; }
 .history-card-top{ position:relative; z-index:1; }
 .history-card-eyebrow{ display:inline-block; font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--on-surface-var); margin-bottom:8px; opacity:0.9; }
-.history-card[data-level="1"] .history-card-eyebrow{ color:var(--lvl1); }
-.history-card[data-level="2"] .history-card-eyebrow{ color:var(--lvl2); }
-.history-card[data-level="3"] .history-card-eyebrow{ color:var(--lvl3); }
+.history-card[data-level="1"] .history-card-eyebrow{ color:var(--hist1-on); }
+.history-card[data-level="2"] .history-card-eyebrow{ color:var(--hist2-on); }
+.history-card[data-level="3"] .history-card-eyebrow{ color:var(--hist3-on); }
 .history-card-title{ font-size:22px; font-weight:900; letter-spacing:-0.3px; line-height:1.25; color:var(--on-surface); text-shadow:0 2px 6px rgba(0,0,0,0.3); }
 .history-card-icon-bg{ position:absolute; right:-14px; bottom:6px; width:120px; height:120px; opacity:0.07; color:var(--on-surface); z-index:0; pointer-events:none; }
 .history-card-icon-bg svg{ width:100%; height:100%; }
@@ -585,6 +594,12 @@ input{ font-family:inherit; }
 .history-card-cta{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; color:var(--on-surface); flex-shrink:0; }
 .history-card-cta svg{ width:18px; height:18px; }
 .history-morph-ghost{ box-shadow:var(--shadow-lg); }
+
+/* Latar wizard arsip disamakan (solid) dengan warna kartu levelnya masing-masing
+   supaya transisi kartu -> wizard terasa nyambung, bukan tiba-tiba berubah. */
+#screen-history-wizard[data-level="1"] .wizard-shell{ background:var(--hist1); }
+#screen-history-wizard[data-level="2"] .wizard-shell{ background:var(--hist2); }
+#screen-history-wizard[data-level="3"] .wizard-shell{ background:var(--hist3); }
 
 /* Kartu arsip di dalam wizard (kartu-bergambar-per-langkah) */
 .history-image-frame{ position:relative; width:100%; aspect-ratio:4/3; border-radius:var(--r-l); overflow:hidden; background:linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); margin:4px 0 20px; box-shadow:inset 0 4px 12px rgba(0,0,0,0.35), var(--shadow-sm); display:flex; align-items:center; justify-content:center; }
