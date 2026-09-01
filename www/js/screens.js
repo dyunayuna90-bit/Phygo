@@ -237,34 +237,29 @@ function commitHistorySwipe(card, id){
 }
 
 // Gestur "mundur": swipe ke atas pada kartu terdepan. Kartu yang paling
-// terakhir dibuang muncul lagi dari bawah layar ke atas menuju posisi depan,
-// sementara kartu-kartu lain di tumpukan otomatis ikut bergeser mengikuti
-// posisi barunya masing-masing (tween yang sama, `layoutHistoryStack`).
+// terakhir dibuang (yang sebelumnya nangkring di posisi paling belakang,
+// dekat judul tab) meluncur turun dengan mulus dari posisi itu menuju slot
+// terdepan — TANPA di-reset/disembunyikan dulu, supaya jadi satu animasi
+// yang menyatu (bukan hilang-lalu-muncul).
 function historySwipeBack(){
   if(!app.history || app.history.swipeCount <= 0) return;
-  const restoredId = app.history.order[app.history.order.length - 1];
-  const restoredCard = historyCardEls[restoredId];
   app.history.order.unshift(app.history.order.pop());
   app.history.swipeCount--;
-  if(restoredCard){
-    gsap.killTweensOf(restoredCard);
-    gsap.set(restoredCard, { y: HIST_CARD_H + 60, opacity:0, rotate:0, scale:1, display:'' });
-  }
   layoutHistoryStack(true);
 }
 
-
-// Transisi buka wizard — sederhana & stabil (fade + scale-down kartu, lalu
-// pindah screen). Konten wizard sendiri sudah masuk dengan animasi fade+slide
-// dari router.js, jadi tidak perlu morphing DOM yang rawan glitch/bug posisi.
+// Transisi buka wizard — sederhana & stabil: kartu cukup "menekan" sedikit
+// (bounce kecil) sebagai umpan balik sentuhan, TANPA memudar/menghilang,
+// lalu pindah screen. Konten wizard sendiri masuk dengan fade+slide halus
+// dari router.js, jadi transisinya tetap terasa menyatu tanpa perlu morphing
+// DOM yang rawan glitch.
 function openHistoryWizard(level, cardEl){
   gsap.killTweensOf(cardEl);
   gsap.to(cardEl, {
-    scale:0.92, opacity:0, duration:.22, ease:'power2.in',
+    scale:0.95, duration:.16, ease:'power2.out',
     onComplete(){
       navigate('history-wizard', { level, step:0 });
-      gsap.set(cardEl, { opacity:'', scale:'' });
-      layoutHistoryStack(false);
+      gsap.to(cardEl, { scale:1, duration:.25, ease:'power2.out' });
     }
   });
 }
