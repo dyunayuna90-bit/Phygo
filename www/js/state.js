@@ -15,12 +15,29 @@ const els = {
   quizLivesFloat: document.getElementById('quizLivesFloat'),
 };
 
+// Elemen-elemen khusus halaman "Sejarah" (wizard arsip) — dipisah dari `els`
+// supaya state wizard simulasi & wizard sejarah tidak pernah tercampur.
+const hwEls = {
+  progress: document.getElementById('hwProgress'),
+  body: document.getElementById('hwBody'),
+  back: document.getElementById('hwBack'),
+  exit: document.getElementById('hwExit'),
+  primary: document.getElementById('hwPrimary'),
+};
+
 const app = {
   completed: new Set(JSON.parse(localStorage.getItem('phygo_completed') || '[]')),
   justUnlockedLevel: null,
   params: {}, attempts: {1:0,2:0,3:0}, calc: {}, calcChain: {1:{},2:{},3:{}}, locked: {}, running: false,
+  // Urutan tumpukan kartu arsip di halaman Sejarah (index 0 = kartu paling
+  // depan). `swipeCount` dipakai untuk menentukan kapan tombol "Mundur" tampil.
+  history: {
+    order: (typeof HISTORY_LEVELS !== 'undefined') ? Object.keys(HISTORY_LEVELS).map(Number).sort((a,b)=>a-b) : [],
+    swipeCount: 0
+  },
 };
 const wizard = { level:1, step:0, previousStep:0 };
+const historyWizard = { level:1, step:0, previousStep:0 };
 
 // ===== "Notifikasi Aktivitas" — mengingat posisi wizard/simulasi terakhir
 // milik level yang BELUM diselesaikan. Disimpan ke localStorage setiap kali
