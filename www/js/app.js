@@ -10,9 +10,18 @@ bumpQuoteIndex();
 // Init tombol exit wizard (butuh els dari state.js + svgIcon dari helpers.js + goToDashboard dari screens.js)
 if(els.wizExit){ els.wizExit.innerHTML = svgIcon('doorExit'); els.wizExit.onclick = goToDashboard; }
 
+// Init tombol exit wizard Sejarah + tombol "Mundur" di dashboard tumpukan kartu
+if(hwEls.exit){ hwEls.exit.innerHTML = svgIcon('doorExit'); hwEls.exit.onclick = closeHistoryWizard; }
+const historyMundurBtn = document.getElementById('historyMundurBtn');
+if(historyMundurBtn){
+  historyMundurBtn.querySelector('.history-mundur-icon').innerHTML = svgIcon('undo');
+  historyMundurBtn.addEventListener('click', undoHistorySwipe);
+}
+
 // ===== Ikon statis Bottom Navigation =====
 document.getElementById('navHome').querySelector('.bn-icon').innerHTML = svgIcon('home');
 document.getElementById('navLevel').querySelector('.bn-icon').innerHTML = svgIcon('mapRoute');
+document.getElementById('navHistory').querySelector('.bn-icon').innerHTML = svgIcon('history');
 document.getElementById('navSettings').querySelector('.bn-icon').innerHTML = svgIcon('gear');
 document.querySelectorAll('.bn-item').forEach(btn=>{
   btn.addEventListener('click', ()=> navigate(btn.dataset.screen, {}, true));
