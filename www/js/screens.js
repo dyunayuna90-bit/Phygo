@@ -236,81 +236,57 @@ function commitHistorySwipe(card, id){
   });
 }
 
-// Gestur "mundur": swipe ke atas pada kartu terdepan. Supaya jadi loop yang
-// simetris & mulus dengan commitHistorySwipe (swipe bawah, yang sudah pas),
-// gestur ini memperlakukan dua kartu sebagai DUA ENTITAS animasi terpisah,
-// jalan bersamaan — bukan sekadar men-tween posisi lama ke posisi baru:
-//   1) Kartu yang dulu dibuang (skrg nangkring paling belakang, nyaris tak
-//      kelihatan) -> "maju": sekejap menghilang, lalu meluncur dari BAWAH
-//      layar naik ke slot TERDEPAN.
-//   2) Kartu yang saat ini di depan -> "turun": meluncur turun & memudar
-//      (persis gerakan buang di commitHistorySwipe), lalu ikut nongol lagi
-//      dari bawah layar, naik ke slot barunya (bukan terdepan lagi).
-// Efeknya: satu kartu kelihatan turun bersamaan satu kartu lain naik dari
-// bawah — ilusi kartu lama "menyalip maju" persis yang diminta.
-// Kartu-kartu sisanya (kalau tumpukan > 2 kartu) cukup digeser halus biasa.
+// Gestur "mundur": swipe ke atas pada kartu terdepan. Ini LITERAL kebalikan
+// dari animasi commitHistorySwipe di atas, dimainkan mundur, untuk SATU kartu
+// yang balik itu saja (kartu lain tidak diapa-apakan selain digeser halus
+// biasa ke slot barunya — tidak ada animasi kedua yang saling tabrakan).
+//
+// Alur commitHistorySwipe (maju) utk kartu yg dibuang:
+//   depan -> [tween: turun+memudar] -> [lompat instan: sembunyi jauh di
+//   bawah] -> [tween: naik ke slot paling belakang]
+// Di sini kita mainkan PERSIS urutan itu terbalik utk kartu yg kembali:
+//   belakang -> [tween: turun+memudar, sembunyi jauh di bawah] ->
+//   [lompat instan: balik ke posisi "baru saja dibuang"] -> [tween: naik
+//   balik ke slot depan]
+// Supaya tidak ketutupan/tembus kartu lain selagi jalan, kartu ini langsung
+// dipindah ke z-index paling atas SEBELUM animasi dimulai.
 function historySwipeBack(){
   if(!app.history || app.history.swipeCount <= 0 || !historyCardEls) return;
   const order = app.history.order;
-  const outgoingId = order[0];
   const returningId = order[order.length - 1];
-  const outgoingCard = historyCardEls[outgoingId];
   const returningCard = historyCardEls[returningId];
 
-  // Rotasi urutan lebih dulu — perhitungan slot (idx -> y/scale) di bawah ini
-  // sudah mengacu ke susunan yang BARU.
   order.unshift(order.pop());
   app.history.swipeCount--;
   const maxDepth = order.length - 1;
+  const frontY = maxDepth * HIST_PEEK;
 
-  const slotOf = (id) => order.indexOf(id);
-  const targetFor = (idx) => ({ y: (maxDepth - idx) * HIST_PEEK, scale: 1 - idx * HIST_SCALE_STEP });
-
-  // --- Entitas 1: kartu lama "maju" dari bawah layar ke slot terdepan ---
   if(returningCard){
     gsap.killTweensOf(returningCard);
-    const idx = slotOf(returningId); // selalu 0 (terdepan)
-    const target = targetFor(idx);
-    returningCard.style.zIndex = 30 - idx;
+    returningCard.style.zIndex = 31; // di atas semua kartu lain selama perjalanan
     returningCard.style.pointerEvents = 'auto';
     returningCard.classList.add('is-front');
     gsap.to(returningCard, {
-      opacity: 0, duration: .12, ease: 'power1.in',
+      y: HIST_CARD_H + 60, opacity: 0, rotate: 0, scale: 1, duration: .3, ease: 'power1.in',
       onComplete: () => {
-        gsap.set(returningCard, { y: HIST_CARD_H + 60, rotate: 0, scale: target.scale });
-        gsap.to(returningCard, { y: target.y, opacity: 1, duration: .5, ease: 'back.out(1.3)' });
+        gsap.set(returningCard, { y: frontY + 380, opacity: 0, rotate: -8, scale: 1 });
+        gsap.to(returningCard, { y: frontY, opacity: 1, rotate: 0, scale: 1, duration: .4, ease: 'power2.out' });
       }
     });
   }
 
-  // --- Entitas 2: kartu terdepan lama "turun" dulu, baru nongol lagi dari
-  // bawah menuju slot barunya (bukan terdepan lagi) ---
-  if(outgoingCard){
-    gsap.killTweensOf(outgoingCard);
-    const idx = slotOf(outgoingId);
-    const target = targetFor(idx);
-    outgoingCard.style.zIndex = 30 - idx;
-    outgoingCard.style.pointerEvents = idx === 0 ? 'auto' : 'none';
-    outgoingCard.classList.toggle('is-front', idx === 0);
-    gsap.to(outgoingCard, {
-      y: '+=380', opacity: 0, rotate: 8, duration: .35, ease: 'power2.in',
-      onComplete: () => {
-        gsap.set(outgoingCard, { y: HIST_CARD_H + 60, rotate: 0, scale: target.scale });
-        gsap.to(outgoingCard, { y: target.y, opacity: 1, duration: .5, ease: 'back.out(1.3)' });
-      }
-    });
-  }
-
-  // --- Kartu sisanya (kalau tumpukan berisi > 2 kartu): geser halus biasa ---
+  // Kartu-kartu lain (termasuk yang tadinya di depan): geser halus biasa ke
+  // slot barunya, tak perlu animasi macam-macam.
   order.forEach((id, idx) => {
-    if(id === outgoingId || id === returningId) return;
+    if(id === returningId) return;
     const card = historyCardEls[id];
     if(!card) return;
-    const target = targetFor(idx);
+    const y = (maxDepth - idx) * HIST_PEEK;
+    const scale = 1 - idx * HIST_SCALE_STEP;
     card.style.zIndex = 30 - idx;
     card.style.pointerEvents = idx === 0 ? 'auto' : 'none';
     card.classList.toggle('is-front', idx === 0);
-    gsap.to(card, { y: target.y, scale: target.scale, opacity: 1, rotate: 0, duration: .55, ease: 'back.out(1.3)', overwrite: 'auto' });
+    gsap.to(card, { y, scale, opacity: 1, rotate: 0, duration: .55, ease: 'back.out(1.3)', overwrite: 'auto' });
   });
 }
 
