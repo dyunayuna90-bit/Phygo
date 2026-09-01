@@ -10,9 +10,9 @@ function showScreen(name, opts){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
 
-  // Bottom nav hanya untuk 4 tab dashboard (home/level/history/settings); disembunyikan
-  // saat masuk mode belajar (materi/simulasi/survival/history-wizard) supaya lebih fokus.
-  const TAB_SCREENS = ['home', 'level', 'history', 'settings'];
+  // Bottom nav hanya untuk 3 tab dashboard (home/level/settings); disembunyikan
+  // saat masuk mode belajar (materi/simulasi/survival) supaya lebih fokus.
+  const TAB_SCREENS = ['home', 'level', 'settings'];
   const bottomNav = document.getElementById('bottomNav');
   if(bottomNav){
     bottomNav.classList.toggle('hide', !TAB_SCREENS.includes(name));
@@ -21,7 +21,6 @@ function showScreen(name, opts){
 
   if(name==='home') { renderHome(); requestAnimationFrame(()=>animateIn(document.getElementById('homeScroll'))); }
   else if(name==='level') { renderLevelMap(); requestAnimationFrame(()=>animateIn(document.getElementById('levelScroll'))); }
-  else if(name==='history') { renderHistoryDashboard(); requestAnimationFrame(()=>animateIn(document.getElementById('historyScroll'))); }
   else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
   else if(name==='appinfo') { renderAppInfo(); requestAnimationFrame(()=>animateIn(document.getElementById('appInfoScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
@@ -38,12 +37,6 @@ function showScreen(name, opts){
     renderWizardStep(true); 
     requestAnimationFrame(()=>{
        gsap.fromTo(els.wizardBody, {opacity:0, y:20}, {opacity:1, y:0, duration:0.5, ease:'back.out(1.2)'});
-    });
-  }
-  else if(name==='history-wizard'){
-    renderHistoryWizard(opts.level);
-    requestAnimationFrame(()=>{
-       gsap.fromTo(document.getElementById('historyWizardBody'), {opacity:0, y:20}, {opacity:1, y:0, duration:0.5, ease:'back.out(1.2)'});
     });
   }
   document.querySelectorAll('#screen-'+name+' .scroll-pane').forEach(s=> s.scrollTop=0);
