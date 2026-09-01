@@ -71,6 +71,21 @@
       </div>
     </section>
 
+    <!-- ===== SEJARAH (Dashboard Tumpukan Kartu) ===== -->
+    <section class="screen" id="screen-history">
+      <div class="scroll-pane" id="historyScroll" style="display:flex; flex-direction:column;">
+        <div class="level-header">
+          <h1>Arsip Sejarah Fisika</h1>
+          <p>Telusuri jejak penemuan di balik setiap rumus, disarikan dari sumber yang kredibel.</p>
+        </div>
+        <button class="history-mundur-btn ripple-host" id="historyMundurBtn" aria-label="Mundur ke arsip sebelumnya">
+          <span class="history-mundur-icon"></span>
+          <span>Mundur</span>
+        </button>
+        <div class="history-stack" id="historyStackHolder"></div>
+      </div>
+    </section>
+
     <!-- ===== PENGATURAN ===== -->
     <section class="screen" id="screen-settings">
       <div class="scroll-pane" id="settingsScroll">
@@ -225,6 +240,21 @@
       </div>
     </section>
 
+    <!-- ===== SEJARAH (Wizard Baca Arsip) ===== -->
+    <section class="screen" id="screen-history-wizard">
+      <div class="wizard-shell">
+        <div class="wizard-progress" id="hwProgress"></div>
+        <div class="scroll-pane step-pane" id="hwBodyWrap" style="overflow-x:hidden;">
+          <div class="wizard-slider" id="hwBody"></div>
+        </div>
+        <div class="wizard-footer">
+          <button class="btn btn-icon btn-ghost ripple-host" id="hwExit" aria-label="Kembali ke Arsip Sejarah"></button>
+          <button class="btn btn-icon btn-ghost ripple-host" id="hwBack" aria-label="Kembali"></button>
+          <button class="btn btn-primary ripple-host" id="hwPrimary" style="flex:1;">Lanjut</button>
+        </div>
+      </div>
+    </section>
+
     <!-- ===== SURVIVAL MODE ===== -->
     <section class="screen" id="screen-survival">
       <div class="surv-shell">
@@ -279,6 +309,10 @@
     <button class="bn-item ripple-host" data-screen="level" id="navLevel">
       <span class="bn-icon"></span>
       <span class="bn-label">Level</span>
+    </button>
+    <button class="bn-item ripple-host" data-screen="history" id="navHistory">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Sejarah</span>
     </button>
     <button class="bn-item ripple-host" data-screen="settings" id="navSettings">
       <span class="bn-icon"></span>
