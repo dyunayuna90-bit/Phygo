@@ -184,10 +184,15 @@ function layoutHistoryStack(animate){
 }
 
 function attachHistoryCardGestures(card, id){
-  let startY = 0, startX = 0, dragging = false, moved = false;
+  let startY = 0, startX = 0, dragging = false, moved = false, baseY = 0;
   card.addEventListener('pointerdown', (e)=>{
     if(card.style.pointerEvents === 'none') return;
     dragging = true; moved = false; startY = e.clientY; startX = e.clientX;
+    // Kartu terdepan istirahat di posisi y > 0 (bukan 0) karena sekarang
+    // ditumpuk mundur ke bawah — jadi harus dicatat dulu titik awalnya,
+    // supaya geseran jari itungannya RELATIF ke situ. Kalau tidak, kartu
+    // bakal "loncat" ke y:0 dulu begitu jari mulai bergerak.
+    baseY = gsap.getProperty(card, 'y') || 0;
     try{ card.setPointerCapture(e.pointerId); }catch(err){}
     gsap.killTweensOf(card);
   });
@@ -199,7 +204,7 @@ function attachHistoryCardGestures(card, id){
     // Gerakan ke atas sengaja tidak diberi efek apa pun di kartu ini — swipe
     // ke atas adalah gestur "mundur" global (lihat endDrag), bukan aksi yang
     // menempel/menyeret kartu terdepan.
-    if(dy > 0) gsap.set(card, { y: dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
+    if(dy > 0) gsap.set(card, { y: baseY + dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
   });
   function endDrag(e){
     if(!dragging) return;
@@ -207,13 +212,13 @@ function attachHistoryCardGestures(card, id){
     const dy = (typeof e.clientY === 'number' ? e.clientY : startY) - startY;
     if(dy > 100){ commitHistorySwipe(card, id); }
     else if(dy < -70){ historySwipeBack(); }
-    else if(moved){ gsap.to(card, { y:0, rotate:0, duration:.4, ease:'back.out(2)' }); }
+    else if(moved){ gsap.to(card, { y:baseY, rotate:0, duration:.4, ease:'back.out(2)' }); }
     else { openHistoryWizard(id, card); }
   }
   card.addEventListener('pointerup', endDrag);
   card.addEventListener('pointercancel', ()=>{
     dragging = false;
-    gsap.to(card, { y:0, rotate:0, duration:.3 });
+    gsap.to(card, { y:baseY, rotate:0, duration:.3 });
   });
 }
 
@@ -225,7 +230,7 @@ function commitHistorySwipe(card, id){
     onComplete:()=>{
       app.history.order.push(app.history.order.shift());
       app.history.swipeCount++;
-      gsap.set(card, { y: HIST_CARD_H, opacity:0, rotate:0, scale: 1 - (app.history.order.length-1) * HIST_SCALE_STEP });
+      gsap.set(card, { y: HIST_CARD_H + 60, opacity:0, rotate:0, scale: 1 - (app.history.order.length-1) * HIST_SCALE_STEP });
       layoutHistoryStack(true);
     }
   });
@@ -243,10 +248,11 @@ function historySwipeBack(){
   app.history.swipeCount--;
   if(restoredCard){
     gsap.killTweensOf(restoredCard);
-    gsap.set(restoredCard, { y: HIST_CARD_H + 40, opacity:0, rotate:0, scale:1, display:'' });
+    gsap.set(restoredCard, { y: HIST_CARD_H + 60, opacity:0, rotate:0, scale:1, display:'' });
   }
   layoutHistoryStack(true);
 }
+
 
 // Transisi buka wizard — sederhana & stabil (fade + scale-down kartu, lalu
 // pindah screen). Konten wizard sendiri sudah masuk dengan animasi fade+slide
