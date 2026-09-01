@@ -557,7 +557,7 @@ input{ font-family:inherit; }
    ===== Halaman "Sejarah" — Tumpukan Kartu Arsip + Wizard Baca ======
    =================================================================== */
 
-.history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:16px auto 0; padding-bottom:28px; }
+.history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:36px auto 0; padding-bottom:28px; }
 
 .history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:var(--surface-c-high); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
 /* Warna solid (bukan gradient) yang diturunkan langsung dari warna tema aktif
