@@ -557,15 +557,15 @@ input{ font-family:inherit; }
    ===== Halaman "Sejarah" — Tumpukan Kartu Arsip + Wizard Baca ======
    =================================================================== */
 
-.history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:0 auto; padding-bottom:28px; }
+.history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:16px auto 0; padding-bottom:28px; }
 
 .history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:var(--surface-c-high); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
 /* Warna solid (bukan gradient) yang diturunkan langsung dari warna tema aktif
    (--primary), jadi otomatis ikut berubah saat tema aplikasi diganti dan tetap
    senada satu sama lain — cuma beda tingkat kepekatan per level. */
-.history-card[data-level="1"]{ background:color-mix(in srgb, var(--primary) 13%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 28%, transparent); }
-.history-card[data-level="2"]{ background:color-mix(in srgb, var(--primary) 21%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 34%, transparent); }
-.history-card[data-level="3"]{ background:color-mix(in srgb, var(--primary) 29%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 40%, transparent); }
+.history-card[data-level="1"]{ background:color-mix(in srgb, var(--primary) 8%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 22%, transparent); }
+.history-card[data-level="2"]{ background:color-mix(in srgb, var(--primary) 20%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 34%, transparent); }
+.history-card[data-level="3"]{ background:color-mix(in srgb, var(--primary) 34%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 46%, transparent); }
 .history-card.is-front{ cursor:pointer; }
 .history-card.is-front:active{ cursor:grabbing; }
 .history-card-top{ position:relative; z-index:1; }
