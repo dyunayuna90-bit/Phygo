@@ -59,7 +59,7 @@ input{ font-family:inherit; }
 
 .scroll-pane{ flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; padding-bottom: 40px; }
 .scroll-pane::-webkit-scrollbar{ display:none; }
-#screen-home .scroll-pane { display: flex; flex-direction: column; perspective: 1200px; position:relative; z-index:1; }
+#screen-home .scroll-pane { display: flex; flex-direction: column; perspective: 1200px; }
 
 .ripple-host{ position:relative; overflow:hidden; }
 .ripple{ position:absolute; border-radius:50%; background:currentColor; opacity:.22; transform:scale(0); animation:rippleAnim .6s cubic-bezier(0.2, 0, 0, 1) forwards; pointer-events:none; }
@@ -71,44 +71,6 @@ input{ font-family:inherit; }
 .home-hero p { font-size:15px; color:var(--on-surface-var); line-height:1.6; max-width:440px; margin:0 auto; }
 #screen-home{ position:relative; }
 #screen-home .scroll-pane{ padding-bottom:96px; }
-
-/* ===== Shape amuba latar belakang â€” Material 3 Expressive, samar & bergerak ===== */
-.home-bg-blobs{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-.home-blob{
-  position:absolute;
-  filter: blur(46px);
-  will-change: transform, border-radius;
-  mix-blend-mode: screen;
-}
-.home-blob-1{
-  width:260px; height:260px; top:-70px; left:-90px;
-  background: var(--primary);
-  opacity:0.16;
-  border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%;
-  animation: homeBlobDrift1 17s ease-in-out infinite alternate, homeBlobMorph1 13s ease-in-out infinite;
-}
-.home-blob-2{
-  width:230px; height:230px; top:34%; right:-100px;
-  background: #FF9F43;
-  opacity:0.13;
-  border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%;
-  animation: homeBlobDrift2 21s ease-in-out infinite alternate, homeBlobMorph2 15s ease-in-out infinite;
-}
-.home-blob-3{
-  width:210px; height:210px; bottom:4%; left:8%;
-  background: var(--primary-soft);
-  opacity:0.12;
-  border-radius: 50% 50% 35% 65% / 60% 40% 60% 40%;
-  animation: homeBlobDrift3 19s ease-in-out infinite alternate, homeBlobMorph1 11s ease-in-out infinite reverse;
-}
-@keyframes homeBlobDrift1{ 0%{ transform: translate(0,0) rotate(0deg) scale(1); } 100%{ transform: translate(36px,46px) rotate(28deg) scale(1.08); } }
-@keyframes homeBlobDrift2{ 0%{ transform: translate(0,0) rotate(0deg) scale(1); } 100%{ transform: translate(-30px,-40px) rotate(-24deg) scale(0.94); } }
-@keyframes homeBlobDrift3{ 0%{ transform: translate(0,0) rotate(0deg) scale(1); } 100%{ transform: translate(24px,-32px) rotate(18deg) scale(1.06); } }
-@keyframes homeBlobMorph1{ 0%,100%{ border-radius: 42% 58% 65% 35% / 45% 40% 60% 55%; } 50%{ border-radius: 58% 42% 35% 65% / 55% 60% 40% 45%; } }
-@keyframes homeBlobMorph2{ 0%,100%{ border-radius: 60% 40% 30% 70% / 50% 60% 40% 50%; } 50%{ border-radius: 35% 65% 60% 40% / 40% 45% 55% 60%; } }
-@media (prefers-reduced-motion: reduce){
-  .home-blob{ animation:none !important; }
-}
 
 /* ===== Halaman "Level" & "Pengaturan" â€” header seragam ===== */
 .level-header{ text-align:center; padding:20px 20px 24px; }
