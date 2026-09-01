@@ -104,15 +104,15 @@ function renderLevelMap(){
 // ===================================================================
 
 let historyCardEls = null; // {levelId: HTMLElement} — dibuat sekali, dipakai ulang
-const HIST_PEEK = 22;        // px pergeseran ke atas tiap kartu di belakangnya
+const HIST_PEEK = 46;         // px "pucuk" kartu di belakang yang kelihatan di atas kartu depannya
 const HIST_SCALE_STEP = 0.045;
+const HIST_CARD_H = 380;      // harus sinkron dengan min-height .history-card di CSS
 
 function renderHistoryDashboard(){
   const holder = document.getElementById('historyStackHolder');
   if(!holder) return;
   if(!historyCardEls) buildHistoryCards();
   layoutHistoryStack(false);
-  updateHistoryMundurBtn();
 }
 
 function buildHistoryCards(){
@@ -149,29 +149,36 @@ function buildHistoryCards(){
     app.history.order = ids.slice();
     app.history.swipeCount = 0;
   }
+  // Tinggi wadah dihitung persis pas: tinggi 1 kartu + "pucuk" kartu-kartu di
+  // belakangnya. Ini yang mencegah kartu paling belakang numpuk/nabrak ke
+  // judul tab di atasnya, berapa pun jumlah kartunya nanti.
+  const depth = Math.max(0, ids.length - 1);
+  holder.style.minHeight = (HIST_CARD_H + depth * HIST_PEEK) + 'px';
 }
 
 // Menata ulang posisi visual seluruh kartu berdasarkan `app.history.order`.
-// Hanya 3 kartu terdepan yang ditampilkan; sisanya "diparkir" tersembunyi di
-// bawah supaya bisa muncul mulus dari bawah ke atas begitu naik ke posisi 3.
+// order[0] = kartu paling depan (aktif). Kartu di belakangnya digeser TURUN
+// makin jauh (bukan naik) sehingga bagian atas tiap kartu di belakang selalu
+// nongol/"pucuk" di ATAS kartu yang ada di depannya — dan karena kartu paling
+// belakang justru berada paling dekat ke atas wadah (bukan mencuat ke luar
+// wadah), dia tidak akan pernah numpuk ke judul tab.
 function layoutHistoryStack(animate){
   if(!historyCardEls || !app.history) return;
   const order = app.history.order;
+  const maxDepth = order.length - 1;
   order.forEach((id, idx)=>{
     const card = historyCardEls[id];
     if(!card) return;
-    if(idx > 3){ card.style.display = 'none'; return; }
     card.style.display = '';
-    const visible = idx <= 2;
-    const y = idx <= 2 ? -idx * HIST_PEEK : 70;
-    const scale = idx <= 2 ? 1 - idx * HIST_SCALE_STEP : 1 - 3 * HIST_SCALE_STEP;
+    const y = (maxDepth - idx) * HIST_PEEK;
+    const scale = 1 - idx * HIST_SCALE_STEP;
     card.style.zIndex = 30 - idx;
     card.style.pointerEvents = idx === 0 ? 'auto' : 'none';
     card.classList.toggle('is-front', idx === 0);
     if(animate){
-      gsap.to(card, { y, scale, opacity: visible ? 1 : 0, rotate:0, duration:.55, ease:'back.out(1.3)', overwrite:'auto' });
+      gsap.to(card, { y, scale, opacity:1, rotate:0, duration:.55, ease:'back.out(1.3)', overwrite:'auto' });
     } else {
-      gsap.set(card, { y, scale, opacity: visible ? 1 : 0, rotate:0 });
+      gsap.set(card, { y, scale, opacity:1, rotate:0 });
     }
   });
 }
@@ -188,6 +195,10 @@ function attachHistoryCardGestures(card, id){
     if(!dragging) return;
     const dy = e.clientY - startY, dx = e.clientX - startX;
     if(Math.abs(dy) > 6 || Math.abs(dx) > 6) moved = true;
+    // Kartu terdepan HANYA boleh diseret ke bawah (buang/mundur-maju biasa).
+    // Gerakan ke atas sengaja tidak diberi efek apa pun di kartu ini — swipe
+    // ke atas adalah gestur "mundur" global (lihat endDrag), bukan aksi yang
+    // menempel/menyeret kartu terdepan.
     if(dy > 0) gsap.set(card, { y: dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
   });
   function endDrag(e){
@@ -195,6 +206,7 @@ function attachHistoryCardGestures(card, id){
     dragging = false;
     const dy = (typeof e.clientY === 'number' ? e.clientY : startY) - startY;
     if(dy > 100){ commitHistorySwipe(card, id); }
+    else if(dy < -70){ historySwipeBack(); }
     else if(moved){ gsap.to(card, { y:0, rotate:0, duration:.4, ease:'back.out(2)' }); }
     else { openHistoryWizard(id, card); }
   }
@@ -205,63 +217,48 @@ function attachHistoryCardGestures(card, id){
   });
 }
 
+// Swipe ke bawah pada kartu terdepan: kartu itu "dibuang" dan pindah ke
+// paling belakang tumpukan.
 function commitHistorySwipe(card, id){
   gsap.to(card, {
     y:'+=380', opacity:0, rotate:-8, duration:.4, ease:'power2.in',
     onComplete:()=>{
       app.history.order.push(app.history.order.shift());
       app.history.swipeCount++;
-      gsap.set(card, { y:70, opacity:0, rotate:0, scale: 1 - 3 * HIST_SCALE_STEP });
+      gsap.set(card, { y: HIST_CARD_H, opacity:0, rotate:0, scale: 1 - (app.history.order.length-1) * HIST_SCALE_STEP });
       layoutHistoryStack(true);
-      updateHistoryMundurBtn();
     }
   });
 }
 
-function undoHistorySwipe(){
+// Gestur "mundur": swipe ke atas pada kartu terdepan. Kartu yang paling
+// terakhir dibuang muncul lagi dari bawah layar ke atas menuju posisi depan,
+// sementara kartu-kartu lain di tumpukan otomatis ikut bergeser mengikuti
+// posisi barunya masing-masing (tween yang sama, `layoutHistoryStack`).
+function historySwipeBack(){
   if(!app.history || app.history.swipeCount <= 0) return;
+  const restoredId = app.history.order[app.history.order.length - 1];
+  const restoredCard = historyCardEls[restoredId];
   app.history.order.unshift(app.history.order.pop());
   app.history.swipeCount--;
+  if(restoredCard){
+    gsap.killTweensOf(restoredCard);
+    gsap.set(restoredCard, { y: HIST_CARD_H + 40, opacity:0, rotate:0, scale:1, display:'' });
+  }
   layoutHistoryStack(true);
-  updateHistoryMundurBtn();
 }
 
-function updateHistoryMundurBtn(){
-  const btn = document.getElementById('historyMundurBtn');
-  if(!btn) return;
-  btn.classList.toggle('show', !!(app.history && app.history.swipeCount > 0));
-}
-
-// Transisi "morphing" — kartu terdepan melebar selayar penuh menjadi wizard.
+// Transisi buka wizard — sederhana & stabil (fade + scale-down kartu, lalu
+// pindah screen). Konten wizard sendiri sudah masuk dengan animasi fade+slide
+// dari router.js, jadi tidak perlu morphing DOM yang rawan glitch/bug posisi.
 function openHistoryWizard(level, cardEl){
-  const rect = cardEl.getBoundingClientRect();
-  const mainEl = document.getElementById('main');
-  const mainRect = mainEl.getBoundingClientRect();
-
-  const ghost = document.createElement('div');
-  ghost.className = 'history-card history-morph-ghost';
-  ghost.dataset.level = level;
-  ghost.style.position = 'fixed';
-  ghost.style.left = rect.left + 'px';
-  ghost.style.top = rect.top + 'px';
-  ghost.style.width = rect.width + 'px';
-  ghost.style.height = rect.height + 'px';
-  ghost.style.margin = '0';
-  ghost.style.zIndex = '500';
-  ghost.style.pointerEvents = 'none';
-  ghost.innerHTML = cardEl.innerHTML;
-  document.body.appendChild(ghost);
-  cardEl.style.opacity = '0';
-
-  const fadeParts = ghost.querySelectorAll('.history-card-desc, .history-card-footer, .history-card-icon-bg');
-  gsap.to(fadeParts, { opacity:0, duration:.22 });
-
-  gsap.to(ghost, {
-    left: mainRect.left, top: mainRect.top, width: mainRect.width, height: mainRect.height,
-    borderRadius: 0, duration:.55, ease:'power3.inOut',
+  gsap.killTweensOf(cardEl);
+  gsap.to(cardEl, {
+    scale:0.92, opacity:0, duration:.22, ease:'power2.in',
     onComplete(){
       navigate('history-wizard', { level, step:0 });
-      requestAnimationFrame(()=>{ ghost.remove(); cardEl.style.opacity = ''; });
+      gsap.set(cardEl, { opacity:'', scale:'' });
+      layoutHistoryStack(false);
     }
   });
 }
