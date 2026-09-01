@@ -263,12 +263,19 @@ function historySwipeBack(){
 
   if(returningCard){
     gsap.killTweensOf(returningCard);
-    returningCard.style.zIndex = 31; // di atas semua kartu lain selama perjalanan
-    returningCard.style.pointerEvents = 'auto';
-    returningCard.classList.add('is-front');
+    // FASE 1: kartu masih di posisi/lapisan aslinya (paling belakang, z-index
+    // rendah) selagi turun & memudar — supaya bagian dia yang tadinya
+    // ketutupan kartu depan TETAP ketutupan, tidak tiba-tiba "nembus" muncul
+    // duluan sebelum animasi kembalinya benar-benar mulai.
     gsap.to(returningCard, {
       y: HIST_CARD_H + 60, opacity: 0, rotate: 0, scale: 1, duration: .3, ease: 'power1.in',
       onComplete: () => {
+        // Di titik ini kartu sudah sepenuhnya transparan (opacity 0) — baru
+        // SEKARANG aman untuk mengangkatnya ke lapisan paling atas, karena
+        // tidak ada apa pun yang kelihatan untuk "nembus".
+        returningCard.style.zIndex = 31;
+        returningCard.style.pointerEvents = 'auto';
+        returningCard.classList.add('is-front');
         gsap.set(returningCard, { y: frontY + 380, opacity: 0, rotate: -8, scale: 1 });
         gsap.to(returningCard, { y: frontY, opacity: 1, rotate: 0, scale: 1, duration: .4, ease: 'power2.out' });
       }
