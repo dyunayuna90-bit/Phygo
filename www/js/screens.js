@@ -263,10 +263,13 @@ function historySwipeBack(){
 
   if(returningCard){
     gsap.killTweensOf(returningCard);
-    // FASE 1: kartu masih di posisi/lapisan aslinya (paling belakang, z-index
-    // rendah) selagi turun & memudar — supaya bagian dia yang tadinya
-    // ketutupan kartu depan TETAP ketutupan, tidak tiba-tiba "nembus" muncul
-    // duluan sebelum animasi kembalinya benar-benar mulai.
+    // FASE 1: kartu dikunci di lapisan PALING BAWAH (bukan sekadar dibiarkan
+    // pakai z-index lama) selagi turun & memudar. Ini perlu, karena begitu
+    // `order` di-rotate, kartu yang tadinya "kedua dari belakang" ikut naik
+    // jadi kartu paling belakang yang baru — dan kalau z-index kartu balik
+    // ini tidak dikunci, sesaat z-index keduanya bisa SERI, bikin urutan
+    // render jadi acak (kartu balik ini sempat nembus 1 kartu di depannya).
+    returningCard.style.zIndex = 0;
     gsap.to(returningCard, {
       y: HIST_CARD_H + 60, opacity: 0, rotate: 0, scale: 1, duration: .3, ease: 'power1.in',
       onComplete: () => {
