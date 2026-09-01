@@ -236,16 +236,82 @@ function commitHistorySwipe(card, id){
   });
 }
 
-// Gestur "mundur": swipe ke atas pada kartu terdepan. Kartu yang paling
-// terakhir dibuang (yang sebelumnya nangkring di posisi paling belakang,
-// dekat judul tab) meluncur turun dengan mulus dari posisi itu menuju slot
-// terdepan — TANPA di-reset/disembunyikan dulu, supaya jadi satu animasi
-// yang menyatu (bukan hilang-lalu-muncul).
+// Gestur "mundur": swipe ke atas pada kartu terdepan. Supaya jadi loop yang
+// simetris & mulus dengan commitHistorySwipe (swipe bawah, yang sudah pas),
+// gestur ini memperlakukan dua kartu sebagai DUA ENTITAS animasi terpisah,
+// jalan bersamaan — bukan sekadar men-tween posisi lama ke posisi baru:
+//   1) Kartu yang dulu dibuang (skrg nangkring paling belakang, nyaris tak
+//      kelihatan) -> "maju": sekejap menghilang, lalu meluncur dari BAWAH
+//      layar naik ke slot TERDEPAN.
+//   2) Kartu yang saat ini di depan -> "turun": meluncur turun & memudar
+//      (persis gerakan buang di commitHistorySwipe), lalu ikut nongol lagi
+//      dari bawah layar, naik ke slot barunya (bukan terdepan lagi).
+// Efeknya: satu kartu kelihatan turun bersamaan satu kartu lain naik dari
+// bawah — ilusi kartu lama "menyalip maju" persis yang diminta.
+// Kartu-kartu sisanya (kalau tumpukan > 2 kartu) cukup digeser halus biasa.
 function historySwipeBack(){
-  if(!app.history || app.history.swipeCount <= 0) return;
-  app.history.order.unshift(app.history.order.pop());
+  if(!app.history || app.history.swipeCount <= 0 || !historyCardEls) return;
+  const order = app.history.order;
+  const outgoingId = order[0];
+  const returningId = order[order.length - 1];
+  const outgoingCard = historyCardEls[outgoingId];
+  const returningCard = historyCardEls[returningId];
+
+  // Rotasi urutan lebih dulu — perhitungan slot (idx -> y/scale) di bawah ini
+  // sudah mengacu ke susunan yang BARU.
+  order.unshift(order.pop());
   app.history.swipeCount--;
-  layoutHistoryStack(true);
+  const maxDepth = order.length - 1;
+
+  const slotOf = (id) => order.indexOf(id);
+  const targetFor = (idx) => ({ y: (maxDepth - idx) * HIST_PEEK, scale: 1 - idx * HIST_SCALE_STEP });
+
+  // --- Entitas 1: kartu lama "maju" dari bawah layar ke slot terdepan ---
+  if(returningCard){
+    gsap.killTweensOf(returningCard);
+    const idx = slotOf(returningId); // selalu 0 (terdepan)
+    const target = targetFor(idx);
+    returningCard.style.zIndex = 30 - idx;
+    returningCard.style.pointerEvents = 'auto';
+    returningCard.classList.add('is-front');
+    gsap.to(returningCard, {
+      opacity: 0, duration: .12, ease: 'power1.in',
+      onComplete: () => {
+        gsap.set(returningCard, { y: HIST_CARD_H + 60, rotate: 0, scale: target.scale });
+        gsap.to(returningCard, { y: target.y, opacity: 1, duration: .5, ease: 'back.out(1.3)' });
+      }
+    });
+  }
+
+  // --- Entitas 2: kartu terdepan lama "turun" dulu, baru nongol lagi dari
+  // bawah menuju slot barunya (bukan terdepan lagi) ---
+  if(outgoingCard){
+    gsap.killTweensOf(outgoingCard);
+    const idx = slotOf(outgoingId);
+    const target = targetFor(idx);
+    outgoingCard.style.zIndex = 30 - idx;
+    outgoingCard.style.pointerEvents = idx === 0 ? 'auto' : 'none';
+    outgoingCard.classList.toggle('is-front', idx === 0);
+    gsap.to(outgoingCard, {
+      y: '+=380', opacity: 0, rotate: 8, duration: .35, ease: 'power2.in',
+      onComplete: () => {
+        gsap.set(outgoingCard, { y: HIST_CARD_H + 60, rotate: 0, scale: target.scale });
+        gsap.to(outgoingCard, { y: target.y, opacity: 1, duration: .5, ease: 'back.out(1.3)' });
+      }
+    });
+  }
+
+  // --- Kartu sisanya (kalau tumpukan berisi > 2 kartu): geser halus biasa ---
+  order.forEach((id, idx) => {
+    if(id === outgoingId || id === returningId) return;
+    const card = historyCardEls[id];
+    if(!card) return;
+    const target = targetFor(idx);
+    card.style.zIndex = 30 - idx;
+    card.style.pointerEvents = idx === 0 ? 'auto' : 'none';
+    card.classList.toggle('is-front', idx === 0);
+    gsap.to(card, { y: target.y, scale: target.scale, opacity: 1, rotate: 0, duration: .55, ease: 'back.out(1.3)', overwrite: 'auto' });
+  });
 }
 
 // Transisi buka wizard — sederhana & stabil: kartu cukup "menekan" sedikit
