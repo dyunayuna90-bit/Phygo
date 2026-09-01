@@ -868,26 +868,3 @@ function renderResultStep(body, cfg){
   else if(attempts >= 3){ setFooter({ backVisible:false, primaryLabel:'Lihat Jawaban Benar', onPrimary:()=>{ Swal.fire({ icon:'info', title:'Perhitungan yang Tepat', html:`${texi(String.raw`${cfg.varName} = ${cfg.correctAnswer} \text{ ${cfg.unit}}`)}`, background: '#1C2426', color:'#E3E3E6', confirmButtonColor: '#57E0E6' }); }}); }
   else { setFooter({ backVisible:false, primaryLabel:`Coba Lagi (Percobaan ${attempts+1} dari 3)`, onPrimary:()=>{ app.calcChain[cfg.level] = {}; navigate('simulasi', {level:cfg.level, step:cfg.retryStep}); }}); }
 }
-
-// ===== HISTORY DASHBOARD — Render Card Stack
-function renderHistoryDashboard(){
-  const stackContainer = document.getElementById('historyStack');
-  if(!stackContainer) return;
-
-  // Init atau reuse card stack instance
-  if(!window.historyCardStack){
-    window.historyCardStack = new HistoryCardStack();
-  }
-  window.historyCardStack.render(stackContainer);
-
-  // Attach event ke tombol "Mundur"
-  const btnBackward = document.getElementById('historyBtnBackward');
-  if(btnBackward){
-    btnBackward.addEventListener('click', () => {
-      const stack = window.historyCardStack;
-      // Rotate array ke belakang (reverse): ambil elemen terakhir, pindah ke depan
-      stack.historyOrder.unshift(stack.historyOrder.pop());
-      stack.animateStackForward();
-    });
-  }
-}
