@@ -1,10 +1,54 @@
 "use strict";
 
 function renderHome(){
+  renderHomeGreeting();
   renderHomeAchievement();
-  renderActivityNotif();
+  renderLanjutkanCard();
   renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderHomeQuote();
+}
+
+// ===== Sapaan dinamis di Home (menggantikan wordmark "Phygo" besar) =====
+// Baris 1: salam berbasis jam. Baris 2: frasa pendek, dipilih sesuai waktu
+// & apakah ada progres yang nyantol (getLastProgress()).
+const HOME_GREETING_PHRASES = {
+  pagi:   ["siap belajar?", "yuk mulai harimu", "semangat pagi!"],
+  siang:  ["semangat lanjut!", "yuk lanjut belajar", "jangan nyerah ya"],
+  sore:   ["lanjut sore ini?", "yuk sedikit lagi", "semangat sore!"],
+  malamAwal: ["masih kuat belajar?", "yuk selesaikan misi", "sedikit lagi kok"],
+  malamLarut: ["ngantuk? tidur gih", "istirahat dulu yuk", "besok lanjut lagi"],
+};
+function getGreetingTimeSlot(hour){
+  if(hour >= 23 || hour < 4) return 'malamLarut';
+  if(hour >= 4 && hour < 11) return 'pagi';
+  if(hour >= 11 && hour < 15) return 'siang';
+  if(hour >= 15 && hour < 18) return 'sore';
+  return 'malamAwal';
+}
+function renderHomeGreeting(){
+  const holder = document.getElementById('homeGreeting');
+  if(!holder) return;
+  const hour = new Date().getHours();
+  const slot = getGreetingTimeSlot(hour);
+  const salamMap = { pagi:'Selamat pagi', siang:'Selamat siang', sore:'Selamat sore', malamAwal:'Selamat malam', malamLarut:'Selamat malam' };
+  const salam = salamMap[slot];
+
+  const lp = getLastProgress();
+  const hasProgress = lp && LEVELS[lp.level] && !app.completed.has(lp.level);
+  let phrase;
+  if(slot === 'malamLarut'){
+    phrase = HOME_GREETING_PHRASES.malamLarut[Math.floor(Math.random() * HOME_GREETING_PHRASES.malamLarut.length)];
+  } else if(hasProgress){
+    phrase = 'lanjutin yang tadi yuk';
+  } else {
+    const pool = HOME_GREETING_PHRASES[slot];
+    phrase = pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  holder.innerHTML = `
+    <h1 class="home-greeting-line1">${salam}</h1>
+    <p class="home-greeting-line2">${phrase}</p>
+  `;
 }
 
 function renderHomeAchievement(){
@@ -13,32 +57,53 @@ function renderHomeAchievement(){
   const pct = Math.round((app.completed.size / 3) * 100);
   holder.innerHTML = `
     <div class="gami-card home-card">
-      <div class="home-card-icon-bg">${svgIcon('trophy')}</div>
+      <h3>Pencapaian</h3>
       <div class="g-chart">
         <svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15"/><circle class="prog" cx="18" cy="18" r="15" stroke-dasharray="${pct}, 100"/></svg>
         <div class="g-val">${app.completed.size}/3</div>
-      </div>
-      <div class="g-info">
-        <h3>Pencapaian</h3>
-        <p>Selesaikan semua tantangan dasar fisika.</p>
       </div>
     </div>
   `;
   apply3DTilt(holder.querySelector('.gami-card'), 10, 0);
 }
 
-function renderHomeQuote(){
-  const holder = document.getElementById('homeQuoteCard');
+// ===== Kartu "Lanjutkan" — gabungan pengingat progres + tombol lanjut main =====
+// Menyerap logic renderActivityNotif() (cek getLastProgress()) dan
+// handleContinuePlay() (3 skenario: resume wizard / lanjut level berikutnya /
+// ajak Mode Survival kalau ketiga level sudah selesai semua).
+function renderLanjutkanCard(){
+  const holder = document.getElementById('homeLanjutkanCard');
   if(!holder) return;
-  const q = PHYSICS_QUOTES[getQuoteIndex() % PHYSICS_QUOTES.length];
+
+  const lp = getLastProgress();
+  const hasResumable = lp && LEVELS[lp.level] && !app.completed.has(lp.level);
+  const allDone = app.completed.size >= 3;
+  const nextLevel = [1,2,3].find(id => !app.completed.has(id));
+
+  let bgLabel, ariaLabel, mascotClass;
+  if(hasResumable){
+    bgLabel = `LVL ${lp.level}`;
+    ariaLabel = `Lanjutkan Level ${lp.level}: ${LEVELS[lp.level].title}`;
+    mascotClass = 'mascot-lanjutkan';
+  } else if(allDone){
+    bgLabel = '3/3';
+    ariaLabel = 'Semua level selesai — main Mode Survival';
+    mascotClass = 'mascot-survival';
+  } else {
+    bgLabel = `LVL ${nextLevel}`;
+    ariaLabel = `Mulai Level ${nextLevel}: ${LEVELS[nextLevel].title}`;
+    mascotClass = 'mascot-lanjutkan';
+  }
+  const label = allDone && !hasResumable ? 'Main Survival' : 'Lanjutkan';
+
   holder.innerHTML = `
-    <div class="quote-card home-card">
-      <div class="home-card-icon-bg">${svgIcon('quote')}</div>
-      <div class="quote-mark">${svgIcon('quote')}</div>
-      <p class="quote-text">${q.text}</p>
-      <span class="quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
-    </div>
+    <button class="home-card lanjutkan-card ripple-host" id="lanjutkanCardBtn" aria-label="${ariaLabel}">
+      <span class="lc-bg-label">${bgLabel}</span>
+      <span class="lc-mascot ${mascotClass}"></span>
+      <span class="lc-label">${label}</span>
+    </button>
   `;
+  document.getElementById('lanjutkanCardBtn').addEventListener('click', handleContinuePlay);
 }
 
 // ===== Tombol "Lanjutkan Main" — arahkan ke posisi paling logis =====
@@ -57,6 +122,20 @@ function handleContinuePlay(){
     return;
   }
   navigate('survival', {});
+}
+
+function renderHomeQuote(){
+  const holder = document.getElementById('homeQuoteCard');
+  if(!holder) return;
+  const q = PHYSICS_QUOTES[getQuoteIndex() % PHYSICS_QUOTES.length];
+  holder.innerHTML = `
+    <div class="quote-card home-card">
+      <div class="home-card-icon-bg">${svgIcon('quote')}</div>
+      <div class="quote-mark">${svgIcon('quote')}</div>
+      <p class="quote-text">${q.text}</p>
+      <span class="quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
+    </div>
+  `;
 }
 
 // ===== Halaman "Level" — peta zig-zag (tidak diubah tampilannya) =====
@@ -472,38 +551,6 @@ function renderAppInfo(){
   const repoLink = document.getElementById('appInfoRepoLink');
   repoLink.href = APP_INFO.repoUrl;
   repoLink.querySelector('.appinfo-repo-icon').innerHTML = svgIcon('code');
-}
-
-// ===== Notifikasi Aktivitas =====
-// Menampilkan kartu pengingat di dashboard kalau ada level yang sudah
-// dimulai (masuk wizard/simulasi) tapi belum diselesaikan — datanya diambil
-// dari getLastProgress() (localStorage), jadi tetap akurat walaupun user
-// baru saja buka ulang app dari kondisi ke-close paksa.
-function renderActivityNotif(){
-  const holder = document.getElementById('activityNotifCard');
-  if(!holder) return;
-
-  const lp = getLastProgress();
-  const L = lp ? LEVELS[lp.level] : null;
-
-  if(!lp || !L || app.completed.has(lp.level)){
-    holder.classList.remove('show');
-    holder.innerHTML = '';
-    return;
-  }
-
-  holder.classList.add('show');
-  holder.innerHTML = `
-    <button class="activity-notif home-card ripple-host" id="activityNotifBtn" aria-label="Lanjutkan Level ${lp.level}: ${L.title}">
-      <div class="home-card-icon-bg">${svgIcon('bell')}</div>
-      <div class="an-icon">${svgIcon(L.icon)}</div>
-      <div class="an-info">
-        <span class="an-eyebrow">Pengingat Belajar</span>
-        <h4>Kamu belum menyelesaikan Level ${lp.level}: ${L.title}</h4>
-      </div>
-    </button>
-  `;
-  document.getElementById('activityNotifBtn').onclick = resumeLastActivity;
 }
 
 // Tombol "Sakti" — satu-satunya pintu masuk untuk melanjutkan progres.
