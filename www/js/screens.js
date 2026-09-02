@@ -680,7 +680,7 @@ function wizardGoStep(delta){
   navigate('simulasi', {level: wizard.level, step: clamp(wizard.step + delta, 0, STEP_COUNTS[wizard.level]-1)}); 
 }
 
-function goToDashboard(){ app.running = false; navigate('home', {}, false); }
+function goToDashboard(){ app.running = false; navigate(app.activeTab || 'home', {}, false); }
 
 function setFooter(cfg){
   els.wizBack.style.visibility = cfg.backVisible ? 'visible' : 'hidden';
@@ -765,7 +765,7 @@ function runQuizFbAction(pending) {
     localStorage.setItem('phygo_completed', JSON.stringify([...app.completed]));
     if(!wasCompleted) { app.justUnlockedLevel = pending.level + 1; bumpQuoteIndex(); }
     clearLastProgress();
-    navigate('home', {}, false);
+    navigate(app.activeTab || 'home', {}, false);
   } else if(pending.action === 'retry') {
     resetQuizForRetry();
   } else if(pending.action === 'restart') {
@@ -817,7 +817,7 @@ function playSadAnimationAndExit() {
   
   setTimeout(() => {
      sadOl.classList.remove('show');
-     navigate('home', {}, false);
+     navigate(app.activeTab || 'home', {}, false);
   }, 3000);
 }
 
