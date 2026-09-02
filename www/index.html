@@ -33,19 +33,31 @@
     <!-- ===== HOME ===== -->
     <section class="screen active" id="screen-home">
       <div class="scroll-pane" id="homeScroll">
-        <div class="home-hero">
-          <h1 class="app-brand-title">Phygo</h1>
+
+        <!-- Header sapaan + lencana streak -->
+        <div class="home-header" id="homeHeader"></div>
+
+        <!-- Kartu CTA utama (adaptif: lanjutkan / mulai level / survival) -->
+        <div id="homeContinueCard"></div>
+
+        <!-- Bento: Pencapaian (lebar penuh) + Survival & Streak (2 kolom) -->
+        <div class="home-bento" id="homeBento">
+          <div id="homeAchievementCard"></div>
+          <div id="homeSurvivalCard"></div>
+          <div id="homeStreakCard"></div>
         </div>
 
-        <!-- Kartu Pencapaian -->
-        <div id="homeAchievementCard"></div>
+        <!-- Aksi Cepat -->
+        <div class="home-section-block">
+          <h3 class="home-section-title">Jelajahi Phygo</h3>
+          <div class="home-quick-grid" id="homeQuickGrid"></div>
+        </div>
 
-        <!-- Notifikasi Aktivitas: pengingat "lanjutkan level yang belum selesai".
-             Kosong & disembunyikan secara default, diisi oleh renderActivityNotif() di screens.js -->
-        <div id="activityNotifCard"></div>
-
-        <!-- Kartu Mode Survival -->
-        <div id="homeSurvivalCard"></div>
+        <!-- Teaser Arsip Sejarah — scroll horizontal ala Pinterest -->
+        <div class="home-section-block">
+          <h3 class="home-section-title">Arsip Sejarah Fisika</h3>
+          <div class="home-history-scroll" id="homeHistoryScroll"></div>
+        </div>
 
         <!-- Kartu Kutipan Tokoh Fisika -->
         <div id="homeQuoteCard"></div>
