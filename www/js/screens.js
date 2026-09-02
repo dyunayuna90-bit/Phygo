@@ -6,12 +6,11 @@ function renderHome(){
   renderHomeAchievement();
   renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderHomeStreakCard();
-  renderHomeQuickGrid();
   renderHomeHistoryScroll();
   renderHomeQuote();
 }
 
-// ===== Header — sapaan dinamis sesuai jam + lencana streak =====
+// ===== Header — sapaan dinamis sesuai jam + tanggal hari ini =====
 function greetingText(){
   const h = new Date().getHours();
   if(h < 11) return 'Selamat pagi';
@@ -20,19 +19,20 @@ function greetingText(){
   return 'Selamat malam';
 }
 
+function todayLongDate(){
+  const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const d = new Date();
+  return `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]}`;
+}
+
 function renderHomeHeader(){
   const holder = document.getElementById('homeHeader');
   if(!holder) return;
-  const streak = getStreakCount();
   holder.innerHTML = `
     <div class="home-header-text">
-      <span class="home-eyebrow">Phygo</span>
       <h1>${greetingText()}</h1>
-      <p>Yuk lanjutkan petualangan fisikamu hari ini.</p>
-    </div>
-    <div class="home-streak-badge" aria-label="${streak} hari beruntun belajar">
-      <span class="hsb-icon">${svgIcon('fire')}</span>
-      <span class="hsb-val">${streak}</span>
+      <p>${todayLongDate()}</p>
     </div>
   `;
 }
@@ -125,24 +125,6 @@ function renderHomeStreakCard(){
   `;
 }
 
-// ===== Grid Aksi Cepat — pintasan ke Level, Sejarah, dan Pengaturan =====
-function renderHomeQuickGrid(){
-  const holder = document.getElementById('homeQuickGrid');
-  if(!holder) return;
-  const tiles = [
-    {icon:'mapRoute', label:'Peta Level', cls:'qt-a', action:()=> navigate('level', {}, true)},
-    {icon:'history', label:'Arsip Sejarah', cls:'qt-b', action:()=> navigate('history', {}, true)},
-    {icon:'gear', label:'Pengaturan', cls:'qt-c', action:()=> navigate('settings', {}, true)},
-  ];
-  holder.innerHTML = tiles.map(t => `
-    <button class="quick-tile ${t.cls} ripple-host">
-      <span class="quick-tile-icon">${svgIcon(t.icon)}</span>
-      <span class="quick-tile-label">${t.label}</span>
-    </button>
-  `).join('');
-  Array.from(holder.children).forEach((btn,i)=> btn.addEventListener('click', tiles[i].action));
-}
-
 // ===== Teaser Arsip Sejarah — scroll horizontal ala Pinterest, tap langsung
 // membuka wizard arsip level terkait (reuse openHistoryWizard) =====
 function renderHomeHistoryScroll(){
@@ -176,24 +158,6 @@ function renderHomeQuote(){
       <span class="quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
     </div>
   `;
-}
-
-// ===== Tombol "Lanjutkan Main" — arahkan ke posisi paling logis =====
-// 1) Kalau ada wizard yang belum selesai -> lanjutkan persis di step itu.
-// 2) Kalau tidak, arahkan ke materi level pertama yang belum diselesaikan.
-// 3) Kalau ketiga level sudah selesai semua -> ajak main Mode Survival.
-function handleContinuePlay(){
-  const lp = getLastProgress();
-  if(lp && LEVELS[lp.level] && !app.completed.has(lp.level)){
-    resumeLastActivity();
-    return;
-  }
-  const nextLevel = [1,2,3].find(id => !app.completed.has(id));
-  if(nextLevel){
-    navigate('materi', {level: nextLevel});
-    return;
-  }
-  navigate('survival', {});
 }
 
 // ===== Halaman "Level" — peta zig-zag (tidak diubah tampilannya) =====
