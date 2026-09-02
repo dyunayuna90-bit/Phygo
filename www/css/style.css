@@ -96,43 +96,44 @@ input{ font-family:inherit; }
    saat ditekan, bukan cuma scale. Ripple sengaja dikecualikan dari aturan
    posisi supaya tidak ikut menambah tinggi kartu saat diklik. --- */
 .home-cta{
-  position:relative; overflow:hidden; display:flex; align-items:center; gap:14px;
-  width:100%; text-align:left; padding:14px 16px 14px 14px;
-  border-radius:24px 24px 24px 8px;
+  position:relative; overflow:hidden; display:flex; align-items:center; gap:16px;
+  width:100%; text-align:left; padding:20px 20px 20px 18px;
+  border-radius:26px 26px 26px 10px;
   background:linear-gradient(135deg, var(--primary-soft) 0%, var(--primary) 65%, var(--primary) 100%);
   color:var(--on-primary);
-  box-shadow:0 5px 0 var(--primary-container);
+  box-shadow:0 6px 0 var(--primary-container);
   border:1px solid rgba(255,255,255,0.14);
   margin-bottom:16px;
   transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
 }
 .home-cta:active{
-  transform:translateY(4px);
+  transform:translateY(5px);
   box-shadow:0 1px 0 var(--primary-container);
 }
 /* aksen glow lembut di pojok, ganti ikon raksasa lama -- expressive tanpa nambah tinggi kartu */
 .home-cta::after{
-  content:''; position:absolute; top:-40%; right:-8%; width:110px; height:110px;
+  content:''; position:absolute; top:-40%; right:-8%; width:120px; height:120px;
   background:radial-gradient(circle, rgba(255,255,255,0.20), transparent 70%);
   border-radius:50%; pointer-events:none; z-index:0;
 }
 .home-cta > *:not(.ripple){ position:relative; z-index:1; }
 .home-cta-icon-bg{
-  flex-shrink:0; width:42px; height:42px; opacity:1; color:var(--on-primary);
+  flex-shrink:0; width:52px; height:52px; opacity:1; color:var(--on-primary);
   display:flex; align-items:center; justify-content:center;
-  border-radius:14px 14px 14px 4px;
+  border-radius:16px 16px 16px 6px;
   background:rgba(255,255,255,0.18);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28);
 }
-.home-cta-icon-bg svg{ width:22px; height:22px; display:block; }
+.home-cta-icon-bg svg{ width:26px; height:26px; display:block; }
 .home-cta-text{ min-width:0; flex:1; }
-.home-cta-eyebrow{ display:block; font-size:10.5px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; opacity:0.78; margin-bottom:2px; }
-.home-cta-title{ font-size:16px; font-weight:900; line-height:1.25; letter-spacing:-0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.home-cta-go{ flex-shrink:0; display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:12px 12px 12px 4px; background:rgba(255,255,255,0.2); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
-.home-cta-go svg{ width:17px; height:17px; }
+.home-cta-eyebrow{ display:block; font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; opacity:0.78; margin-bottom:4px; }
+.home-cta-title{ font-size:18px; font-weight:900; line-height:1.28; letter-spacing:-0.2px; margin-bottom:4px; }
+.home-cta-sub{ font-size:12.5px; font-weight:500; opacity:0.85; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-cta-go{ flex-shrink:0; display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:13px 13px 13px 4px; background:rgba(255,255,255,0.2); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
+.home-cta-go svg{ width:19px; height:19px; }
 
 /* --- Bento grid: Pencapaian (lebar penuh) di atas, Survival + Streak berdampingan di bawah --- */
-.home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px; }
+.home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
 .home-bento > div:first-child{ grid-column:1 / -1; }
 .home-bento .home-card,
 .home-bento .survival-card,
