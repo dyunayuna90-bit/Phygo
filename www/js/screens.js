@@ -71,11 +71,12 @@ function renderHomeContinueCard(){
   }
 
   holder.innerHTML = `
-    <button class="home-cta ripple-host" id="homeCtaBtn" title="${sub}">
+    <button class="home-cta ripple-host" id="homeCtaBtn">
       <span class="home-cta-icon-bg">${svgIcon('speed')}</span>
       <span class="home-cta-text">
         <span class="home-cta-eyebrow">${eyebrow}</span>
         <h3 class="home-cta-title">${title}</h3>
+        <p class="home-cta-sub">${sub}</p>
       </span>
       <span class="home-cta-go">${svgIcon('chevronRight')}</span>
     </button>
