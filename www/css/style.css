@@ -18,7 +18,7 @@
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.25);
 }
 
-/* ===== Tema Alternatif Ã¢â‚¬â€ Pink Pastel & Coklat (tetap dark mode) ===== */
+/* ===== Tema Alternatif ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Pink Pastel & Coklat (tetap dark mode) ===== */
 html[data-theme="pink"]{
   --bg:#170F14; --surface:#1E1319; --surface-c:#271A21; --surface-c-high:#35232C;
   --on-surface:#F3E6EC; --on-surface-var:#D3B8C6; --outline:#A88696; --outline-var:#4A3038;
@@ -91,7 +91,7 @@ input{ font-family:inherit; }
 .home-card-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
 
-/* --- Kartu CTA utama (adaptif) — tombol pressable 3D, senada dgn Mode
+/* --- Kartu CTA utama (adaptif) â€” tombol pressable 3D, senada dgn Mode
    Survival & tombol Lanjutkan: bayangan solid di bawah yang "menipis"
    saat ditekan, bukan cuma scale. Ripple sengaja dikecualikan dari aturan
    posisi supaya tidak ikut menambah tinggi kartu saat diklik. --- */
@@ -110,7 +110,7 @@ input{ font-family:inherit; }
   transform:translateY(6px);
   box-shadow:0 1px 0 var(--primary-container);
 }
-.home-cta-icon-bg{ position:absolute; top:-4px; right:-60px; width:130px; height:130px; opacity:0.16; color:var(--on-primary); z-index:0; }
+.home-cta-icon-bg{ position:absolute; top:-4px; right:-32px; width:130px; height:130px; opacity:0.16; color:var(--on-primary); z-index:0; }
 .home-cta-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-cta > *:not(.ripple){ position:relative; z-index:1; }
 .home-cta-eyebrow{ font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; opacity:0.8; margin-bottom:8px; }
@@ -489,7 +489,7 @@ input{ font-family:inherit; }
 .quiz-fb-title { font-size: 22px; font-weight: 900; display:flex; align-items:center; gap:12px; }
 .quiz-fb-desc { font-size: 15px; line-height: 1.6; opacity: 0.9; }
 
-/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) Ã¢â‚¬â€ bisa digeser, ga kepotong */
+/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â bisa digeser, ga kepotong */
 .quiz-fb-desc .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
@@ -512,7 +512,7 @@ input{ font-family:inherit; }
 #survLives .heart-icon.lost { color: var(--surface-c-high); }
 .quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-/* Pill nyawa mengambang Ã¢â‚¬â€ absolute relatif ke .wizard-shell (bukan di dalam
+/* Pill nyawa mengambang ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â absolute relatif ke .wizard-shell (bukan di dalam
    scroll-pane), nempel di pojok kanan atas, jadi tetap kelihatan mau di-scroll
    atau tidak. */
 .quiz-lives-float { position: absolute; top: calc(52px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
@@ -536,7 +536,7 @@ input{ font-family:inherit; }
 
 
 
-/* ===== Safe-area (notch/status-bar/nav-bar) Ã¢â‚¬â€ WAJIB buat mode fullscreen immersive ===== */
+/* ===== Safe-area (notch/status-bar/nav-bar) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â WAJIB buat mode fullscreen immersive ===== */
 #app{
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
@@ -587,7 +587,7 @@ input{ font-family:inherit; }
 #survOpts{ padding:0 20px; }
 #survOpts.frozen{ pointer-events:none; opacity:0.92; }
 
-/* ===== Mode Survival — Opsi Jawaban Pill-shape + Morphing ===== */
+/* ===== Mode Survival â€” Opsi Jawaban Pill-shape + Morphing ===== */
 #survOpts .quiz-opt{
   background:#364140;
   border:2px solid transparent;
@@ -623,7 +623,7 @@ input{ font-family:inherit; }
 .surv-go-correction{ font-size:13.5px; color:var(--on-surface-var); margin-bottom:22px; line-height:1.6; font-weight:500; }
 .surv-go-actions{ display:flex; flex-direction:column; gap:10px; }
 
-/* ===== Halaman "Tentang Aplikasi" Ã¢â‚¬â€ full page, bukan pop-up ===== */
+/* ===== Halaman "Tentang Aplikasi" ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â full page, bukan pop-up ===== */
 #screen-appinfo{ position:relative; }
 .appinfo-topbar{ flex-shrink:0; display:flex; align-items:center; gap:12px; padding:0 4px 14px; }
 .appinfo-back{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--surface-c-high); color:var(--on-surface); box-shadow: var(--shadow-sm); transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -652,7 +652,7 @@ input{ font-family:inherit; }
 .appinfo-footer{ text-align:center; font-size:12.5px; color:var(--on-surface-var); opacity:0.7; padding:36px 20px 20px; }
 
 /* ===================================================================
-   ===== Halaman "Sejarah" — Tumpukan Kartu Arsip + Wizard Baca ======
+   ===== Halaman "Sejarah" â€” Tumpukan Kartu Arsip + Wizard Baca ======
    =================================================================== */
 
 .history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:36px auto 0; padding-bottom:28px; }
@@ -660,7 +660,7 @@ input{ font-family:inherit; }
 .history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:var(--surface-c-high); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
 /* Warna solid (bukan gradient) yang diturunkan langsung dari warna tema aktif
    (--primary), jadi otomatis ikut berubah saat tema aplikasi diganti dan tetap
-   senada satu sama lain — cuma beda tingkat kepekatan per level. */
+   senada satu sama lain â€” cuma beda tingkat kepekatan per level. */
 .history-card[data-level="1"]{ background:color-mix(in srgb, var(--primary) 8%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 22%, transparent); }
 .history-card[data-level="2"]{ background:color-mix(in srgb, var(--primary) 20%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 34%, transparent); }
 .history-card[data-level="3"]{ background:color-mix(in srgb, var(--primary) 34%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 46%, transparent); }
