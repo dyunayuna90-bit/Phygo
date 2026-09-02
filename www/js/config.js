@@ -39,7 +39,7 @@ const LEVELS = {
   2:{
     eyebrow:'Level 2 — Terus Meningkat', title:'Percepatan Konstan (GLBB)', accent:'lvl-2', icon:'accel',
     materi:[
-      `Mobil tidak langsung melaju di kecepatan tertinggi. Mesin memberikan dorongan secara perlahan dan terus menerus—inilah percepatan. Kecepatan akan terus bertambah setiap detiknya.`,
+      `Mobil tidak langsung melaju di kecepatan tertinggi. Mesin memberikan dorongan secara perlahan dan terus menerusinilah percepatan. Kecepatan akan terus bertambah setiap detiknya.`,
       `Karena semakin lama semakin cepat, jarak yang ditempuh juga akan semakin besar, tidak cuma bertambah secara merata.`
     ],
     analogy:`Ini seperti kamu berlari dengan semakin cepat, sampai akhirnya kamu menyusul temanmu yang larinya santai.`,
@@ -90,7 +90,7 @@ const HISTORY_LEVELS = {
         figure:{ name:'Galileo Galilei', years:'1564–1642', role:'Astronom & Fisikawan Italia' },
         body:[
           `Galileo Galilei mencoba sesuatu yang sederhana namun radikal: menggelindingkan bola di bidang miring yang dipoles sehalus mungkin untuk mengurangi gesekan.`,
-          `Ia mendapati, semakin licin permukaannya, semakin lama bola itu <b>mempertahankan kecepatannya</b> tanpa melambat. Dari sana muncul gagasan baru: gerak dengan kecepatan tetap sebenarnya adalah keadaan "alami" suatu benda — bukan sesuatu yang butuh dorongan terus-menerus seperti kata Aristoteles.`
+          `Ia mendapati, semakin licin permukaannya, semakin lama bola itu <b>mempertahankan kecepatannya</b> tanpa melambat. Dari sana muncul gagasan baru: gerak dengan kecepatan tetap sebenarnya adalah keadaan "alami" suatu benda bukan sesuatu yang butuh dorongan terus-menerus seperti kata Aristoteles.`
         ]
       },
       {
@@ -101,7 +101,7 @@ const HISTORY_LEVELS = {
         figure:{ name:'Isaac Newton', years:'1642–1727', role:'Fisikawan & Matematikawan Inggris' },
         body:[
           `Dalam bukunya <i>Philosophiæ Naturalis Principia Mathematica</i> (1687), Isaac Newton merumuskan gagasan Galileo secara matematis lewat <b>Hukum I Newton</b>: benda akan tetap diam, atau bergerak lurus dengan kecepatan tetap, selama tidak ada gaya total yang bekerja padanya.`,
-          `Sejak saat itu, pandangan Aristoteles yang bertahan ribuan tahun resmi digantikan — dan gerak lurus beraturan (GLB) diakui sebagai konsep dasar fisika gerak.`
+          `Sejak saat itu, pandangan Aristoteles yang bertahan ribuan tahun resmi digantikan dan gerak lurus beraturan (GLB) diakui sebagai konsep dasar fisika gerak.`
         ]
       },
       {
@@ -119,7 +119,7 @@ const HISTORY_LEVELS = {
   },
   2:{
     eyebrow:'Arsip Level 2', title:'Jejak Percepatan Konstan (GLBB)', icon:'accel',
-    summary:'Kisah bagaimana Galileo pertama kali berhasil "mengukur" sesuatu yang terus berubah — kecepatan yang makin lama makin cepat.',
+    summary:'Kisah bagaimana Galileo pertama kali berhasil "mengukur" sesuatu yang terus berubah kecepatan yang makin lama makin cepat.',
     arsip:[
       {
         tag:'Sebelum Abad ke-17',
@@ -127,7 +127,7 @@ const HISTORY_LEVELS = {
         image:'assets/history/level2/level2-01-masalah.webp',
         imageAlt:'Ilustrasi batu menggelinding turun dari bukit',
         body:[
-          `Menjelaskan benda yang bergerak dengan kecepatan tetap saja sudah sulit — apalagi benda yang kecepatannya terus bertambah, seperti batu yang menggelinding turun dari bukit atau buah yang jatuh dari pohon.`,
+          `Menjelaskan benda yang bergerak dengan kecepatan tetap saja sudah sulit apalagi benda yang kecepatannya terus bertambah, seperti batu yang menggelinding turun dari bukit atau buah yang jatuh dari pohon.`,
           `Sebelum ada alat ukur waktu yang presisi, para pemikir kesulitan membuktikan pola apa pun di balik gerak jenis ini.`
         ]
       },
@@ -148,7 +148,7 @@ const HISTORY_LEVELS = {
         image:'assets/history/level2/level2-03-buku.webp',
         imageAlt:'Ilustrasi buku Discorsi e Dimostrazioni Matematiche karya Galileo',
         body:[
-          `Galileo membukukan hasil riset seumur hidupnya dalam <i>Discorsi e Dimostrazioni Matematiche, intorno a due nuove scienze</i> ("Dua Ilmu Baru"), 1638 — memuat penjelasan matematis pertama tentang gerak dipercepat beraturan.`,
+          `Galileo membukukan hasil riset seumur hidupnya dalam <i>Discorsi e Dimostrazioni Matematiche, intorno a due nuove scienze</i> ("Dua Ilmu Baru"), 1638 memuat penjelasan matematis pertama tentang gerak dipercepat beraturan.`,
           `Buku ini ditulis di masa-masa akhir hidupnya, saat ia berada dalam tahanan rumah, namun tetap menjadi salah satu fondasi terpenting fisika modern.`
         ]
       },
@@ -186,7 +186,7 @@ const HISTORY_LEVELS = {
         imageAlt:'Ilustrasi Galileo dengan bola-bola berbeda berat',
         figure:{ name:'Galileo Galilei', years:'1564–1642', role:'Astronom & Fisikawan Italia' },
         body:[
-          `Lewat penalaran logis dan eksperimen bidang miringnya, Galileo menunjukkan bahwa <b>tanpa hambatan udara</b>, semua benda sebenarnya jatuh dengan percepatan yang sama besar — tidak peduli seberapa berat bendanya.`,
+          `Lewat penalaran logis dan eksperimen bidang miringnya, Galileo menunjukkan bahwa <b>tanpa hambatan udara</b>, semua benda sebenarnya jatuh dengan percepatan yang sama besar tidak peduli seberapa berat bendanya.`,
           `Kisah ia menjatuhkan bola dari Menara Pisa memang populer, tapi para sejarawan meyakini pembuktian sesungguhnya lebih banyak berasal dari eksperimen bidang miring yang lebih presisi dan bisa diulang berkali-kali.`
         ]
       },
@@ -210,7 +210,7 @@ const HISTORY_LEVELS = {
         figure:{ name:'David Scott', years:'Misi Apollo 15', role:'Astronot NASA' },
         body:[
           `Astronot David Scott menjatuhkan sebuah palu dan bulu burung secara bersamaan di permukaan Bulan yang hampa udara, disiarkan langsung ke seluruh dunia.`,
-          `Karena tidak ada hambatan udara sama sekali, keduanya menyentuh permukaan Bulan <b>pada saat yang sama persis</b> — membuktikan gagasan Galileo secara nyata, hampir 350 tahun setelah pertama kali diajukan.`
+          `Karena tidak ada hambatan udara sama sekali, keduanya menyentuh permukaan Bulan <b>pada saat yang sama persis</b> membuktikan gagasan Galileo secara nyata, hampir 350 tahun setelah pertama kali diajukan.`
         ]
       }
     ]
