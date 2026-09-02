@@ -8,6 +8,17 @@
   --lvl1:#5FE1E2; --lvl1-c:#063B3C; --lvl1-on-c:#9EF1F1;
   --lvl2:#FFB871; --lvl2-c:#3D2B00; --lvl2-on-c:#FFDDB3;
   --lvl3:#B7C0FF; --lvl3-c:#1A2166; --lvl3-on-c:#DEE0FF;
+
+  /* --- Aksen "api" Mode Survival/Streak: dasarnya oranye (semantik energi),
+     tapi dicampur dikit dengan --primary tema aktif via color-mix supaya
+     selalu terasa nyambung ke tema apa pun (teal/pink/coklat), bukan cuma
+     nempel begitu saja. --- */
+  --fire-1: color-mix(in srgb, var(--primary) 22%, #FFAB57);
+  --fire-2: color-mix(in srgb, var(--primary) 14%, #FF7E22);
+  --fire-3: color-mix(in srgb, var(--primary) 10%, #FF6A1A);
+  --fire-shadow: color-mix(in srgb, var(--primary-container) 35%, #C4530A);
+  --fire-c: color-mix(in srgb, var(--primary-container) 30%, #3D2B00);
+  --fire-on-c: color-mix(in srgb, var(--primary) 18%, #FFDDB3);
   
   --r-xl:32px; --r-l:24px; --r-m:16px; --r-s:12px; --r-pill:999px;
   --font: 'Roboto Variable', system-ui, -apple-system, sans-serif;
@@ -158,13 +169,13 @@ input{ font-family:inherit; }
 .streak-card{
   padding:18px 18px 16px; text-align:center;
   border-radius:24px 24px 24px 10px;
-  background:linear-gradient(160deg, var(--lvl2-c), var(--surface-c));
+  background:linear-gradient(160deg, var(--fire-c), var(--surface-c));
   box-shadow:0 10px 22px -12px rgba(0,0,0,0.45), var(--shadow-sm);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-.streak-icon-box{ width:38px; height:38px; border-radius:12px; background:linear-gradient(150deg, var(--lvl2), #C46A1E); color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,0.25); }
+.streak-icon-box{ width:38px; height:38px; border-radius:12px; background:linear-gradient(150deg, var(--fire-1), var(--fire-3)); color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,0.25); }
 .streak-icon-box svg{ width:20px; height:20px; }
-.streak-val{ font-family:var(--font-mono); font-size:26px; font-weight:900; color:var(--lvl2-on-c); line-height:1; margin-bottom:2px; }
+.streak-val{ font-family:var(--font-mono); font-size:26px; font-weight:900; color:var(--fire-on-c); line-height:1; margin-bottom:2px; }
 .streak-label{ font-size:11px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:var(--on-surface-var); margin-bottom:6px; }
 .streak-msg{ font-size:11.5px; color:var(--on-surface-var); line-height:1.35; }
 
@@ -546,14 +557,14 @@ input{ font-family:inherit; }
   padding:20px;
   display:flex; align-items:center; gap:16px;
   cursor:pointer; text-align:left;
-  background: linear-gradient(150deg, #FFA24C 0%, #FF7A1A 55%, #FF6A00 100%);
-  box-shadow: 0 9px 0 #C4530A, inset 0 1px 0 rgba(255,255,255,0.3);
+  background: linear-gradient(150deg, var(--fire-1) 0%, var(--fire-2) 55%, var(--fire-3) 100%);
+  box-shadow: 0 9px 0 var(--fire-shadow), inset 0 1px 0 rgba(255,255,255,0.3);
   border: 1px solid rgba(255,255,255,0.16);
   transition: transform .16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .16s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .survival-card:active{
   transform: translateY(7px);
-  box-shadow: 0 2px 0 #C4530A, inset 0 1px 0 rgba(255,255,255,0.2);
+  box-shadow: 0 2px 0 var(--fire-shadow), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 .survival-card .home-card-icon-bg{ color:#fff; opacity:0.14; }
 .survival-icon-box{ width:52px; height:52px; border-radius:16px; background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.22); }
