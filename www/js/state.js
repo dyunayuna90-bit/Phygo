@@ -70,3 +70,31 @@ function bumpQuoteIndex(){
   try{ localStorage.setItem(QUOTE_CTR_KEY, String(n)); }catch(e){}
   return n;
 }
+
+// ===== Streak Belajar — menghitung hari berturut-turut user membuka app =====
+// Ditampilkan di header & kartu "Streak" pada Home. Naik +1 kalau hari ini
+// beda dari terakhir kali dibuka DAN kemarin masih tercatat aktif; reset ke 1
+// kalau ada hari yang terlewat, supaya datanya selalu jujur/akurat.
+const STREAK_KEY = 'phygo_streak';
+function todayStr(){
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+function getStreakData(){
+  try{
+    const raw = localStorage.getItem(STREAK_KEY);
+    const d = raw ? JSON.parse(raw) : null;
+    return (d && typeof d.count === 'number') ? d : {count:0, lastDate:null};
+  }catch(e){ return {count:0, lastDate:null}; }
+}
+function bumpStreak(){
+  const t = todayStr();
+  const data = getStreakData();
+  if(data.lastDate === t) return data.count; // sudah dihitung hari ini
+  const y = new Date(); y.setDate(y.getDate()-1);
+  const yStr = `${y.getFullYear()}-${String(y.getMonth()+1).padStart(2,'0')}-${String(y.getDate()).padStart(2,'0')}`;
+  const count = (data.lastDate === yStr) ? data.count + 1 : 1;
+  try{ localStorage.setItem(STREAK_KEY, JSON.stringify({count, lastDate:t})); }catch(e){}
+  return count;
+}
+function getStreakCount(){ return getStreakData().count; }
