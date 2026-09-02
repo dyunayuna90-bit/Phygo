@@ -110,7 +110,7 @@ input{ font-family:inherit; }
   transform:translateY(6px);
   box-shadow:0 1px 0 var(--primary-container);
 }
-.home-cta-icon-bg{ position:absolute; top:-4px; right:-32px; width:130px; height:130px; opacity:0.16; color:var(--on-primary); z-index:0; }
+.home-cta-icon-bg{ position:absolute; top:-4px; right:-60px; width:130px; height:130px; opacity:0.16; color:var(--on-primary); z-index:0; }
 .home-cta-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-cta > *:not(.ripple){ position:relative; z-index:1; }
 .home-cta-eyebrow{ font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; opacity:0.8; margin-bottom:8px; }
