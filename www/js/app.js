@@ -25,10 +25,6 @@ document.querySelectorAll('.bn-item').forEach(btn=>{
   btn.addEventListener('click', ()=> navigate(btn.dataset.screen, {}, true));
 });
 
-// ===== Tombol "Lanjutkan Main" (mengambang) di Home =====
-document.querySelector('#btnContinuePlay .bcf-icon').innerHTML = svgIcon('play');
-document.getElementById('btnContinuePlay').addEventListener('click', handleContinuePlay);
-
 // ===== Ikon & aksi statis di Pengaturan =====
 document.getElementById('btnExportData').querySelector('.settings-row-icon').innerHTML = svgIcon('download');
 document.getElementById('btnImportData').querySelector('.settings-row-icon').innerHTML = svgIcon('upload');
