@@ -66,7 +66,6 @@ input{ font-family:inherit; }
 @keyframes rippleAnim{ to{ transform:scale(3); opacity:0; } }
 
 #screen-home{ position:relative; }
-#screen-home .scroll-pane{ padding-bottom:96px; }
 
 /* ===== Halaman "Level" & "Pengaturan" -- header seragam ===== */
 .level-header{ text-align:center; padding:20px 20px 24px; }
@@ -80,15 +79,11 @@ input{ font-family:inherit; }
    dan tanpa emoji -- semua ikon pakai svgIcon().
    =================================================================== */
 
-/* --- Header: sapaan dinamis + lencana streak --- */
-.home-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:6px 4px 22px; }
+/* --- Header: sapaan dinamis + tanggal --- */
+.home-header{ padding:6px 4px 22px; }
 .home-header-text{ min-width:0; }
-.home-eyebrow{ display:block; font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--primary); margin-bottom:6px; }
 .home-header-text h1{ font-size:26px; font-weight:900; color:var(--on-surface); letter-spacing:-0.5px; line-height:1.2; margin-bottom:4px; }
-.home-header-text p{ font-size:13.5px; color:var(--on-surface-var); line-height:1.4; max-width:260px; }
-.home-streak-badge{ flex-shrink:0; display:flex; align-items:center; gap:7px; background:linear-gradient(150deg, var(--lvl2), var(--lvl2-c)); color:var(--lvl2-on-c); font-family:var(--font-mono); font-weight:800; font-size:16px; padding:9px 16px 9px 12px; border-radius:var(--r-pill); box-shadow:0 6px 16px -4px rgba(0,0,0,0.35); margin-top:2px; }
-.hsb-icon{ width:18px; height:18px; display:flex; align-items:center; justify-content:center; }
-.hsb-icon svg{ width:18px; height:18px; }
+.home-header-text p{ font-size:13.5px; color:var(--on-surface-var); line-height:1.4; }
 
 /* --- Kartu dasar bersama (Pencapaian, Kutipan) --- */
 .home-card{ position:relative; overflow:hidden; background:linear-gradient(150deg, var(--surface-c-high), var(--surface-c)); width:100%; margin:0 0 16px; }
@@ -96,24 +91,31 @@ input{ font-family:inherit; }
 .home-card-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
 
-/* --- Kartu CTA utama (adaptif) --- */
+/* --- Kartu CTA utama (adaptif) — tombol pressable 3D, senada dgn Mode
+   Survival & tombol Lanjutkan: bayangan solid di bawah yang "menipis"
+   saat ditekan, bukan cuma scale. Ripple sengaja dikecualikan dari aturan
+   posisi supaya tidak ikut menambah tinggi kartu saat diklik. --- */
 .home-cta{
   position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:flex-start;
-  width:100%; text-align:left; padding:24px 26px 26px;
-  border-radius:30px 30px 30px 10px;
+  width:100%; text-align:left; padding:22px 24px 24px;
+  border-radius:28px 28px 28px 10px;
   background:linear-gradient(135deg, var(--primary-soft) 0%, var(--primary) 65%, var(--primary) 100%);
   color:var(--on-primary);
-  box-shadow:0 14px 28px -10px color-mix(in srgb, var(--primary) 55%, transparent), var(--shadow-md);
+  box-shadow:0 7px 0 var(--primary-container), 0 16px 26px -12px color-mix(in srgb, var(--primary) 55%, transparent);
+  border:1px solid rgba(255,255,255,0.14);
   margin-bottom:16px;
-  transition: transform .18s cubic-bezier(0.34,1.56,0.64,1), box-shadow .18s ease;
+  transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
 }
-.home-cta:active{ transform:scale(.98); box-shadow:0 8px 18px -8px color-mix(in srgb, var(--primary) 55%, transparent); }
+.home-cta:active{
+  transform:translateY(6px);
+  box-shadow:0 1px 0 var(--primary-container), 0 6px 14px -10px color-mix(in srgb, var(--primary) 55%, transparent);
+}
 .home-cta-icon-bg{ position:absolute; top:-22px; right:-22px; width:130px; height:130px; opacity:0.16; color:var(--on-primary); z-index:0; }
 .home-cta-icon-bg svg{ width:100%; height:100%; display:block; }
-.home-cta > *{ position:relative; z-index:1; }
+.home-cta > *:not(.ripple){ position:relative; z-index:1; }
 .home-cta-eyebrow{ font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; opacity:0.8; margin-bottom:8px; }
-.home-cta-title{ font-size:21px; font-weight:900; line-height:1.3; letter-spacing:-0.3px; margin-bottom:6px; max-width:88%; }
-.home-cta-sub{ font-size:13.5px; font-weight:500; opacity:0.88; line-height:1.4; max-width:86%; margin-bottom:18px; }
+.home-cta-title{ font-size:20px; font-weight:900; line-height:1.3; letter-spacing:-0.3px; margin-bottom:6px; max-width:88%; }
+.home-cta-sub{ font-size:13.5px; font-weight:500; opacity:0.88; line-height:1.4; max-width:86%; margin-bottom:16px; }
 .home-cta-go{ display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:14px 14px 14px 4px; background:rgba(255,255,255,0.22); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
 .home-cta-go svg{ width:20px; height:20px; }
 
@@ -161,27 +163,6 @@ input{ font-family:inherit; }
 .home-section-block{ margin:22px 0 6px; }
 .home-section-title{ font-size:14px; font-weight:800; letter-spacing:0.3px; color:var(--on-surface); margin:0 2px 12px; }
 
-/* --- Grid Aksi Cepat --- */
-.home-quick-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; }
-.quick-tile{
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-  padding:18px 8px 14px; text-align:center;
-  border-radius:20px 20px 20px 8px;
-  transition: transform .18s cubic-bezier(0.34,1.56,0.64,1);
-}
-.quick-tile:nth-child(2){ border-radius:20px 20px 8px 20px; }
-.quick-tile:nth-child(3){ border-radius:8px 20px 20px 20px; }
-.quick-tile:active{ transform:scale(.94); }
-.quick-tile-icon{ width:38px; height:38px; border-radius:13px; display:flex; align-items:center; justify-content:center; }
-.quick-tile-icon svg{ width:20px; height:20px; }
-.quick-tile-label{ font-size:11.5px; font-weight:800; line-height:1.25; }
-.quick-tile.qt-a{ background:var(--primary-container); color:var(--on-primary-container); }
-.quick-tile.qt-a .quick-tile-icon{ background:color-mix(in srgb, var(--on-primary-container) 16%, transparent); }
-.quick-tile.qt-b{ background:var(--lvl3-c); color:var(--lvl3-on-c); }
-.quick-tile.qt-b .quick-tile-icon{ background:color-mix(in srgb, var(--lvl3-on-c) 16%, transparent); }
-.quick-tile.qt-c{ background:var(--secondary-container); color:var(--on-secondary-container); }
-.quick-tile.qt-c .quick-tile-icon{ background:color-mix(in srgb, var(--on-secondary-container) 16%, transparent); }
-
 /* --- Teaser Arsip Sejarah: scroll horizontal ala Pinterest --- */
 .home-history-scroll{ display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x proximity; padding:2px 2px 8px; scrollbar-width:none; }
 .home-history-scroll::-webkit-scrollbar{ display:none; }
@@ -199,43 +180,46 @@ input{ font-family:inherit; }
 .htc-eyebrow{ font-size:10.5px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--primary); }
 .htc-title{ font-size:13px; font-weight:700; color:var(--on-surface); line-height:1.35; }
 
-/* --- Kartu Kutipan Fisika (Home) -- menempel langsung di latar, tanpa kotak --- */
+/* --- Kartu Kutipan Fisika (Home) -- kotak ringkas & rapi, tidak menempel
+   langsung ke latar supaya tetap "nyambung" secara visual dgn kartu lain --- */
 .quote-card{
   position:relative;
-  background:none; box-shadow:none; border:none;
-  padding:14px 10px 6px;
+  background:linear-gradient(150deg, var(--surface-c-high), var(--surface-c));
+  box-shadow:0 8px 18px -12px rgba(0,0,0,0.4), var(--shadow-sm);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:22px 22px 22px 8px;
+  padding:18px 20px;
   text-align:center;
-  transform:none;
+  margin:0 0 18px;
 }
 .quote-card .home-card-icon-bg{ display:none; }
-.quote-card .quote-mark{ width:30px; height:30px; margin:0 auto 12px; color:var(--primary); opacity:0.55; }
+.quote-card .quote-mark{ width:20px; height:20px; margin:0 auto 8px; color:var(--primary); opacity:0.6; }
 .quote-card .quote-text{
-  font-size:20px; line-height:1.5;
-  font-weight:800; font-style:italic;
-  letter-spacing:-0.2px;
+  font-size:14.5px; line-height:1.45;
+  font-weight:700; font-style:italic;
+  letter-spacing:-0.1px;
   text-align:center;
-  margin-bottom:16px;
-  background:linear-gradient(135deg, var(--on-surface) 30%, var(--primary) 120%);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  text-shadow:none;
+  margin-bottom:10px;
+  color:var(--on-surface);
 }
 .quote-card .quote-by{
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size:10.5px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase;
   color:var(--on-surface-var); text-align:center;
 }
 .quote-card .quote-by::before, .quote-card .quote-by::after{
-  content:''; display:block; width:20px; height:1px;
+  content:''; display:block; width:14px; height:1px;
   background:linear-gradient(90deg, transparent, var(--outline-var));
 }
 .quote-card .quote-by::after{ background:linear-gradient(90deg, var(--outline-var), transparent); }
 
-/* ===== Tombol mengambang "Lanjutkan" -- hanya tampil di halaman Home ===== */
-.btn-continue-float{ position:absolute; right:16px; bottom:16px; z-index:40; display:inline-flex; align-items:center; gap:10px; padding:15px 22px 15px 18px; border-radius:var(--r-pill); background:linear-gradient(to bottom, var(--primary), var(--primary-soft)); color:var(--on-primary); font-size:15px; font-weight:800; letter-spacing:0.2px; box-shadow: 0 8px 0 var(--primary-container), var(--shadow-lg); transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.btn-continue-float:active{ transform:translateY(4px); box-shadow: 0 3px 0 var(--primary-container), var(--shadow-sm); }
-.btn-continue-float .bcf-icon{ width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.btn-continue-float .bcf-icon svg{ width:22px; height:22px; }
-.btn-continue-float .bcf-label{ white-space:nowrap; }
+/* --- Wordmark penutup halaman Home --- */
+.home-footer-mark{
+  text-align:center;
+  font-size:12px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+  color:var(--on-surface-var); opacity:0.45;
+  padding:4px 0 10px;
+}
 
 .journey-map { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 85px; padding: 40px 0 120px; position: relative; z-index: 1; perspective: 1200px; }
 .j-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
