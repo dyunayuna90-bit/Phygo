@@ -28,6 +28,9 @@ const hwEls = {
 const app = {
   completed: new Set(JSON.parse(localStorage.getItem('phygo_completed') || '[]')),
   justUnlockedLevel: null,
+  // Tab dashboard terakhir (home/level/history/settings) yang aktif — dipakai
+  // router.js & screens.js supaya keluar dari mode belajar balik ke tab asal.
+  activeTab: 'home',
   params: {}, attempts: {1:0,2:0,3:0}, calc: {}, calcChain: {1:{},2:{},3:{}}, locked: {}, running: false,
   // Urutan tumpukan kartu arsip di halaman Sejarah (index 0 = kartu paling
   // depan). `swipeCount` dipakai untuk menentukan kapan tombol "Mundur" tampil.
