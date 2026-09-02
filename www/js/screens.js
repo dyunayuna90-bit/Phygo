@@ -73,6 +73,9 @@ function renderHomeContinueCard(){
 
   holder.innerHTML = `
     <button class="home-cta ripple-host" id="homeCtaBtn">
+      <div class="home-cta-illustration-wrap">
+        <img class="home-cta-illustration" src="assets/home/mascot-belajar.png" alt="">
+      </div>
       <div class="home-cta-icon-bg">${svgIcon('speed')}</div>
       <span class="home-cta-eyebrow">${eyebrow}</span>
       <h3 class="home-cta-title">${title}</h3>
