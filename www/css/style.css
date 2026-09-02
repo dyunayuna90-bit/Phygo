@@ -18,7 +18,7 @@
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.25);
 }
 
-/* ===== Tema Alternatif ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Pink Pastel & Coklat (tetap dark mode) ===== */
+/* ===== Tema Alternatif ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Pink Pastel & Coklat (tetap dark mode) ===== */
 html[data-theme="pink"]{
   --bg:#170F14; --surface:#1E1319; --surface-c:#271A21; --surface-c-high:#35232C;
   --on-surface:#F3E6EC; --on-surface-var:#D3B8C6; --outline:#A88696; --outline-var:#4A3038;
@@ -91,33 +91,45 @@ input{ font-family:inherit; }
 .home-card-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
 
-/* --- Kartu CTA utama (adaptif) Ã¢â‚¬â€ tombol pressable 3D, senada dgn Mode
+/* --- Kartu CTA utama (adaptif) â€” tombol pressable 3D, senada dgn Mode
    Survival & tombol Lanjutkan: bayangan solid di bawah yang "menipis"
    saat ditekan, bukan cuma scale. Ripple sengaja dikecualikan dari aturan
    posisi supaya tidak ikut menambah tinggi kartu saat diklik. --- */
 .home-cta{
-  position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:flex-start;
-  width:100%; text-align:left; padding:22px 24px 24px;
-  border-radius:28px 28px 28px 10px;
+  position:relative; overflow:hidden; display:flex; align-items:center; gap:14px;
+  width:100%; text-align:left; padding:14px 16px 14px 14px;
+  border-radius:24px 24px 24px 8px;
   background:linear-gradient(135deg, var(--primary-soft) 0%, var(--primary) 65%, var(--primary) 100%);
   color:var(--on-primary);
-  box-shadow:0 7px 0 var(--primary-container);
+  box-shadow:0 5px 0 var(--primary-container);
   border:1px solid rgba(255,255,255,0.14);
   margin-bottom:16px;
   transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
 }
 .home-cta:active{
-  transform:translateY(6px);
+  transform:translateY(4px);
   box-shadow:0 1px 0 var(--primary-container);
 }
-.home-cta-icon-bg{ position:absolute; top:-4px; right:-32px; width:130px; height:130px; opacity:0.16; color:var(--on-primary); z-index:0; }
-.home-cta-icon-bg svg{ width:100%; height:100%; display:block; }
+/* aksen glow lembut di pojok, ganti ikon raksasa lama -- expressive tanpa nambah tinggi kartu */
+.home-cta::after{
+  content:''; position:absolute; top:-40%; right:-8%; width:110px; height:110px;
+  background:radial-gradient(circle, rgba(255,255,255,0.20), transparent 70%);
+  border-radius:50%; pointer-events:none; z-index:0;
+}
 .home-cta > *:not(.ripple){ position:relative; z-index:1; }
-.home-cta-eyebrow{ font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; opacity:0.8; margin-bottom:8px; }
-.home-cta-title{ font-size:20px; font-weight:900; line-height:1.3; letter-spacing:-0.3px; margin-bottom:6px; max-width:88%; }
-.home-cta-sub{ font-size:13.5px; font-weight:500; opacity:0.88; line-height:1.4; max-width:86%; margin-bottom:16px; }
-.home-cta-go{ display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:14px 14px 14px 4px; background:rgba(255,255,255,0.22); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
-.home-cta-go svg{ width:20px; height:20px; }
+.home-cta-icon-bg{
+  flex-shrink:0; width:42px; height:42px; opacity:1; color:var(--on-primary);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:14px 14px 14px 4px;
+  background:rgba(255,255,255,0.18);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28);
+}
+.home-cta-icon-bg svg{ width:22px; height:22px; display:block; }
+.home-cta-text{ min-width:0; flex:1; }
+.home-cta-eyebrow{ display:block; font-size:10.5px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; opacity:0.78; margin-bottom:2px; }
+.home-cta-title{ font-size:16px; font-weight:900; line-height:1.25; letter-spacing:-0.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-cta-go{ flex-shrink:0; display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:12px 12px 12px 4px; background:rgba(255,255,255,0.2); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
+.home-cta-go svg{ width:17px; height:17px; }
 
 /* --- Bento grid: Pencapaian (lebar penuh) di atas, Survival + Streak berdampingan di bawah --- */
 .home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px; }
@@ -159,26 +171,9 @@ input{ font-family:inherit; }
 .home-bento .survival-card{ flex-direction:column; align-items:flex-start; justify-content:flex-end; padding:16px 16px 14px; border-radius:24px 24px 10px 24px; gap:8px; }
 .home-bento .survival-badge{ align-self:flex-start; }
 
-/* --- Judul seksi (Aksi Cepat, Arsip Sejarah) --- */
+/* --- Judul seksi (mis. Aksi Cepat) --- */
 .home-section-block{ margin:22px 0 6px; }
 .home-section-title{ font-size:14px; font-weight:800; letter-spacing:0.3px; color:var(--on-surface); margin:0 2px 12px; }
-
-/* --- Teaser Arsip Sejarah: scroll horizontal ala Pinterest --- */
-.home-history-scroll{ display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x proximity; padding:2px 2px 8px; scrollbar-width:none; }
-.home-history-scroll::-webkit-scrollbar{ display:none; }
-.history-teaser-card{
-  flex:0 0 auto; scroll-snap-align:start; width:158px; text-align:left; padding:16px;
-  border-radius:22px 22px 22px 8px;
-  background:linear-gradient(160deg, var(--surface-c-high), var(--surface-c));
-  box-shadow:0 8px 18px -10px rgba(0,0,0,0.4), var(--shadow-sm);
-  display:flex; flex-direction:column; gap:10px;
-  transition: transform .18s cubic-bezier(0.34,1.56,0.64,1);
-}
-.history-teaser-card:active{ transform:scale(.96); }
-.htc-icon{ width:36px; height:36px; border-radius:12px; background:var(--primary-container); color:var(--on-primary-container); display:flex; align-items:center; justify-content:center; }
-.htc-icon svg{ width:19px; height:19px; }
-.htc-eyebrow{ font-size:10.5px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase; color:var(--primary); }
-.htc-title{ font-size:13px; font-weight:700; color:var(--on-surface); line-height:1.35; }
 
 /* --- Kartu Kutipan Fisika (Home) -- kotak ringkas & rapi, tidak menempel
    langsung ke latar supaya tetap "nyambung" secara visual dgn kartu lain --- */
@@ -489,7 +484,7 @@ input{ font-family:inherit; }
 .quiz-fb-title { font-size: 22px; font-weight: 900; display:flex; align-items:center; gap:12px; }
 .quiz-fb-desc { font-size: 15px; line-height: 1.6; opacity: 0.9; }
 
-/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â bisa digeser, ga kepotong */
+/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â bisa digeser, ga kepotong */
 .quiz-fb-desc .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
@@ -512,7 +507,7 @@ input{ font-family:inherit; }
 #survLives .heart-icon.lost { color: var(--surface-c-high); }
 .quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-/* Pill nyawa mengambang ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â absolute relatif ke .wizard-shell (bukan di dalam
+/* Pill nyawa mengambang ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â absolute relatif ke .wizard-shell (bukan di dalam
    scroll-pane), nempel di pojok kanan atas, jadi tetap kelihatan mau di-scroll
    atau tidak. */
 .quiz-lives-float { position: absolute; top: calc(52px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
@@ -536,7 +531,7 @@ input{ font-family:inherit; }
 
 
 
-/* ===== Safe-area (notch/status-bar/nav-bar) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â WAJIB buat mode fullscreen immersive ===== */
+/* ===== Safe-area (notch/status-bar/nav-bar) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â WAJIB buat mode fullscreen immersive ===== */
 #app{
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
@@ -587,7 +582,7 @@ input{ font-family:inherit; }
 #survOpts{ padding:0 20px; }
 #survOpts.frozen{ pointer-events:none; opacity:0.92; }
 
-/* ===== Mode Survival Ã¢â‚¬â€ Opsi Jawaban Pill-shape + Morphing ===== */
+/* ===== Mode Survival â€” Opsi Jawaban Pill-shape + Morphing ===== */
 #survOpts .quiz-opt{
   background:var(--surface-c-high);
   border:2px solid transparent;
@@ -623,7 +618,7 @@ input{ font-family:inherit; }
 .surv-go-correction{ font-size:13.5px; color:var(--on-surface-var); margin-bottom:22px; line-height:1.6; font-weight:500; }
 .surv-go-actions{ display:flex; flex-direction:column; gap:10px; }
 
-/* ===== Halaman "Tentang Aplikasi" ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â full page, bukan pop-up ===== */
+/* ===== Halaman "Tentang Aplikasi" ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â full page, bukan pop-up ===== */
 #screen-appinfo{ position:relative; }
 .appinfo-topbar{ flex-shrink:0; display:flex; align-items:center; gap:12px; padding:0 4px 14px; }
 .appinfo-back{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--surface-c-high); color:var(--on-surface); box-shadow: var(--shadow-sm); transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -652,7 +647,7 @@ input{ font-family:inherit; }
 .appinfo-footer{ text-align:center; font-size:12.5px; color:var(--on-surface-var); opacity:0.7; padding:36px 20px 20px; }
 
 /* ===================================================================
-   ===== Halaman "Sejarah" Ã¢â‚¬â€ Tumpukan Kartu Arsip + Wizard Baca ======
+   ===== Halaman "Sejarah" â€” Tumpukan Kartu Arsip + Wizard Baca ======
    =================================================================== */
 
 .history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:36px auto 0; padding-bottom:28px; }
@@ -660,7 +655,7 @@ input{ font-family:inherit; }
 .history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:var(--surface-c-high); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
 /* Warna solid (bukan gradient) yang diturunkan langsung dari warna tema aktif
    (--primary), jadi otomatis ikut berubah saat tema aplikasi diganti dan tetap
-   senada satu sama lain Ã¢â‚¬â€ cuma beda tingkat kepekatan per level. */
+   senada satu sama lain â€” cuma beda tingkat kepekatan per level. */
 .history-card[data-level="1"]{ background:color-mix(in srgb, var(--primary) 8%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 22%, transparent); }
 .history-card[data-level="2"]{ background:color-mix(in srgb, var(--primary) 20%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 34%, transparent); }
 .history-card[data-level="3"]{ background:color-mix(in srgb, var(--primary) 34%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 46%, transparent); }
