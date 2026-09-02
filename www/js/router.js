@@ -23,6 +23,14 @@ function showScreen(name, opts){
     document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
   }
 
+  // FIX: ingat tab dashboard (home/level/history/settings) terakhir yang
+  // aktif SEBELUM user masuk ke mode belajar (materi/simulasi/survival/dll).
+  // Dipakai supaya saat keluar/selesai dari mode belajar itu, user balik ke
+  // tab asalnya (misal: 'level'), bukan selalu dilempar ke 'home'.
+  if(TAB_SCREENS.includes(name)){
+    app.activeTab = name;
+  }
+
   if(name==='home') { renderHome(); requestAnimationFrame(()=>animateIn(document.getElementById('homeScroll'))); }
   else if(name==='level') { renderLevelMap(); requestAnimationFrame(()=>animateIn(document.getElementById('levelScroll'))); }
   else if(name==='history') { renderHistoryDashboard(); requestAnimationFrame(()=>animateIn(document.getElementById('historyScroll'))); }
