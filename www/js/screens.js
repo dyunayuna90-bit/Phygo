@@ -1,16 +1,96 @@
 "use strict";
 
 function renderHome(){
+  renderHomeHeader();
+  renderHomeContinueCard();
   renderHomeAchievement();
-  renderActivityNotif();
   renderSurvivalCard(document.getElementById('homeSurvivalCard'));
+  renderHomeStreakCard();
+  renderHomeQuickGrid();
+  renderHomeHistoryScroll();
   renderHomeQuote();
+}
+
+// ===== Header — sapaan dinamis sesuai jam + lencana streak =====
+function greetingText(){
+  const h = new Date().getHours();
+  if(h < 11) return 'Selamat pagi';
+  if(h < 15) return 'Selamat siang';
+  if(h < 19) return 'Selamat sore';
+  return 'Selamat malam';
+}
+
+function renderHomeHeader(){
+  const holder = document.getElementById('homeHeader');
+  if(!holder) return;
+  const streak = getStreakCount();
+  holder.innerHTML = `
+    <div class="home-header-text">
+      <span class="home-eyebrow">Phygo</span>
+      <h1>${greetingText()}</h1>
+      <p>Yuk lanjutkan petualangan fisikamu hari ini.</p>
+    </div>
+    <div class="home-streak-badge" aria-label="${streak} hari beruntun belajar">
+      <span class="hsb-icon">${svgIcon('fire')}</span>
+      <span class="hsb-val">${streak}</span>
+    </div>
+  `;
+}
+
+// ===== Kartu CTA utama — 1 kartu adaptif yang menggantikan tombol lama +
+// notifikasi lama, jadi selalu ada satu ajakan aksi paling relevan:
+// 1) Ada wizard belum selesai -> ajak lanjutkan persis di step itu.
+// 2) Ada level materi berikutnya -> ajak mulai level itu.
+// 3) Semua level selesai -> ajak coba Mode Survival.
+function renderHomeContinueCard(){
+  const holder = document.getElementById('homeContinueCard');
+  if(!holder) return;
+
+  const lp = getLastProgress();
+  const L = lp ? LEVELS[lp.level] : null;
+
+  let eyebrow, title, sub, action;
+  if(lp && L && !app.completed.has(lp.level)){
+    eyebrow = 'Lanjutkan Belajar';
+    title = `Level ${lp.level}: ${L.title}`;
+    sub = 'Kamu berhenti di tengah jalan — yuk selesaikan sekarang.';
+    action = resumeLastActivity;
+  } else {
+    const nextLevel = [1,2,3].find(id => !app.completed.has(id));
+    if(nextLevel){
+      const NL = LEVELS[nextLevel];
+      eyebrow = app.completed.size === 0 ? 'Mulai Belajar' : 'Level Berikutnya';
+      title = `Level ${nextLevel}: ${NL.title}`;
+      sub = 'Pelajari materinya, lalu uji lewat simulasi interaktif.';
+      action = ()=> navigate('materi', {level:nextLevel});
+    } else {
+      eyebrow = 'Semua Level Tuntas!';
+      title = 'Asah Kecepatanmu di Mode Survival';
+      sub = 'Jawab soal cepat-cepatan dan kejar skor tertinggimu.';
+      action = ()=> navigate('survival', {});
+    }
+  }
+
+  holder.innerHTML = `
+    <button class="home-cta ripple-host" id="homeCtaBtn">
+      <div class="home-cta-icon-bg">${svgIcon('speed')}</div>
+      <span class="home-cta-eyebrow">${eyebrow}</span>
+      <h3 class="home-cta-title">${title}</h3>
+      <p class="home-cta-sub">${sub}</p>
+      <span class="home-cta-go">${svgIcon('chevronRight')}</span>
+    </button>
+  `;
+  document.getElementById('homeCtaBtn').addEventListener('click', action);
 }
 
 function renderHomeAchievement(){
   const holder = document.getElementById('homeAchievementCard');
   if(!holder) return;
   const pct = Math.round((app.completed.size / 3) * 100);
+  const lvlChips = [1,2,3].map(id=>{
+    const done = app.completed.has(id);
+    return `<span class="ach-lvl-chip ${done?'done':''}">${done ? svgIcon('checkSm') : id}</span>`;
+  }).join('');
   holder.innerHTML = `
     <div class="gami-card home-card">
       <div class="home-card-icon-bg">${svgIcon('trophy')}</div>
@@ -21,10 +101,67 @@ function renderHomeAchievement(){
       <div class="g-info">
         <h3>Pencapaian</h3>
         <p>Selesaikan semua tantangan dasar fisika.</p>
+        <div class="ach-lvl-row">${lvlChips}</div>
       </div>
     </div>
   `;
   apply3DTilt(holder.querySelector('.gami-card'), 10, 0);
+}
+
+// ===== Kartu Streak — pendamping kartu Survival di baris bento kedua =====
+function renderHomeStreakCard(){
+  const holder = document.getElementById('homeStreakCard');
+  if(!holder) return;
+  const streak = getStreakCount();
+  const msg = streak <= 1 ? 'Ayo mulai kebiasaan belajar!' : 'Pertahankan terus, jangan putus!';
+  holder.innerHTML = `
+    <div class="streak-card home-card">
+      <div class="home-card-icon-bg">${svgIcon('fire')}</div>
+      <span class="streak-icon-box">${svgIcon('fire')}</span>
+      <div class="streak-val">${streak}</div>
+      <div class="streak-label">Hari Beruntun</div>
+      <p class="streak-msg">${msg}</p>
+    </div>
+  `;
+}
+
+// ===== Grid Aksi Cepat — pintasan ke Level, Sejarah, dan Pengaturan =====
+function renderHomeQuickGrid(){
+  const holder = document.getElementById('homeQuickGrid');
+  if(!holder) return;
+  const tiles = [
+    {icon:'mapRoute', label:'Peta Level', cls:'qt-a', action:()=> navigate('level', {}, true)},
+    {icon:'history', label:'Arsip Sejarah', cls:'qt-b', action:()=> navigate('history', {}, true)},
+    {icon:'gear', label:'Pengaturan', cls:'qt-c', action:()=> navigate('settings', {}, true)},
+  ];
+  holder.innerHTML = tiles.map(t => `
+    <button class="quick-tile ${t.cls} ripple-host">
+      <span class="quick-tile-icon">${svgIcon(t.icon)}</span>
+      <span class="quick-tile-label">${t.label}</span>
+    </button>
+  `).join('');
+  Array.from(holder.children).forEach((btn,i)=> btn.addEventListener('click', tiles[i].action));
+}
+
+// ===== Teaser Arsip Sejarah — scroll horizontal ala Pinterest, tap langsung
+// membuka wizard arsip level terkait (reuse openHistoryWizard) =====
+function renderHomeHistoryScroll(){
+  const holder = document.getElementById('homeHistoryScroll');
+  if(!holder || typeof HISTORY_LEVELS === 'undefined') return;
+  const ids = Object.keys(HISTORY_LEVELS).map(Number).sort((a,b)=>a-b);
+  holder.innerHTML = ids.map(id => {
+    const L = HISTORY_LEVELS[id];
+    return `
+      <button class="history-teaser-card ripple-host" data-level="${id}">
+        <span class="htc-icon">${svgIcon(L.icon)}</span>
+        <span class="htc-eyebrow">${L.eyebrow}</span>
+        <span class="htc-title">${L.title}</span>
+      </button>
+    `;
+  }).join('');
+  Array.from(holder.children).forEach(card=>{
+    card.addEventListener('click', ()=> openHistoryWizard(Number(card.dataset.level), card));
+  });
 }
 
 function renderHomeQuote(){
@@ -399,7 +536,7 @@ function resetAllData(){
     cancelButtonColor:'var(--surface-c-high)'
   }).then(res=>{
     if(!res.isConfirmed) return;
-    ['phygo_completed','phygo_last_progress','phygo_survival_highscore','phygo_quote_ctr'].forEach(k=>{
+    ['phygo_completed','phygo_last_progress','phygo_survival_highscore','phygo_quote_ctr','phygo_streak'].forEach(k=>{
       try{ localStorage.removeItem(k); }catch(e){}
     });
     app.completed = new Set();
@@ -417,6 +554,7 @@ function exportDataJson(){
     lastProgress: getLastProgress(),
     survivalHighScore: survGetHighScore(),
     quoteCtr: getQuoteIndex(),
+    streak: getStreakData(),
     theme: getTheme(),
     exportedAt: new Date().toISOString()
   };
@@ -448,6 +586,7 @@ function importDataJson(file){
 
       if(typeof data.survivalHighScore === 'number') survSaveHighScore(data.survivalHighScore);
       if(typeof data.quoteCtr === 'number'){ try{ localStorage.setItem('phygo_quote_ctr', String(data.quoteCtr)); }catch(err){} }
+      if(data.streak && typeof data.streak.count === 'number'){ try{ localStorage.setItem('phygo_streak', JSON.stringify(data.streak)); }catch(err){} }
       if(data.theme) setTheme(data.theme);
 
       Swal.fire({ icon:'success', title:'Data berhasil dipulihkan', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' })
@@ -472,38 +611,6 @@ function renderAppInfo(){
   const repoLink = document.getElementById('appInfoRepoLink');
   repoLink.href = APP_INFO.repoUrl;
   repoLink.querySelector('.appinfo-repo-icon').innerHTML = svgIcon('code');
-}
-
-// ===== Notifikasi Aktivitas =====
-// Menampilkan kartu pengingat di dashboard kalau ada level yang sudah
-// dimulai (masuk wizard/simulasi) tapi belum diselesaikan — datanya diambil
-// dari getLastProgress() (localStorage), jadi tetap akurat walaupun user
-// baru saja buka ulang app dari kondisi ke-close paksa.
-function renderActivityNotif(){
-  const holder = document.getElementById('activityNotifCard');
-  if(!holder) return;
-
-  const lp = getLastProgress();
-  const L = lp ? LEVELS[lp.level] : null;
-
-  if(!lp || !L || app.completed.has(lp.level)){
-    holder.classList.remove('show');
-    holder.innerHTML = '';
-    return;
-  }
-
-  holder.classList.add('show');
-  holder.innerHTML = `
-    <button class="activity-notif home-card ripple-host" id="activityNotifBtn" aria-label="Lanjutkan Level ${lp.level}: ${L.title}">
-      <div class="home-card-icon-bg">${svgIcon('bell')}</div>
-      <div class="an-icon">${svgIcon(L.icon)}</div>
-      <div class="an-info">
-        <span class="an-eyebrow">Pengingat Belajar</span>
-        <h4>Kamu belum menyelesaikan Level ${lp.level}: ${L.title}</h4>
-      </div>
-    </button>
-  `;
-  document.getElementById('activityNotifBtn').onclick = resumeLastActivity;
 }
 
 // Tombol "Sakti" — satu-satunya pintu masuk untuk melanjutkan progres.
