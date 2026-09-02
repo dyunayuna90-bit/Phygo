@@ -7,6 +7,9 @@ setTheme(getTheme());
 // bumpQuoteIndex() yang dipanggil tiap naik level, di screens.js)
 bumpQuoteIndex();
 
+// Hitung streak belajar (hari berturut-turut app dibuka) — dipakai di header & kartu Home
+bumpStreak();
+
 // Init tombol exit wizard (butuh els dari state.js + svgIcon dari helpers.js + goToDashboard dari screens.js)
 if(els.wizExit){ els.wizExit.innerHTML = svgIcon('doorExit'); els.wizExit.onclick = goToDashboard; }
 
