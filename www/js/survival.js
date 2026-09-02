@@ -5,9 +5,10 @@
 // =====================================================================
 
 const SURV_HS_KEY = 'phygo_survival_highscore';
-const SURV_QUESTION_TIME = 40; // detik per soal
+const SURV_QUESTION_TIME = 60; // detik per soal
 const SURV_PANIC_AT = 5;       // detik tersisa saat efek panik aktif
-const SURV_LIVES_START = 2;
+const SURV_LIVES_START = 3;
+const SURV_ANSWER_DELAY = 1000; // ms — jeda validasi jawaban (morphing + feedback warna)
 
 function survGetHighScore(){ try{ return parseInt(localStorage.getItem(SURV_HS_KEY) || '0', 10) || 0; }catch(e){ return 0; } }
 function survSaveHighScore(v){ try{ localStorage.setItem(SURV_HS_KEY, String(v)); }catch(e){} }
@@ -164,7 +165,7 @@ function survGenerateQuestion(lastTopic){
 }
 
 // ===== State & Alur Permainan =====
-const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, answering: false };
+const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false };
 
 function renderSurvivalCard(holder){
   if(!holder) return;
@@ -253,22 +254,44 @@ function survNextQuestion(){
   survStartTimer();
 }
 
+// Anti-Cheat (Strict): waktu dihitung dari selisih waktu mutlak (Date.now())
+// terhadap sebuah deadline tetap, bukan dengan mengurangi timeLeft per-tick.
+// Dengan begitu, saat user minimize/pindah tab/keluar app lalu kembali,
+// setInterval boleh saja "tertahan" oleh browser, tapi begitu tick berikutnya
+// (atau event visibilitychange) berjalan, sisa waktu akan langsung terpotong
+// secara akurat sesuai waktu nyata yang sudah berlalu — tidak bisa dicurangi.
 function survStartTimer(){
   clearInterval(survState.timerId);
   survState.timeLeft = SURV_QUESTION_TIME;
+  survState.deadline = Date.now() + SURV_QUESTION_TIME * 1000;
   const timerEl = document.getElementById('survTimerVal');
   const fillEl = document.getElementById('survProgressFill');
   survUpdateTimerUI(timerEl, fillEl);
 
-  survState.timerId = setInterval(()=>{
-    survState.timeLeft = Math.max(0, survRound1(survState.timeLeft - 0.1));
-    survUpdateTimerUI(timerEl, fillEl);
-    if(survState.timeLeft <= 0){
-      clearInterval(survState.timerId);
-      survHandleTimeout();
-    }
-  }, 100);
+  survState.timerId = setInterval(()=> survTick(timerEl, fillEl), 100);
 }
+
+function survTick(timerEl, fillEl){
+  if(survState.deadline == null) return;
+  const remain = Math.max(0, survRound1((survState.deadline - Date.now()) / 1000));
+  survState.timeLeft = remain;
+  survUpdateTimerUI(timerEl, fillEl);
+  if(remain <= 0){
+    clearInterval(survState.timerId);
+    survHandleTimeout();
+  }
+}
+
+// Saat aplikasi kembali terlihat (kembali dari minimize/tab lain), langsung
+// hitung ulang sisa waktu dari selisih waktu mutlak, tanpa menunggu tick
+// interval berikutnya — memastikan sisa waktu terpotong akurat seketika itu.
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && survState.timerId != null && !survState.answering){
+    const timerEl = document.getElementById('survTimerVal');
+    const fillEl = document.getElementById('survProgressFill');
+    survTick(timerEl, fillEl);
+  }
+});
 
 function survUpdateTimerUI(timerEl, fillEl){
   if(!timerEl || !fillEl) return;
@@ -298,7 +321,7 @@ function survHandleAnswer(idx){
   const isCorrect = idx === survState.current.correctIdx;
   if(optEl) optEl.classList.add(isCorrect ? 'correct' : 'wrong');
 
-  // Validasi jeda 0,5 detik penuh + anti-spam click
+  // Validasi jeda 1 detik penuh (morphing bentuk + feedback warna) + anti-spam click
   setTimeout(()=>{
     if(isCorrect){
       survState.score++;
@@ -307,7 +330,7 @@ function survHandleAnswer(idx){
     } else {
       survLoseLife();
     }
-  }, 500);
+  }, SURV_ANSWER_DELAY);
 }
 
 function survLoseLife(){
@@ -322,6 +345,7 @@ function survLoseLife(){
 
 function survGameOver(){
   clearInterval(survState.timerId);
+  survState.deadline = null;
   const hs = survGetHighScore();
   if(survState.score > hs) survSaveHighScore(survState.score);
 
