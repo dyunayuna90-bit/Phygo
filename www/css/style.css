@@ -84,221 +84,200 @@ input{ font-family:inherit; }
 .level-header p{ font-size:15px; color:var(--on-surface-var); line-height:1.5; max-width:440px; margin:0 auto; }
 
 /* ===================================================================
-   ===== HOME — Material 3 Expressive, versi "melar" (morphing) =====
-   Aturan keras: TANPA gradient, TANPA blur, TANPA emoji. Semua warna
-   solid/tonal dari palet tema aktif. Setiap kotak & bentuk ikon punya
-   animasi border-radius yang terus "melar" pelan (organik, async lewat
-   delay negatif) plus morph tambahan saat ditekan (squash & bulge ala
-   karet), sesuai bahasa gerak Material 3 Expressive (spring/bounce).
+   ===== HOME -- Material 3 Expressive Dashboard (bold edition) =======
+   Prinsip desain: silhouette membulat asimetris & berbeda tiap kartu
+   (bukan cuma satu sudut kecil seragam), warna tonal berani berlapis,
+   panel dekoratif organik (bukan blur -- radial-gradient solid),
+   tipografi besar/tegas, ukuran kartu variatif (bento), tanpa blur
+   dan tanpa emoji -- semua ikon tetap lewat svgIcon().
    =================================================================== */
 
-@keyframes m3In{
-  0%{ opacity:0; transform:scale(.80) translateY(16px); }
-  100%{ opacity:1; transform:scale(1) translateY(0); }
-}
-/* morph lembut utk kartu besar (persegi asimetris "bernapas") */
-@keyframes m3BreatheA{
-  0%,100%{ border-radius:30px 30px 30px 12px; }
-  50%{ border-radius:36px 20px 36px 18px; }
-}
-@keyframes m3BreatheB{
-  0%,100%{ border-radius:30px 30px 12px 30px; }
-  50%{ border-radius:20px 36px 18px 36px; }
-}
-/* morph kuat ala "blob" utk aksen ikon/dekor bulat */
-@keyframes m3Blob{
-  0%,100%{ border-radius:42% 58% 68% 32% / 45% 40% 60% 55%; }
-  33%{ border-radius:63% 37% 30% 70% / 55% 63% 37% 45%; }
-  66%{ border-radius:34% 66% 55% 45% / 66% 32% 68% 34%; }
-}
-@keyframes m3Pulse{
-  0%,100%{ transform:scale(1); }
-  50%{ transform:scale(1.06); }
-}
-
-/* --- Header: eyebrow tanggal + sapaan besar, dengan blob aksen solid --- */
-.m3-home-header{ position:relative; padding:10px 6px 24px; overflow:visible; isolation:isolate; }
-.m3-home-header::before{
-  content:''; position:absolute; z-index:-1; top:-34px; left:-18px; width:118px; height:118px;
-  background:var(--primary-container); opacity:.55;
-  animation:m3Blob 9s ease-in-out infinite -3s;
-}
-.m3-header-eyebrow{ display:block; font-size:11.5px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--primary); margin-bottom:6px; }
-.m3-home-header h1{ font-size:29px; font-weight:900; color:var(--on-surface); letter-spacing:-0.6px; line-height:1.15; }
-.m3-header-dot{ color:var(--primary); }
-
-/* --- Kartu CTA utama (Hero) — bold, tonal penuh warna primary,
-   morph terus-menerus & "melompat-melar" saat ditekan --- */
-.m3-hero{
-  position:relative; overflow:hidden; isolation:isolate;
-  display:flex; align-items:center; gap:16px; width:100%;
-  text-align:left; padding:22px 20px 22px 18px; margin-bottom:18px;
-  background:var(--primary); color:var(--on-primary);
+/* --- Header: panel tonal + sapaan besar, dekor organik di pojok --- */
+.home-header{ padding:4px 2px 20px; }
+.home-header-inner{
+  position:relative; overflow:hidden;
+  padding:22px 22px 26px;
   border-radius:32px 32px 32px 12px;
-  animation:m3In .5s cubic-bezier(.34,1.56,.64,1) both, m3BreatheA 7s ease-in-out infinite -2.4s;
-  transition:transform .22s cubic-bezier(.34,1.56,.64,1), border-radius .22s cubic-bezier(.34,1.56,.64,1);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--primary) 16%, var(--surface-c-high)) 0%, var(--surface-c) 78%);
+  box-shadow:var(--shadow-sm);
+  border:1px solid rgba(255,255,255,0.05);
 }
-.m3-hero:active{
-  transform:scale(.95,1.06);
-  border-radius:44px 20px 44px 20px;
-  animation-play-state:paused;
+.home-header-inner::before{
+  content:''; position:absolute; top:-34%; right:-16%; width:190px; height:190px;
+  background:radial-gradient(circle, color-mix(in srgb, var(--primary) 30%, transparent) 0%, transparent 72%);
+  border-radius:44% 56% 58% 42% / 46% 40% 60% 54%;
+  pointer-events:none; z-index:0;
 }
-.m3-hero-shape{
-  content:''; position:absolute; z-index:0; top:-50px; right:-32px; width:150px; height:150px;
-  background:var(--on-primary); opacity:.10; pointer-events:none;
-  animation:m3Blob 6s ease-in-out infinite -1s;
+.home-header-inner::after{
+  content:''; position:absolute; bottom:-40%; left:-8%; width:120px; height:120px;
+  background:radial-gradient(circle, color-mix(in srgb, var(--primary) 12%, transparent) 0%, transparent 75%);
+  border-radius:50%; pointer-events:none; z-index:0;
 }
-.m3-hero-icon{
-  position:relative; z-index:1; flex-shrink:0; width:54px; height:54px;
-  display:flex; align-items:center; justify-content:center;
-  background:var(--on-primary); color:var(--primary);
-  border-radius:42% 58% 68% 32% / 45% 40% 60% 55%;
-  animation:m3Blob 5s ease-in-out infinite reverse -1.6s;
+.home-eyebrow{
+  position:relative; z-index:1; display:inline-flex; align-items:center;
+  font-size:11.5px; font-weight:900; letter-spacing:1.4px; text-transform:uppercase;
+  color:var(--on-primary-container); background:var(--primary-container);
+  padding:6px 14px 6px 12px; border-radius:999px 999px 999px 4px; margin-bottom:12px;
+  box-shadow:var(--shadow-sm);
 }
-.m3-hero-icon svg{ width:26px; height:26px; display:block; }
-.m3-hero-body{ position:relative; z-index:1; min-width:0; flex:1; }
-.m3-hero-eyebrow{ display:block; font-size:11px; font-weight:800; letter-spacing:1.3px; text-transform:uppercase; opacity:.8; margin-bottom:4px; }
-.m3-hero-title{ font-size:19px; font-weight:900; line-height:1.25; letter-spacing:-.3px; margin-bottom:4px; }
-.m3-hero-sub{ font-size:12.5px; font-weight:600; opacity:.86; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.m3-hero-arrow{
-  position:relative; z-index:1; flex-shrink:0; width:38px; height:38px;
-  display:flex; align-items:center; justify-content:center;
-  background:var(--on-primary); color:var(--primary);
-  border-radius:63% 37% 30% 70% / 55% 63% 37% 45%;
-  animation:m3Blob 4.5s ease-in-out infinite -2s;
+.home-greeting{
+  position:relative; z-index:1;
+  font-size:29px; font-weight:900; letter-spacing:-0.7px; line-height:1.12;
+  color:var(--on-surface);
+  background:linear-gradient(120deg, var(--on-surface) 42%, var(--primary) 135%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
 }
-.m3-hero-arrow svg{ width:19px; height:19px; }
 
-/* --- Bento grid: Pencapaian (lebar penuh) + Survival & Streak (2 kolom) --- */
-.home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; align-items:stretch; }
+/* --- Kartu dasar bersama (Pencapaian, Kutipan) --- */
+.home-card{ position:relative; overflow:hidden; background:linear-gradient(150deg, var(--surface-c-high), var(--surface-c)); width:100%; margin:0 0 16px; }
+.home-card-icon-bg{ position:absolute; top:50%; right:-18px; transform:translateY(-50%); width:96px; height:96px; opacity:0.06; color:var(--on-surface); pointer-events:none; z-index:0; }
+.home-card-icon-bg svg{ width:100%; height:100%; display:block; }
+.home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
+
+/* --- Kartu CTA utama (adaptif) -- tombol pressable 3D berani, bayangan
+   solid di bawah yang "menipis" saat ditekan, aksen kaca-cahaya di pojok
+   pakai radial-gradient solid (bukan backdrop-blur). --- */
+.home-cta{
+  position:relative; overflow:hidden; display:flex; align-items:center; gap:16px;
+  width:100%; text-align:left; padding:22px 22px 22px 20px;
+  border-radius:36px 36px 36px 14px;
+  background:linear-gradient(135deg, var(--primary-soft) 0%, var(--primary) 62%, var(--primary) 100%);
+  color:var(--on-primary);
+  box-shadow:0 7px 0 var(--primary-container), var(--shadow-lg);
+  border:1px solid rgba(255,255,255,0.16);
+  margin-bottom:18px;
+  transition: transform .18s cubic-bezier(0.34,1.56,0.64,1), box-shadow .18s cubic-bezier(0.34,1.56,0.64,1);
+}
+.home-cta:active{
+  transform:translateY(6px);
+  box-shadow:0 1px 0 var(--primary-container);
+}
+.home-cta-shape{
+  position:absolute; top:-46%; right:-14%; width:160px; height:160px;
+  background:radial-gradient(circle, rgba(255,255,255,0.24), transparent 70%);
+  border-radius:50%; pointer-events:none; z-index:0;
+}
+.home-cta > *:not(.ripple){ position:relative; z-index:1; }
+.home-cta-icon-bg{
+  flex-shrink:0; width:56px; height:56px; color:var(--on-primary);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:20px 20px 20px 8px;
+  background:rgba(255,255,255,0.20);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.30);
+}
+.home-cta-icon-bg svg{ width:28px; height:28px; display:block; }
+.home-cta-text{ min-width:0; flex:1; }
+.home-cta-eyebrow{ display:inline-block; font-size:11px; font-weight:900; letter-spacing:1.3px; text-transform:uppercase; opacity:0.92; margin-bottom:6px; background:rgba(255,255,255,0.18); padding:3px 10px; border-radius:999px; }
+.home-cta-title{ font-size:19px; font-weight:900; line-height:1.26; letter-spacing:-0.3px; margin-bottom:5px; }
+.home-cta-sub{ font-size:12.5px; font-weight:600; opacity:0.9; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-cta-go{ flex-shrink:0; display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:16px 16px 16px 6px; background:rgba(255,255,255,0.22); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.32); transition:transform .2s cubic-bezier(0.34,1.56,0.64,1); }
+.home-cta:active .home-cta-go{ transform:translateX(3px); }
+.home-cta-go svg{ width:20px; height:20px; }
+
+/* --- Bento grid: Pencapaian (lebar penuh) di atas, Survival + Streak
+   berdampingan di bawah -- tiap kartu punya silhouette sudut berbeda
+   supaya terasa "dilipat dari bentuk yang sama" ala M3 Expressive --- */
+.home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
 .home-bento > div:first-child{ grid-column:1 / -1; }
-.home-bento > div{ display:flex; }
-.home-bento .m3-card,
-.home-bento .survival-card{ margin:0; flex:1; }
+.home-bento .home-card,
+.home-bento .survival-card,
+.home-bento .streak-card{ margin-bottom:0; height:100%; }
 
-/* --- Kartu dasar bersama (dekor ikon watermark) --- */
-.m3-card{ position:relative; overflow:hidden; isolation:isolate; width:100%; }
-.m3-card-icon{ position:absolute; z-index:0; opacity:.09; pointer-events:none; }
-.m3-card-icon svg{ display:block; width:100%; height:100%; }
-.m3-card > *:not(.m3-card-icon):not(.ripple){ position:relative; z-index:1; }
+.gami-card{
+  padding:24px 24px 24px 22px; display:flex; align-items:center; gap:20px;
+  border-radius:32px 32px 12px 32px;
+  box-shadow:0 12px 24px -12px rgba(0,0,0,0.45), var(--shadow-sm);
+  border:1px solid rgba(255,255,255,0.06);
+  transform:rotateX(8deg);
+}
+.g-chart{ width:72px; height:72px; position:relative; flex-shrink:0; }
+.g-chart svg{ width:100%; height:100%; transform:rotate(-90deg); }
+.g-chart circle{ fill:none; stroke-width:5.5; stroke-linecap:round; }
+.g-chart .bg{ stroke:var(--surface); }
+.g-chart .prog{ stroke:var(--primary); transition:stroke-dasharray 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.g-val{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:900; font-size:16px; color:var(--on-surface); }
+.g-info{ min-width:0; }
+.g-info h3{ font-size:19px; font-weight:900; margin-bottom:4px; letter-spacing:-0.3px; }
+.g-info p{ font-size:13px; color:var(--on-surface-var); line-height:1.4; margin-bottom:11px; }
+.ach-lvl-row{ display:flex; gap:7px; }
+.ach-lvl-chip{ width:27px; height:27px; border-radius:9px; background:var(--surface); color:var(--on-surface-var); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; transition:all .3s cubic-bezier(0.34,1.56,0.64,1); }
+.ach-lvl-chip svg{ width:13px; height:13px; }
+.ach-lvl-chip.lvl-1{ background:var(--lvl1-c); color:var(--lvl1-on-c); }
+.ach-lvl-chip.lvl-2{ background:var(--lvl2-c); color:var(--lvl2-on-c); }
+.ach-lvl-chip.lvl-3{ background:var(--lvl3-c); color:var(--lvl3-on-c); }
+.ach-lvl-chip.done{ background:linear-gradient(145deg, var(--primary), var(--primary-soft)); color:var(--on-primary); transform:scale(1.1); box-shadow:0 3px 8px rgba(0,0,0,0.3); }
 
-/* --- Kartu Pencapaian — tonal secondary-container --- */
-.m3-card--achieve{
-  display:flex; align-items:center; gap:18px; padding:22px 20px;
-  background:var(--secondary-container); color:var(--on-secondary-container);
-  border-radius:30px 30px 12px 30px;
-  animation:m3In .5s cubic-bezier(.34,1.56,.64,1) both, m3BreatheB 8s ease-in-out infinite -3.5s;
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-radius .2s cubic-bezier(.34,1.56,.64,1);
+/* --- Kartu Streak (pendamping Survival di bento) --- */
+.streak-card{
+  padding:20px 18px 18px; text-align:center;
+  border-radius:28px 12px 28px 28px;
+  background:linear-gradient(160deg, var(--fire-c), var(--surface-c));
+  box-shadow:0 12px 24px -14px rgba(0,0,0,0.5), var(--shadow-sm);
+  border:1px solid rgba(255,255,255,0.05);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-.m3-card--achieve:active{ transform:scale(.96); border-radius:38px 38px 14px 14px; }
-.m3-card--achieve .m3-card-icon{ top:50%; right:-18px; width:100px; height:100px; transform:translateY(-50%); color:var(--on-secondary-container); }
-.m3-ring{ width:64px; height:64px; position:relative; flex-shrink:0; }
-.m3-ring svg{ width:100%; height:100%; transform:rotate(-90deg); }
-.m3-ring circle{ fill:none; stroke-width:5; stroke-linecap:round; }
-.m3-ring .bg{ stroke:rgba(0,0,0,0.14); }
-.m3-ring .prog{ stroke:var(--on-secondary-container); transition:stroke-dasharray 1.2s cubic-bezier(.34,1.56,.64,1); }
-.m3-ring-val{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:900; font-size:15px; }
-.m3-card-info{ min-width:0; }
-.m3-card-info h3{ font-size:17px; font-weight:900; margin-bottom:3px; letter-spacing:-.2px; }
-.m3-card-info p{ font-size:12px; line-height:1.35; margin-bottom:9px; opacity:.85; }
-.m3-lvl-row{ display:flex; gap:6px; }
-.m3-lvl-chip{
-  width:24px; height:24px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-  font-size:11px; font-weight:800; background:rgba(0,0,0,0.16); color:inherit;
-  border-radius:42% 58% 68% 32% / 45% 40% 60% 55%;
-  animation:m3Blob 6s ease-in-out infinite -2.2s;
-}
-.m3-lvl-chip svg{ width:12px; height:12px; }
-.m3-lvl-chip.done{ background:var(--on-secondary-container); color:var(--secondary-container); }
+.streak-icon-box{ width:42px; height:42px; border-radius:15px 15px 15px 5px; background:linear-gradient(150deg, var(--fire-1), var(--fire-3)); color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 5px 12px rgba(0,0,0,0.28); }
+.streak-icon-box svg{ width:22px; height:22px; }
+.streak-val{ font-family:var(--font-mono); font-size:30px; font-weight:900; color:var(--fire-on-c); line-height:1; margin-bottom:2px; }
+.streak-label{ font-size:11px; font-weight:900; letter-spacing:0.6px; text-transform:uppercase; color:var(--on-surface-var); margin-bottom:6px; }
+.streak-msg{ font-size:11.5px; color:var(--on-surface-var); line-height:1.4; font-weight:600; }
 
-/* --- Kartu Streak — tonal "api" (fire), flat --- */
-.m3-card--streak{
-  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-  padding:20px 16px 18px;
-  background:var(--fire-c); color:var(--fire-on-c);
-  border-radius:28px 28px 28px 12px;
-  animation:m3In .5s cubic-bezier(.34,1.56,.64,1) both, m3BreatheA 7.5s ease-in-out infinite -4.2s;
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1), border-radius .2s cubic-bezier(.34,1.56,.64,1);
-}
-.m3-card--streak:active{ transform:scale(.96); border-radius:40px 16px 40px 16px; }
-.m3-card--streak .m3-card-icon{ top:-22px; right:-22px; width:92px; height:92px; color:var(--fire-on-c); }
-.m3-streak-icon{
-  width:40px; height:40px; display:flex; align-items:center; justify-content:center; margin-bottom:9px;
-  background:var(--fire-1); color:var(--fire-c);
-  border-radius:63% 37% 30% 70% / 55% 63% 37% 45%;
-  animation:m3Blob 5s ease-in-out infinite -.8s;
-}
-.m3-streak-icon svg{ width:20px; height:20px; }
-.m3-streak-val{ font-family:var(--font-mono); font-size:27px; font-weight:900; line-height:1; margin-bottom:2px; animation:m3Pulse 3.4s ease-in-out infinite -1.2s; }
-.m3-streak-label{ font-size:10.5px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; opacity:.82; margin-bottom:6px; }
-.m3-streak-msg{ font-size:11.5px; line-height:1.35; opacity:.85; }
+/* --- Survival card di dalam grid bento: silhouette senada dgn streak-card,
+   tapi cermin sudutnya supaya bento terasa "berpasangan" bukan seragam --- */
+.home-bento .survival-card{ flex-direction:column; align-items:flex-start; justify-content:flex-end; padding:18px 18px 16px; border-radius:28px 28px 12px 28px; gap:10px; }
+.home-bento .survival-badge{ align-self:flex-start; }
 
-/* --- Survival card di dalam bento (markup dari renderSurvivalCard, kelas tetap sama) --- */
-.survival-card{
-  position:relative; overflow:hidden; isolation:isolate; cursor:pointer;
-  flex-direction:column; align-items:flex-start; justify-content:flex-end;
-  padding:16px 16px 14px; gap:8px; text-align:left;
-  background:var(--fire-2); color:#fff;
-  border-radius:28px 28px 10px 28px;
-  animation:m3In .5s cubic-bezier(.34,1.56,.64,1) both, m3BreatheB 7s ease-in-out infinite -1.6s;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1), border-radius .18s cubic-bezier(.34,1.56,.64,1);
-}
-.survival-card:active{ transform:scale(.95,1.05); border-radius:38px 14px 38px 14px; }
-.survival-card .home-card-icon-bg{ position:absolute; z-index:0; top:-22px; right:-22px; width:92px; height:92px; color:#fff; opacity:.14; pointer-events:none; }
-.survival-icon-box{
-  position:relative; z-index:1; width:44px; height:44px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; color:#fff;
-  background:var(--fire-3);
-  border-radius:42% 58% 68% 32% / 45% 40% 60% 55%;
-  animation:m3Blob 5.4s ease-in-out infinite reverse -2.8s;
-}
-.survival-icon-box svg{ width:22px; height:22px; }
-.survival-info{ position:relative; z-index:1; min-width:0; }
-.survival-info h3{ font-size:15.5px; font-weight:900; color:#fff; margin-bottom:2px; letter-spacing:-.2px; }
-.survival-info p{ font-size:11.5px; color:rgba(255,255,255,0.85); font-weight:500; }
-.survival-badge{
-  position:relative; z-index:1; align-self:flex-start; display:flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,0.24); color:#fff; font-size:11.5px; font-weight:800; letter-spacing:.2px;
-  border-radius:999px; padding:7px 13px; flex-shrink:0; line-height:1;
-  animation:m3Pulse 3s ease-in-out infinite -.6s;
-}
-.survival-badge .sv-trophy{ display:flex; align-items:center; justify-content:center; color:#fff; }
-.survival-badge .sv-trophy svg{ width:14px; height:14px; }
+/* --- Judul seksi bento & kutipan --- */
+.home-section-block{ margin:22px 0 12px; padding:0 2px; }
+.home-section-title{ font-size:13.5px; font-weight:900; letter-spacing:0.4px; color:var(--on-surface); }
 
-/* --- Kartu Kutipan Fisika --- */
-.m3-quote{
-  position:relative; overflow:hidden; isolation:isolate; text-align:center;
-  background:var(--surface-c-high); color:var(--on-surface);
-  padding:22px 20px; margin:0 0 18px;
-  border-radius:26px 26px 26px 10px;
-  animation:m3In .5s cubic-bezier(.34,1.56,.64,1) both, m3BreatheB 9s ease-in-out infinite -5s;
+/* --- Kartu Kutipan Fisika (Home) -- blok warna tonal berani (bukan
+   netral), tipografi besar-tegas, dekor organik di sudut --- */
+.quote-card{
+  position:relative; overflow:hidden;
+  background:linear-gradient(150deg, var(--primary-container), color-mix(in srgb, var(--primary-container) 55%, var(--surface-c-high)));
+  box-shadow:0 14px 26px -16px rgba(0,0,0,0.5), var(--shadow-sm);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:30px 30px 30px 10px;
+  padding:24px 24px 22px;
+  text-align:center;
+  margin:0 0 18px;
 }
-.m3-quote-blob{
-  position:absolute; z-index:0; top:-42px; left:-42px; width:112px; height:112px;
-  background:var(--primary); opacity:.09; pointer-events:none;
-  animation:m3Blob 10s ease-in-out infinite -4s;
+.quote-card::after{
+  content:''; position:absolute; bottom:-32%; left:-10%; width:150px; height:150px;
+  background:radial-gradient(circle, color-mix(in srgb, var(--primary) 32%, transparent), transparent 72%);
+  border-radius:50%; pointer-events:none; z-index:0;
 }
-.m3-quote > *:not(.m3-quote-blob){ position:relative; z-index:1; }
-.m3-quote-mark{
-  display:flex; align-items:center; justify-content:center; width:34px; height:34px; margin:0 auto 12px;
-  background:var(--primary-container); color:var(--primary);
-  border-radius:63% 37% 30% 70% / 55% 63% 37% 45%;
-  animation:m3Blob 6s ease-in-out infinite -3.3s;
+.quote-card .home-card-icon-bg{ display:none; }
+.quote-card .quote-mark{ position:relative; z-index:1; width:24px; height:24px; margin:0 auto 10px; color:var(--on-primary-container); opacity:0.85; }
+.quote-card .quote-text{
+  position:relative; z-index:1;
+  font-size:15.5px; line-height:1.5;
+  font-weight:800; font-style:italic;
+  letter-spacing:-0.1px;
+  text-align:center;
+  margin-bottom:12px;
+  color:var(--on-primary-container);
 }
-.m3-quote-mark svg{ width:16px; height:16px; }
-.m3-quote-text{ font-size:14.5px; font-weight:700; font-style:italic; line-height:1.5; letter-spacing:-.1px; margin-bottom:12px; }
-.m3-quote-by{ display:flex; align-items:center; justify-content:center; gap:8px; font-size:10.5px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; color:var(--on-surface-var); }
-.m3-quote-by::before, .m3-quote-by::after{ content:''; width:14px; height:2px; background:var(--outline-var); }
+.quote-card .quote-by{
+  position:relative; z-index:1;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size:10.5px; font-weight:900; letter-spacing:1.3px; text-transform:uppercase;
+  color:var(--on-primary-container); opacity:0.78; text-align:center;
+}
+.quote-card .quote-by::before, .quote-card .quote-by::after{
+  content:''; display:block; width:14px; height:1px;
+  background:color-mix(in srgb, var(--on-primary-container) 45%, transparent);
+}
 
 /* --- Wordmark penutup halaman Home --- */
 .home-footer-mark{
-  text-align:center;
-  font-size:12px; font-weight:900; letter-spacing:4px; text-transform:uppercase;
-  color:var(--on-surface-var); opacity:0.4;
-  padding:6px 0 12px;
-  animation:m3Pulse 5s ease-in-out infinite -1s;
+  text-align:center; display:flex; align-items:center; justify-content:center; gap:10px;
+  font-size:11.5px; font-weight:900; letter-spacing:4px; text-transform:uppercase;
+  color:var(--on-surface-var); opacity:0.5;
+  padding:16px 0 12px;
 }
-
+.home-footer-mark::before, .home-footer-mark::after{ content:''; width:20px; height:2px; border-radius:2px; background:var(--outline-var); }
 .journey-map { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 85px; padding: 40px 0 120px; position: relative; z-index: 1; perspective: 1200px; }
 .j-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 
@@ -622,10 +601,31 @@ input{ font-family:inherit; }
 }
 
 /* ===== MODE SURVIVAL ===== */
-/* Kartu promo Survival di Home dipindah & didesain ulang di bagian
-   "HOME" di atas (.survival-card, .survival-icon-box, .survival-info,
-   .survival-badge) — markup-nya sama, jadi tidak didefinisikan ulang
-   di sini supaya tidak bentrok (gradient lama sengaja dihapus). */
+
+/* --- Kartu dashboard (Home), di bento sebelah kartu Streak --- */
+.survival-card{
+  padding:20px;
+  display:flex; align-items:center; gap:16px;
+  cursor:pointer; text-align:left;
+  border-radius:28px 28px 12px 28px;
+  background: linear-gradient(150deg, var(--fire-1) 0%, var(--fire-2) 55%, var(--fire-3) 100%);
+  box-shadow: 0 9px 0 var(--fire-shadow), 0 14px 24px -14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.16);
+  transition: transform .16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .16s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.survival-card:active{
+  transform: translateY(7px);
+  box-shadow: 0 2px 0 var(--fire-shadow), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.survival-card .home-card-icon-bg{ color:#fff; opacity:0.14; }
+.survival-icon-box{ width:52px; height:52px; border-radius:18px 18px 18px 6px; background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.22); }
+.survival-icon-box svg{ width:26px; height:26px; }
+.survival-info{ flex:1; min-width:0; }
+.survival-info h3{ font-size:17.5px; font-weight:900; color:#fff; margin-bottom:2px; letter-spacing:-0.2px; text-shadow: 0 2px 6px rgba(0,0,0,0.22); }
+.survival-info p{ font-size:13px; color:rgba(255,255,255,0.85); font-weight:500; }
+.survival-badge{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.22); color:#fff; font-size:12.5px; font-weight:900; letter-spacing:0.2px; border-radius:var(--r-pill); padding:8px 14px; text-align:center; flex-shrink:0; line-height:1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
+.survival-badge .sv-trophy{ display:flex; align-items:center; justify-content:center; line-height:1; color:#fff; }
+.survival-badge .sv-trophy svg{ width:15px; height:15px; }
 
 /* --- Layar Gameplay & HUD --- */
 .surv-shell{ display:flex; flex-direction:column; flex:1; min-height:0; width:100%; position:relative; }
