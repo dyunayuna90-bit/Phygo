@@ -29,9 +29,9 @@ function renderHomeHeader(){
   const holder = document.getElementById('homeHeader');
   if(!holder) return;
   holder.innerHTML = `
-    <div class="home-header-text">
-      <h1>${greetingText()}</h1>
-      <p>${todayLongDate()}</p>
+    <div class="m3-home-header">
+      <span class="m3-header-eyebrow">${todayLongDate()}</span>
+      <h1>${greetingText()}<span class="m3-header-dot">.</span></h1>
     </div>
   `;
 }
@@ -71,14 +71,15 @@ function renderHomeContinueCard(){
   }
 
   holder.innerHTML = `
-    <button class="home-cta ripple-host" id="homeCtaBtn">
-      <span class="home-cta-icon-bg">${svgIcon('speed')}</span>
-      <span class="home-cta-text">
-        <span class="home-cta-eyebrow">${eyebrow}</span>
-        <h3 class="home-cta-title">${title}</h3>
-        <p class="home-cta-sub">${sub}</p>
+    <button class="m3-hero ripple-host" id="homeCtaBtn">
+      <span class="m3-hero-shape" aria-hidden="true"></span>
+      <span class="m3-hero-icon">${svgIcon('speed')}</span>
+      <span class="m3-hero-body">
+        <span class="m3-hero-eyebrow">${eyebrow}</span>
+        <h3 class="m3-hero-title">${title}</h3>
+        <p class="m3-hero-sub">${sub}</p>
       </span>
-      <span class="home-cta-go">${svgIcon('chevronRight')}</span>
+      <span class="m3-hero-arrow">${svgIcon('chevronRight')}</span>
     </button>
   `;
   document.getElementById('homeCtaBtn').addEventListener('click', action);
@@ -90,23 +91,22 @@ function renderHomeAchievement(){
   const pct = Math.round((app.completed.size / 3) * 100);
   const lvlChips = [1,2,3].map(id=>{
     const done = app.completed.has(id);
-    return `<span class="ach-lvl-chip ${done?'done':''}">${done ? svgIcon('checkSm') : id}</span>`;
+    return `<span class="m3-lvl-chip ${done?'done':''}">${done ? svgIcon('checkSm') : id}</span>`;
   }).join('');
   holder.innerHTML = `
-    <div class="gami-card home-card">
-      <div class="home-card-icon-bg">${svgIcon('trophy')}</div>
-      <div class="g-chart">
+    <div class="m3-card m3-card--achieve">
+      <span class="m3-card-icon">${svgIcon('trophy')}</span>
+      <div class="m3-ring">
         <svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15"/><circle class="prog" cx="18" cy="18" r="15" stroke-dasharray="${pct}, 100"/></svg>
-        <div class="g-val">${app.completed.size}/3</div>
+        <div class="m3-ring-val">${app.completed.size}/3</div>
       </div>
-      <div class="g-info">
+      <div class="m3-card-info">
         <h3>Pencapaian</h3>
         <p>Selesaikan semua tantangan dasar fisika.</p>
-        <div class="ach-lvl-row">${lvlChips}</div>
+        <div class="m3-lvl-row">${lvlChips}</div>
       </div>
     </div>
   `;
-  apply3DTilt(holder.querySelector('.gami-card'), 10, 0);
 }
 
 // ===== Kartu Streak — pendamping kartu Survival di baris bento kedua =====
@@ -116,12 +116,12 @@ function renderHomeStreakCard(){
   const streak = getStreakCount();
   const msg = streak <= 1 ? 'Ayo mulai kebiasaan belajar!' : 'Pertahankan terus, jangan putus!';
   holder.innerHTML = `
-    <div class="streak-card home-card">
-      <div class="home-card-icon-bg">${svgIcon('fire')}</div>
-      <span class="streak-icon-box">${svgIcon('fire')}</span>
-      <div class="streak-val">${streak}</div>
-      <div class="streak-label">Hari Beruntun</div>
-      <p class="streak-msg">${msg}</p>
+    <div class="m3-card m3-card--streak">
+      <span class="m3-card-icon">${svgIcon('fire')}</span>
+      <span class="m3-streak-icon">${svgIcon('fire')}</span>
+      <div class="m3-streak-val">${streak}</div>
+      <div class="m3-streak-label">Hari Beruntun</div>
+      <p class="m3-streak-msg">${msg}</p>
     </div>
   `;
 }
@@ -131,11 +131,11 @@ function renderHomeQuote(){
   if(!holder) return;
   const q = PHYSICS_QUOTES[getQuoteIndex() % PHYSICS_QUOTES.length];
   holder.innerHTML = `
-    <div class="quote-card home-card">
-      <div class="home-card-icon-bg">${svgIcon('quote')}</div>
-      <div class="quote-mark">${svgIcon('quote')}</div>
-      <p class="quote-text">${q.text}</p>
-      <span class="quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
+    <div class="m3-quote">
+      <span class="m3-quote-blob" aria-hidden="true"></span>
+      <span class="m3-quote-mark">${svgIcon('quote')}</span>
+      <p class="m3-quote-text">${q.text}</p>
+      <span class="m3-quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
     </div>
   `;
 }
