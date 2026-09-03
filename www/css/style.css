@@ -29,7 +29,7 @@
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.25);
 }
 
-/* ===== Tema Alternatif ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Pink Pastel & Coklat (tetap dark mode) ===== */
+/* ===== Tema Alternatif ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Pink Pastel & Coklat (tetap dark mode) ===== */
 html[data-theme="pink"]{
   --bg:#170F14; --surface:#1E1319; --surface-c:#271A21; --surface-c-high:#35232C;
   --on-surface:#F3E6EC; --on-surface-var:#D3B8C6; --outline:#A88696; --outline-var:#4A3038;
@@ -84,49 +84,17 @@ input{ font-family:inherit; }
 .level-header p{ font-size:15px; color:var(--on-surface-var); line-height:1.5; max-width:440px; margin:0 auto; }
 
 /* ===================================================================
-   ===== HOME -- Material 3 Expressive Dashboard (bold edition) =======
-   Prinsip desain: silhouette membulat asimetris & berbeda tiap kartu
-   (bukan cuma satu sudut kecil seragam), warna tonal berani berlapis,
-   panel dekoratif organik (bukan blur -- radial-gradient solid),
-   tipografi besar/tegas, ukuran kartu variatif (bento), tanpa blur
-   dan tanpa emoji -- semua ikon tetap lewat svgIcon().
+   ===== HOME -- Material 3 Expressive / Pinterest-style dashboard =====
+   Prinsip desain: bentuk membulat asimetris (satu sudut lebih kecil),
+   warna tonal berlapis, kartu berukuran variatif (bento), tanpa blur
+   dan tanpa emoji -- semua ikon pakai svgIcon().
    =================================================================== */
 
-/* --- Header: panel tonal + sapaan besar, dekor organik di pojok --- */
-.home-header{ padding:4px 2px 20px; }
-.home-header-inner{
-  position:relative; overflow:hidden;
-  padding:22px 22px 26px;
-  border-radius:32px 32px 32px 12px;
-  background:linear-gradient(135deg, color-mix(in srgb, var(--primary) 16%, var(--surface-c-high)) 0%, var(--surface-c) 78%);
-  box-shadow:var(--shadow-sm);
-  border:1px solid rgba(255,255,255,0.05);
-}
-.home-header-inner::before{
-  content:''; position:absolute; top:-34%; right:-16%; width:190px; height:190px;
-  background:radial-gradient(circle, color-mix(in srgb, var(--primary) 30%, transparent) 0%, transparent 72%);
-  border-radius:44% 56% 58% 42% / 46% 40% 60% 54%;
-  pointer-events:none; z-index:0;
-}
-.home-header-inner::after{
-  content:''; position:absolute; bottom:-40%; left:-8%; width:120px; height:120px;
-  background:radial-gradient(circle, color-mix(in srgb, var(--primary) 12%, transparent) 0%, transparent 75%);
-  border-radius:50%; pointer-events:none; z-index:0;
-}
-.home-eyebrow{
-  position:relative; z-index:1; display:inline-flex; align-items:center;
-  font-size:11.5px; font-weight:900; letter-spacing:1.4px; text-transform:uppercase;
-  color:var(--on-primary-container); background:var(--primary-container);
-  padding:6px 14px 6px 12px; border-radius:999px 999px 999px 4px; margin-bottom:12px;
-  box-shadow:var(--shadow-sm);
-}
-.home-greeting{
-  position:relative; z-index:1;
-  font-size:29px; font-weight:900; letter-spacing:-0.7px; line-height:1.12;
-  color:var(--on-surface);
-  background:linear-gradient(120deg, var(--on-surface) 42%, var(--primary) 135%);
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
-}
+/* --- Header: sapaan dinamis + tanggal --- */
+.home-header{ padding:6px 4px 22px; }
+.home-header-text{ min-width:0; }
+.home-header-text h1{ font-size:26px; font-weight:900; color:var(--on-surface); letter-spacing:-0.5px; line-height:1.2; margin-bottom:4px; }
+.home-header-text p{ font-size:13.5px; color:var(--on-surface-var); line-height:1.4; }
 
 /* --- Kartu dasar bersama (Pencapaian, Kutipan) --- */
 .home-card{ position:relative; overflow:hidden; background:linear-gradient(150deg, var(--surface-c-high), var(--surface-c)); width:100%; margin:0 0 16px; }
@@ -134,150 +102,132 @@ input{ font-family:inherit; }
 .home-card-icon-bg svg{ width:100%; height:100%; display:block; }
 .home-card > *:not(.home-card-icon-bg):not(.ripple){ position:relative; z-index:1; }
 
-/* --- Kartu CTA utama (adaptif) -- tombol pressable 3D berani, bayangan
-   solid di bawah yang "menipis" saat ditekan, aksen kaca-cahaya di pojok
-   pakai radial-gradient solid (bukan backdrop-blur). --- */
+/* --- Kartu CTA utama (adaptif) Ã¢â‚¬â€ tombol pressable 3D, senada dgn Mode
+   Survival & tombol Lanjutkan: bayangan solid di bawah yang "menipis"
+   saat ditekan, bukan cuma scale. Ripple sengaja dikecualikan dari aturan
+   posisi supaya tidak ikut menambah tinggi kartu saat diklik. --- */
 .home-cta{
   position:relative; overflow:hidden; display:flex; align-items:center; gap:16px;
-  width:100%; text-align:left; padding:22px 22px 22px 20px;
-  border-radius:36px 36px 36px 14px;
-  background:linear-gradient(135deg, var(--primary-soft) 0%, var(--primary) 62%, var(--primary) 100%);
+  width:100%; text-align:left; padding:20px 20px 20px 18px;
+  border-radius:26px 26px 26px 10px;
+  background:linear-gradient(135deg, var(--primary-soft) 0%, var(--primary) 65%, var(--primary) 100%);
   color:var(--on-primary);
-  box-shadow:0 7px 0 var(--primary-container), var(--shadow-lg);
-  border:1px solid rgba(255,255,255,0.16);
-  margin-bottom:18px;
-  transition: transform .18s cubic-bezier(0.34,1.56,0.64,1), box-shadow .18s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 6px 0 var(--primary-container);
+  border:1px solid rgba(255,255,255,0.14);
+  margin-bottom:16px;
+  transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
 }
 .home-cta:active{
-  transform:translateY(6px);
+  transform:translateY(5px);
   box-shadow:0 1px 0 var(--primary-container);
 }
-.home-cta-shape{
-  position:absolute; top:-46%; right:-14%; width:160px; height:160px;
-  background:radial-gradient(circle, rgba(255,255,255,0.24), transparent 70%);
+/* aksen glow lembut di pojok, ganti ikon raksasa lama -- expressive tanpa nambah tinggi kartu */
+.home-cta::after{
+  content:''; position:absolute; top:-40%; right:-8%; width:120px; height:120px;
+  background:radial-gradient(circle, rgba(255,255,255,0.20), transparent 70%);
   border-radius:50%; pointer-events:none; z-index:0;
 }
 .home-cta > *:not(.ripple){ position:relative; z-index:1; }
 .home-cta-icon-bg{
-  flex-shrink:0; width:56px; height:56px; color:var(--on-primary);
+  flex-shrink:0; width:52px; height:52px; opacity:1; color:var(--on-primary);
   display:flex; align-items:center; justify-content:center;
-  border-radius:20px 20px 20px 8px;
-  background:rgba(255,255,255,0.20);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.30);
+  border-radius:16px 16px 16px 6px;
+  background:rgba(255,255,255,0.18);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.28);
 }
-.home-cta-icon-bg svg{ width:28px; height:28px; display:block; }
+.home-cta-icon-bg svg{ width:26px; height:26px; display:block; }
 .home-cta-text{ min-width:0; flex:1; }
-.home-cta-eyebrow{ display:inline-block; font-size:11px; font-weight:900; letter-spacing:1.3px; text-transform:uppercase; opacity:0.92; margin-bottom:6px; background:rgba(255,255,255,0.18); padding:3px 10px; border-radius:999px; }
-.home-cta-title{ font-size:19px; font-weight:900; line-height:1.26; letter-spacing:-0.3px; margin-bottom:5px; }
-.home-cta-sub{ font-size:12.5px; font-weight:600; opacity:0.9; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.home-cta-go{ flex-shrink:0; display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:16px 16px 16px 6px; background:rgba(255,255,255,0.22); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.32); transition:transform .2s cubic-bezier(0.34,1.56,0.64,1); }
-.home-cta:active .home-cta-go{ transform:translateX(3px); }
-.home-cta-go svg{ width:20px; height:20px; }
+.home-cta-eyebrow{ display:block; font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; opacity:0.78; margin-bottom:4px; }
+.home-cta-title{ font-size:18px; font-weight:900; line-height:1.28; letter-spacing:-0.2px; margin-bottom:4px; }
+.home-cta-sub{ font-size:12.5px; font-weight:500; opacity:0.85; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-cta-go{ flex-shrink:0; display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:13px 13px 13px 4px; background:rgba(255,255,255,0.2); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3); }
+.home-cta-go svg{ width:19px; height:19px; }
 
-/* --- Bento grid: Pencapaian (lebar penuh) di atas, Survival + Streak
-   berdampingan di bawah -- tiap kartu punya silhouette sudut berbeda
-   supaya terasa "dilipat dari bentuk yang sama" ala M3 Expressive --- */
-.home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px; }
+/* --- Bento grid: Pencapaian (lebar penuh) di atas, Survival + Streak berdampingan di bawah --- */
+.home-bento{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
 .home-bento > div:first-child{ grid-column:1 / -1; }
 .home-bento .home-card,
 .home-bento .survival-card,
 .home-bento .streak-card{ margin-bottom:0; height:100%; }
 
-.gami-card{
-  padding:24px 24px 24px 22px; display:flex; align-items:center; gap:20px;
-  border-radius:32px 32px 12px 32px;
-  box-shadow:0 12px 24px -12px rgba(0,0,0,0.45), var(--shadow-sm);
-  border:1px solid rgba(255,255,255,0.06);
-  transform:rotateX(8deg);
-}
-.g-chart{ width:72px; height:72px; position:relative; flex-shrink:0; }
+.gami-card{ padding:22px 22px 22px 20px; display:flex; align-items:center; gap:20px; border-radius:28px 28px 10px 28px; box-shadow:0 10px 22px -10px rgba(0,0,0,0.4), var(--shadow-sm); transform:rotateX(10deg); }
+.g-chart{ width:68px; height:68px; position:relative; flex-shrink:0; }
 .g-chart svg{ width:100%; height:100%; transform:rotate(-90deg); }
-.g-chart circle{ fill:none; stroke-width:5.5; stroke-linecap:round; }
+.g-chart circle{ fill:none; stroke-width:5; stroke-linecap:round; }
 .g-chart .bg{ stroke:var(--surface); }
 .g-chart .prog{ stroke:var(--primary); transition:stroke-dasharray 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.g-val{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:900; font-size:16px; color:var(--on-surface); }
+.g-val{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-weight:800; font-size:16px; color:var(--on-surface); }
 .g-info{ min-width:0; }
-.g-info h3{ font-size:19px; font-weight:900; margin-bottom:4px; letter-spacing:-0.3px; }
-.g-info p{ font-size:13px; color:var(--on-surface-var); line-height:1.4; margin-bottom:11px; }
-.ach-lvl-row{ display:flex; gap:7px; }
-.ach-lvl-chip{ width:27px; height:27px; border-radius:9px; background:var(--surface); color:var(--on-surface-var); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:900; flex-shrink:0; transition:all .3s cubic-bezier(0.34,1.56,0.64,1); }
-.ach-lvl-chip svg{ width:13px; height:13px; }
-.ach-lvl-chip.lvl-1{ background:var(--lvl1-c); color:var(--lvl1-on-c); }
-.ach-lvl-chip.lvl-2{ background:var(--lvl2-c); color:var(--lvl2-on-c); }
-.ach-lvl-chip.lvl-3{ background:var(--lvl3-c); color:var(--lvl3-on-c); }
-.ach-lvl-chip.done{ background:linear-gradient(145deg, var(--primary), var(--primary-soft)); color:var(--on-primary); transform:scale(1.1); box-shadow:0 3px 8px rgba(0,0,0,0.3); }
+.g-info h3{ font-size:18px; font-weight:900; margin-bottom:4px; letter-spacing:-0.3px; }
+.g-info p{ font-size:13px; color:var(--on-surface-var); line-height:1.4; margin-bottom:10px; }
+.ach-lvl-row{ display:flex; gap:6px; }
+.ach-lvl-chip{ width:24px; height:24px; border-radius:8px; background:var(--surface); color:var(--on-surface-var); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+.ach-lvl-chip svg{ width:12px; height:12px; }
+.ach-lvl-chip.done{ background:linear-gradient(145deg, var(--primary), var(--primary-soft)); color:var(--on-primary); }
 
 /* --- Kartu Streak (pendamping Survival di bento) --- */
 .streak-card{
-  padding:20px 18px 18px; text-align:center;
-  border-radius:28px 12px 28px 28px;
+  padding:18px 18px 16px; text-align:center;
+  border-radius:24px 24px 24px 10px;
   background:linear-gradient(160deg, var(--fire-c), var(--surface-c));
-  box-shadow:0 12px 24px -14px rgba(0,0,0,0.5), var(--shadow-sm);
-  border:1px solid rgba(255,255,255,0.05);
+  box-shadow:0 10px 22px -12px rgba(0,0,0,0.45), var(--shadow-sm);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-.streak-icon-box{ width:42px; height:42px; border-radius:15px 15px 15px 5px; background:linear-gradient(150deg, var(--fire-1), var(--fire-3)); color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 5px 12px rgba(0,0,0,0.28); }
-.streak-icon-box svg{ width:22px; height:22px; }
-.streak-val{ font-family:var(--font-mono); font-size:30px; font-weight:900; color:var(--fire-on-c); line-height:1; margin-bottom:2px; }
-.streak-label{ font-size:11px; font-weight:900; letter-spacing:0.6px; text-transform:uppercase; color:var(--on-surface-var); margin-bottom:6px; }
-.streak-msg{ font-size:11.5px; color:var(--on-surface-var); line-height:1.4; font-weight:600; }
+.streak-icon-box{ width:38px; height:38px; border-radius:12px; background:linear-gradient(150deg, var(--fire-1), var(--fire-3)); color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:8px; box-shadow:0 4px 10px rgba(0,0,0,0.25); }
+.streak-icon-box svg{ width:20px; height:20px; }
+.streak-val{ font-family:var(--font-mono); font-size:26px; font-weight:900; color:var(--fire-on-c); line-height:1; margin-bottom:2px; }
+.streak-label{ font-size:11px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:var(--on-surface-var); margin-bottom:6px; }
+.streak-msg{ font-size:11.5px; color:var(--on-surface-var); line-height:1.35; }
 
-/* --- Survival card di dalam grid bento: silhouette senada dgn streak-card,
-   tapi cermin sudutnya supaya bento terasa "berpasangan" bukan seragam --- */
-.home-bento .survival-card{ flex-direction:column; align-items:flex-start; justify-content:flex-end; padding:18px 18px 16px; border-radius:28px 28px 12px 28px; gap:10px; }
+/* --- Survival card di dalam grid bento: samakan proporsi dgn streak-card --- */
+.home-bento .survival-card{ flex-direction:column; align-items:flex-start; justify-content:flex-end; padding:16px 16px 14px; border-radius:24px 24px 10px 24px; gap:8px; }
 .home-bento .survival-badge{ align-self:flex-start; }
 
-/* --- Judul seksi bento & kutipan --- */
-.home-section-block{ margin:22px 0 12px; padding:0 2px; }
-.home-section-title{ font-size:13.5px; font-weight:900; letter-spacing:0.4px; color:var(--on-surface); }
+/* --- Judul seksi (mis. Aksi Cepat) --- */
+.home-section-block{ margin:22px 0 6px; }
+.home-section-title{ font-size:14px; font-weight:800; letter-spacing:0.3px; color:var(--on-surface); margin:0 2px 12px; }
 
-/* --- Kartu Kutipan Fisika (Home) -- blok warna tonal berani (bukan
-   netral), tipografi besar-tegas, dekor organik di sudut --- */
+/* --- Kartu Kutipan Fisika (Home) -- kotak ringkas & rapi, tidak menempel
+   langsung ke latar supaya tetap "nyambung" secara visual dgn kartu lain --- */
 .quote-card{
-  position:relative; overflow:hidden;
-  background:linear-gradient(150deg, var(--primary-container), color-mix(in srgb, var(--primary-container) 55%, var(--surface-c-high)));
-  box-shadow:0 14px 26px -16px rgba(0,0,0,0.5), var(--shadow-sm);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:30px 30px 30px 10px;
-  padding:24px 24px 22px;
+  position:relative;
+  background:linear-gradient(150deg, var(--surface-c-high), var(--surface-c));
+  box-shadow:0 8px 18px -12px rgba(0,0,0,0.4), var(--shadow-sm);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:22px 22px 22px 8px;
+  padding:18px 20px;
   text-align:center;
   margin:0 0 18px;
 }
-.quote-card::after{
-  content:''; position:absolute; bottom:-32%; left:-10%; width:150px; height:150px;
-  background:radial-gradient(circle, color-mix(in srgb, var(--primary) 32%, transparent), transparent 72%);
-  border-radius:50%; pointer-events:none; z-index:0;
-}
 .quote-card .home-card-icon-bg{ display:none; }
-.quote-card .quote-mark{ position:relative; z-index:1; width:24px; height:24px; margin:0 auto 10px; color:var(--on-primary-container); opacity:0.85; }
+.quote-card .quote-mark{ width:20px; height:20px; margin:0 auto 8px; color:var(--primary); opacity:0.6; }
 .quote-card .quote-text{
-  position:relative; z-index:1;
-  font-size:15.5px; line-height:1.5;
-  font-weight:800; font-style:italic;
+  font-size:14.5px; line-height:1.45;
+  font-weight:700; font-style:italic;
   letter-spacing:-0.1px;
   text-align:center;
-  margin-bottom:12px;
-  color:var(--on-primary-container);
+  margin-bottom:10px;
+  color:var(--on-surface);
 }
 .quote-card .quote-by{
-  position:relative; z-index:1;
   display:flex; align-items:center; justify-content:center; gap:8px;
-  font-size:10.5px; font-weight:900; letter-spacing:1.3px; text-transform:uppercase;
-  color:var(--on-primary-container); opacity:0.78; text-align:center;
+  font-size:10.5px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase;
+  color:var(--on-surface-var); text-align:center;
 }
 .quote-card .quote-by::before, .quote-card .quote-by::after{
   content:''; display:block; width:14px; height:1px;
-  background:color-mix(in srgb, var(--on-primary-container) 45%, transparent);
+  background:linear-gradient(90deg, transparent, var(--outline-var));
 }
+.quote-card .quote-by::after{ background:linear-gradient(90deg, var(--outline-var), transparent); }
 
 /* --- Wordmark penutup halaman Home --- */
 .home-footer-mark{
-  text-align:center; display:flex; align-items:center; justify-content:center; gap:10px;
-  font-size:11.5px; font-weight:900; letter-spacing:4px; text-transform:uppercase;
-  color:var(--on-surface-var); opacity:0.5;
-  padding:16px 0 12px;
+  text-align:center;
+  font-size:12px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+  color:var(--on-surface-var); opacity:0.45;
+  padding:4px 0 10px;
 }
-.home-footer-mark::before, .home-footer-mark::after{ content:''; width:20px; height:2px; border-radius:2px; background:var(--outline-var); }
+
 .journey-map { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 85px; padding: 40px 0 120px; position: relative; z-index: 1; perspective: 1200px; }
 .j-path-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 
@@ -546,7 +496,7 @@ input{ font-family:inherit; }
 .quiz-fb-title { font-size: 22px; font-weight: 900; display:flex; align-items:center; gap:12px; }
 .quiz-fb-desc { font-size: 15px; line-height: 1.6; opacity: 0.9; }
 
-/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â bisa digeser, ga kepotong */
+/* Rumus KaTeX panjang di dalam feedback kuis (benar/salah) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â bisa digeser, ga kepotong */
 .quiz-fb-desc .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
@@ -569,7 +519,7 @@ input{ font-family:inherit; }
 #survLives .heart-icon.lost { color: var(--surface-c-high); }
 .quiz-visual-box { width: 100%; height: 140px; background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c)); border-radius: var(--r-l); margin-bottom: 20px; box-shadow: inset 0 4px 12px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-/* Pill nyawa mengambang ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â absolute relatif ke .wizard-shell (bukan di dalam
+/* Pill nyawa mengambang ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â absolute relatif ke .wizard-shell (bukan di dalam
    scroll-pane), nempel di pojok kanan atas, jadi tetap kelihatan mau di-scroll
    atau tidak. */
 .quiz-lives-float { position: absolute; top: calc(52px + env(safe-area-inset-top)); right: 16px; left: auto; bottom: auto; transform: none; z-index: 20; display: flex; gap: 6px; align-items: center; background: var(--surface-c-high); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); pointer-events: none; opacity: 0; transition: opacity 0.3s ease-out; }
@@ -593,7 +543,7 @@ input{ font-family:inherit; }
 
 
 
-/* ===== Safe-area (notch/status-bar/nav-bar) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â WAJIB buat mode fullscreen immersive ===== */
+/* ===== Safe-area (notch/status-bar/nav-bar) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â WAJIB buat mode fullscreen immersive ===== */
 #app{
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
@@ -602,14 +552,13 @@ input{ font-family:inherit; }
 
 /* ===== MODE SURVIVAL ===== */
 
-/* --- Kartu dashboard (Home), di bento sebelah kartu Streak --- */
+/* --- Kartu dashboard, di bawah kartu Pencapaian --- */
 .survival-card{
   padding:20px;
   display:flex; align-items:center; gap:16px;
   cursor:pointer; text-align:left;
-  border-radius:28px 28px 12px 28px;
   background: linear-gradient(150deg, var(--fire-1) 0%, var(--fire-2) 55%, var(--fire-3) 100%);
-  box-shadow: 0 9px 0 var(--fire-shadow), 0 14px 24px -14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 9px 0 var(--fire-shadow), inset 0 1px 0 rgba(255,255,255,0.3);
   border: 1px solid rgba(255,255,255,0.16);
   transition: transform .16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .16s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -618,12 +567,12 @@ input{ font-family:inherit; }
   box-shadow: 0 2px 0 var(--fire-shadow), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 .survival-card .home-card-icon-bg{ color:#fff; opacity:0.14; }
-.survival-icon-box{ width:52px; height:52px; border-radius:18px 18px 18px 6px; background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.22); }
-.survival-icon-box svg{ width:26px; height:26px; }
+.survival-icon-box{ width:52px; height:52px; border-radius:16px; background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.22); }
+.survival-icon-box svg{ width:26px; height:26px; filter: drop-shadow(0 0 6px rgba(255,255,255,0.5)); }
 .survival-info{ flex:1; min-width:0; }
 .survival-info h3{ font-size:17.5px; font-weight:900; color:#fff; margin-bottom:2px; letter-spacing:-0.2px; text-shadow: 0 2px 6px rgba(0,0,0,0.22); }
 .survival-info p{ font-size:13px; color:rgba(255,255,255,0.85); font-weight:500; }
-.survival-badge{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.22); color:#fff; font-size:12.5px; font-weight:900; letter-spacing:0.2px; border-radius:var(--r-pill); padding:8px 14px; text-align:center; flex-shrink:0; line-height:1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
+.survival-badge{ display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.22); color:#fff; font-size:12.5px; font-weight:800; letter-spacing:0.2px; border-radius:var(--r-pill); padding:8px 14px; text-align:center; flex-shrink:0; line-height:1; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
 .survival-badge .sv-trophy{ display:flex; align-items:center; justify-content:center; line-height:1; color:#fff; }
 .survival-badge .sv-trophy svg{ width:15px; height:15px; }
 
@@ -645,7 +594,7 @@ input{ font-family:inherit; }
 #survOpts{ padding:0 20px; }
 #survOpts.frozen{ pointer-events:none; opacity:0.92; }
 
-/* ===== Mode Survival â€” Opsi Jawaban Pill-shape + Morphing ===== */
+/* ===== Mode Survival Ã¢â‚¬â€ Opsi Jawaban Pill-shape + Morphing ===== */
 #survOpts .quiz-opt{
   background:var(--surface-c-high);
   border:2px solid transparent;
@@ -681,7 +630,7 @@ input{ font-family:inherit; }
 .surv-go-correction{ font-size:13.5px; color:var(--on-surface-var); margin-bottom:22px; line-height:1.6; font-weight:500; }
 .surv-go-actions{ display:flex; flex-direction:column; gap:10px; }
 
-/* ===== Halaman "Tentang Aplikasi" ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â full page, bukan pop-up ===== */
+/* ===== Halaman "Tentang Aplikasi" ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â full page, bukan pop-up ===== */
 #screen-appinfo{ position:relative; }
 .appinfo-topbar{ flex-shrink:0; display:flex; align-items:center; gap:12px; padding:0 4px 14px; }
 .appinfo-back{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:var(--surface-c-high); color:var(--on-surface); box-shadow: var(--shadow-sm); transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -710,7 +659,7 @@ input{ font-family:inherit; }
 .appinfo-footer{ text-align:center; font-size:12.5px; color:var(--on-surface-var); opacity:0.7; padding:36px 20px 20px; }
 
 /* ===================================================================
-   ===== Halaman "Sejarah" â€” Tumpukan Kartu Arsip + Wizard Baca ======
+   ===== Halaman "Sejarah" Ã¢â‚¬â€ Tumpukan Kartu Arsip + Wizard Baca ======
    =================================================================== */
 
 .history-stack{ position:relative; flex:1; min-height:380px; max-width:420px; width:100%; margin:36px auto 0; padding-bottom:28px; }
@@ -718,7 +667,7 @@ input{ font-family:inherit; }
 .history-card{ position:absolute; left:0; right:0; top:0; width:100%; min-height:380px; display:flex; flex-direction:column; text-align:left; padding:26px 24px 22px; border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--shadow-lg); transform-origin:center top; will-change:transform, opacity; background:var(--surface-c-high); border:1px solid rgba(255,255,255,0.05); touch-action:none; }
 /* Warna solid (bukan gradient) yang diturunkan langsung dari warna tema aktif
    (--primary), jadi otomatis ikut berubah saat tema aplikasi diganti dan tetap
-   senada satu sama lain â€” cuma beda tingkat kepekatan per level. */
+   senada satu sama lain Ã¢â‚¬â€ cuma beda tingkat kepekatan per level. */
 .history-card[data-level="1"]{ background:color-mix(in srgb, var(--primary) 8%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 22%, transparent); }
 .history-card[data-level="2"]{ background:color-mix(in srgb, var(--primary) 20%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 34%, transparent); }
 .history-card[data-level="3"]{ background:color-mix(in srgb, var(--primary) 34%, var(--surface-c-high)); border-color:color-mix(in srgb, var(--primary) 46%, transparent); }
