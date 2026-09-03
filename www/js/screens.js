@@ -9,7 +9,7 @@ function renderHome(){
   renderHomeQuote();
 }
 
-// ===== Header — sapaan dinamis sesuai jam + tanggal hari ini =====
+// ===== Header â€” sapaan dinamis sesuai jam + tanggal hari ini =====
 function greetingText(){
   const h = new Date().getHours();
   if(h < 11) return 'Selamat pagi';
@@ -29,14 +29,14 @@ function renderHomeHeader(){
   const holder = document.getElementById('homeHeader');
   if(!holder) return;
   holder.innerHTML = `
-    <div class="home-header-inner">
-      <span class="home-eyebrow">${todayLongDate()}</span>
-      <h1 class="home-greeting">${greetingText()}</h1>
+    <div class="home-header-text">
+      <h1>${greetingText()}</h1>
+      <p>${todayLongDate()}</p>
     </div>
   `;
 }
 
-// ===== Kartu CTA utama — 1 kartu adaptif yang menggantikan tombol lama +
+// ===== Kartu CTA utama â€” 1 kartu adaptif yang menggantikan tombol lama +
 // notifikasi lama, jadi selalu ada satu ajakan aksi paling relevan:
 // 1) Ada wizard belum selesai -> ajak lanjutkan persis di step itu.
 // 2) Ada level materi berikutnya -> ajak mulai level itu.
@@ -48,13 +48,12 @@ function renderHomeContinueCard(){
   const lp = getLastProgress();
   const L = lp ? LEVELS[lp.level] : null;
 
-  let eyebrow, title, sub, action, icon;
+  let eyebrow, title, sub, action;
   if(lp && L && !app.completed.has(lp.level)){
     eyebrow = 'Lanjutkan Belajar';
     title = `Level ${lp.level}: ${L.title}`;
-    sub = 'Kamu berhenti di tengah jalan — yuk selesaikan sekarang.';
+    sub = 'Kamu berhenti di tengah jalan â€” yuk selesaikan sekarang.';
     action = resumeLastActivity;
-    icon = 'speed';
   } else {
     const nextLevel = [1,2,3].find(id => !app.completed.has(id));
     if(nextLevel){
@@ -63,20 +62,17 @@ function renderHomeContinueCard(){
       title = `Level ${nextLevel}: ${NL.title}`;
       sub = 'Pelajari materinya, lalu uji lewat simulasi interaktif.';
       action = ()=> navigate('materi', {level:nextLevel});
-      icon = NL.icon || 'speed';
     } else {
       eyebrow = 'Semua Level Tuntas!';
       title = 'Asah Kecepatanmu di Mode Survival';
       sub = 'Jawab soal cepat-cepatan dan kejar skor tertinggimu.';
       action = ()=> navigate('survival', {});
-      icon = 'fire';
     }
   }
 
   holder.innerHTML = `
     <button class="home-cta ripple-host" id="homeCtaBtn">
-      <span class="home-cta-shape" aria-hidden="true"></span>
-      <span class="home-cta-icon-bg">${svgIcon(icon)}</span>
+      <span class="home-cta-icon-bg">${svgIcon('speed')}</span>
       <span class="home-cta-text">
         <span class="home-cta-eyebrow">${eyebrow}</span>
         <h3 class="home-cta-title">${title}</h3>
@@ -94,7 +90,7 @@ function renderHomeAchievement(){
   const pct = Math.round((app.completed.size / 3) * 100);
   const lvlChips = [1,2,3].map(id=>{
     const done = app.completed.has(id);
-    return `<span class="ach-lvl-chip lvl-${id} ${done?'done':''}">${done ? svgIcon('checkSm') : id}</span>`;
+    return `<span class="ach-lvl-chip ${done?'done':''}">${done ? svgIcon('checkSm') : id}</span>`;
   }).join('');
   holder.innerHTML = `
     <div class="gami-card home-card">
@@ -113,7 +109,7 @@ function renderHomeAchievement(){
   apply3DTilt(holder.querySelector('.gami-card'), 10, 0);
 }
 
-// ===== Kartu Streak — pendamping kartu Survival di baris bento kedua =====
+// ===== Kartu Streak â€” pendamping kartu Survival di baris bento kedua =====
 function renderHomeStreakCard(){
   const holder = document.getElementById('homeStreakCard');
   if(!holder) return;
@@ -144,7 +140,7 @@ function renderHomeQuote(){
   `;
 }
 
-// ===== Halaman "Level" — peta zig-zag (tidak diubah tampilannya) =====
+// ===== Halaman "Level" â€” peta zig-zag (tidak diubah tampilannya) =====
 function renderLevelMap(){
   const mapEl = document.getElementById('journeyMap');
   Array.from(mapEl.children).forEach(c => { if(c.id !== 'jPathSvg') c.remove(); });
@@ -185,10 +181,10 @@ function renderLevelMap(){
 }
 
 // ===================================================================
-// ===== Halaman "Sejarah" — Tumpukan kartu arsip + wizard konten ====
+// ===== Halaman "Sejarah" â€” Tumpukan kartu arsip + wizard konten ====
 // ===================================================================
 
-let historyCardEls = null; // {levelId: HTMLElement} — dibuat sekali, dipakai ulang
+let historyCardEls = null; // {levelId: HTMLElement} â€” dibuat sekali, dipakai ulang
 const HIST_PEEK = 46;         // px "pucuk" kartu di belakang yang kelihatan di atas kartu depannya
 const HIST_SCALE_STEP = 0.045;
 const HIST_CARD_H = 380;      // harus sinkron dengan min-height .history-card di CSS
@@ -244,7 +240,7 @@ function buildHistoryCards(){
 // Menata ulang posisi visual seluruh kartu berdasarkan `app.history.order`.
 // order[0] = kartu paling depan (aktif). Kartu di belakangnya digeser TURUN
 // makin jauh (bukan naik) sehingga bagian atas tiap kartu di belakang selalu
-// nongol/"pucuk" di ATAS kartu yang ada di depannya — dan karena kartu paling
+// nongol/"pucuk" di ATAS kartu yang ada di depannya â€” dan karena kartu paling
 // belakang justru berada paling dekat ke atas wadah (bukan mencuat ke luar
 // wadah), dia tidak akan pernah numpuk ke judul tab.
 function layoutHistoryStack(animate){
@@ -274,7 +270,7 @@ function attachHistoryCardGestures(card, id){
     if(card.style.pointerEvents === 'none') return;
     dragging = true; moved = false; startY = e.clientY; startX = e.clientX;
     // Kartu terdepan istirahat di posisi y > 0 (bukan 0) karena sekarang
-    // ditumpuk mundur ke bawah — jadi harus dicatat dulu titik awalnya,
+    // ditumpuk mundur ke bawah â€” jadi harus dicatat dulu titik awalnya,
     // supaya geseran jari itungannya RELATIF ke situ. Kalau tidak, kartu
     // bakal "loncat" ke y:0 dulu begitu jari mulai bergerak.
     baseY = gsap.getProperty(card, 'y') || 0;
@@ -286,7 +282,7 @@ function attachHistoryCardGestures(card, id){
     const dy = e.clientY - startY, dx = e.clientX - startX;
     if(Math.abs(dy) > 6 || Math.abs(dx) > 6) moved = true;
     // Kartu terdepan HANYA boleh diseret ke bawah (buang/mundur-maju biasa).
-    // Gerakan ke atas sengaja tidak diberi efek apa pun di kartu ini — swipe
+    // Gerakan ke atas sengaja tidak diberi efek apa pun di kartu ini â€” swipe
     // ke atas adalah gestur "mundur" global (lihat endDrag), bukan aksi yang
     // menempel/menyeret kartu terdepan.
     if(dy > 0) gsap.set(card, { y: baseY + dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
@@ -324,7 +320,7 @@ function commitHistorySwipe(card, id){
 // Gestur "mundur": swipe ke atas pada kartu terdepan. Ini LITERAL kebalikan
 // dari animasi commitHistorySwipe di atas, dimainkan mundur, untuk SATU kartu
 // yang balik itu saja (kartu lain tidak diapa-apakan selain digeser halus
-// biasa ke slot barunya — tidak ada animasi kedua yang saling tabrakan).
+// biasa ke slot barunya â€” tidak ada animasi kedua yang saling tabrakan).
 //
 // Alur commitHistorySwipe (maju) utk kartu yg dibuang:
 //   depan -> [tween: turun+memudar] -> [lompat instan: sembunyi jauh di
@@ -351,14 +347,14 @@ function historySwipeBack(){
     // FASE 1: kartu dikunci di lapisan PALING BAWAH (bukan sekadar dibiarkan
     // pakai z-index lama) selagi turun & memudar. Ini perlu, karena begitu
     // `order` di-rotate, kartu yang tadinya "kedua dari belakang" ikut naik
-    // jadi kartu paling belakang yang baru — dan kalau z-index kartu balik
+    // jadi kartu paling belakang yang baru â€” dan kalau z-index kartu balik
     // ini tidak dikunci, sesaat z-index keduanya bisa SERI, bikin urutan
     // render jadi acak (kartu balik ini sempat nembus 1 kartu di depannya).
     returningCard.style.zIndex = 0;
     gsap.to(returningCard, {
       y: HIST_CARD_H + 60, opacity: 0, rotate: 0, scale: 1, duration: .3, ease: 'power1.in',
       onComplete: () => {
-        // Di titik ini kartu sudah sepenuhnya transparan (opacity 0) — baru
+        // Di titik ini kartu sudah sepenuhnya transparan (opacity 0) â€” baru
         // SEKARANG aman untuk mengangkatnya ke lapisan paling atas, karena
         // tidak ada apa pun yang kelihatan untuk "nembus".
         returningCard.style.zIndex = 31;
@@ -385,7 +381,7 @@ function historySwipeBack(){
   });
 }
 
-// Transisi buka wizard — sederhana & stabil: kartu cukup "menekan" sedikit
+// Transisi buka wizard â€” sederhana & stabil: kartu cukup "menekan" sedikit
 // (bounce kecil) sebagai umpan balik sentuhan, TANPA memudar/menghilang,
 // lalu pindah screen. Konten wizard sendiri masuk dengan fade+slide halus
 // dari router.js, jadi transisinya tetap terasa menyatu tanpa perlu morphing
@@ -546,7 +542,7 @@ function importDataJson(file){
   reader.readAsText(file);
 }
 
-// ===== Halaman "Tentang Aplikasi" — halaman penuh (bukan pop-up) =====
+// ===== Halaman "Tentang Aplikasi" â€” halaman penuh (bukan pop-up) =====
 function renderAppInfo(){
   document.getElementById('appInfoPurpose').textContent = APP_INFO.purpose;
   document.getElementById('appInfoTeam').innerHTML = APP_INFO.team.map(n => `
@@ -561,12 +557,12 @@ function renderAppInfo(){
   repoLink.querySelector('.appinfo-repo-icon').innerHTML = svgIcon('code');
 }
 
-// Tombol "Sakti" — satu-satunya pintu masuk untuk melanjutkan progres.
+// Tombol "Sakti" â€” satu-satunya pintu masuk untuk melanjutkan progres.
 // Karena hasil kalkulasi antar-step (app.calc/app.locked/app.calcChain/
 // app.lastResult) cuma hidup di memory dan ikut hilang kalau app sempat
 // di-close, di sini kita regenerate parameter soal-nya persis seperti saat
 // user pertama kali membuka halaman materi level tsb (lihat renderMateri()).
-// Wizard tetap diarahkan ke step terakhir yang tersimpan — dan itu AMAN,
+// Wizard tetap diarahkan ke step terakhir yang tersimpan â€” dan itu AMAN,
 // karena tiap step renderer di level1/2/3.js sudah otomatis mundur sendiri
 // (wizardGoStep(-1)) kalau ada data hitungan yang belum tersedia, sehingga
 // user tidak akan pernah nyangkut di step yang rusak/kosong maupun harus
@@ -903,7 +899,7 @@ function renderWizardStep(isInitial = false){
   for(let i=0;i<count;i++) html += `<div class="step-dot ${i===wizard.step?'current':(i<wizard.step?'done':'')}"></div>`;
   els.wizardProgress.innerHTML = html;
 
-  // Reset pill nyawa mengambang tiap pindah step — hanya renderQuizStep yang
+  // Reset pill nyawa mengambang tiap pindah step â€” hanya renderQuizStep yang
   // akan mengisi & menampilkannya lagi kalau step ini memang kuis.
   if(els.quizLivesFloat){ els.quizLivesFloat.classList.remove('show'); els.quizLivesFloat.innerHTML = ''; }
   
@@ -911,7 +907,7 @@ function renderWizardStep(isInitial = false){
     // FIX LAG: matiin semua tween/timeline GSAP yang masih nempel di konten
     // step SEBELUMNYA sebelum kontennya dibuang. Tanpa ini, animasi infinite
     // (repeat:-1) di preview kuis dsb tetap jalan selamanya di background
-    // walau elemennya udah gak ada di layar — makin sering pindah step,
+    // walau elemennya udah gak ada di layar â€” makin sering pindah step,
     // makin numpuk, makin berat. Ini akar masalah "makin lama makin ngelag".
     gsap.killTweensOf(els.wizardBody.querySelectorAll('*'));
     els.wizardBody.innerHTML = '';
