@@ -16,16 +16,21 @@ if(els.wizExit){ els.wizExit.innerHTML = svgIcon('doorExit'); els.wizExit.onclic
 // Init tombol exit wizard Sejarah
 if(hwEls.exit){ hwEls.exit.innerHTML = svgIcon('doorExit'); hwEls.exit.onclick = closeHistoryWizard; }
 
-// ===== Ikon statis Bottom Navigation =====
+// ===== Ikon statis Bottom Navigation (berubah: navSettings → navProfile) =====
 document.getElementById('navHome').querySelector('.bn-icon').innerHTML = svgIcon('home');
 document.getElementById('navLevel').querySelector('.bn-icon').innerHTML = svgIcon('mapRoute');
 document.getElementById('navHistory').querySelector('.bn-icon').innerHTML = svgIcon('history');
-document.getElementById('navSettings').querySelector('.bn-icon').innerHTML = svgIcon('gear');
+document.getElementById('navProfile').querySelector('.bn-icon').innerHTML = svgIcon('user');
 document.querySelectorAll('.bn-item').forEach(btn=>{
   btn.addEventListener('click', ()=> navigate(btn.dataset.screen, {}, true));
 });
 
-// ===== Ikon & aksi statis di Pengaturan =====
+// ===== Ikon & aksi statis di Pengaturan (Settings screen terpisah) =====
+document.getElementById('settingsBackBtn').innerHTML = svgIcon('arrowBack');
+document.getElementById('settingsBackBtn').addEventListener('click', ()=>{
+  navigate('profile', {}, false);
+});
+
 document.getElementById('btnExportData').querySelector('.settings-row-icon').innerHTML = svgIcon('download');
 document.getElementById('btnImportData').querySelector('.settings-row-icon').innerHTML = svgIcon('upload');
 document.getElementById('btnResetData').querySelector('.settings-row-icon').innerHTML = svgIcon('trash');
@@ -48,12 +53,21 @@ importFileInput.addEventListener('change', (e)=>{
   importFileInput.value = '';
 });
 
+// ===== Theme Swatches =====
 document.querySelectorAll('#themeGrid .theme-swatch').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     setTheme(btn.dataset.theme);
     document.querySelectorAll('#themeGrid .theme-swatch').forEach(el => el.classList.toggle('active', el === btn));
   });
 });
+
+// ===== Privacy Toggle (di Settings screen) =====
+const privacyToggle = document.getElementById('privacyToggle');
+if(privacyToggle){
+  privacyToggle.addEventListener('change', (e)=>{
+    savePrivacySetting(e.target.checked);
+  });
+}
 
 // Entry point — dijalankan setelah semua module lain ke-load.
 // Ga langsung ke home: initAuthGate() cek dulu status login (lihat
