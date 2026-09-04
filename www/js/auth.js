@@ -83,7 +83,9 @@ async function registerWithUsername(username, password, profile) {
 // ===== LOGIN pakai username =====
 async function loginWithUsername(username, password) {
   const email = usernameToEmail(username);
+  if (window.phygoLog) window.phygoLog('AUTH.JS', 'panggil signInWithEmailAndPassword, email=' + email);
   await fbAuth.signInWithEmailAndPassword(email, password);
+  if (window.phygoLog) window.phygoLog('AUTH.JS', 'signInWithEmailAndPassword selesai (resolved)');
 }
 
 // ===== LOGIN pakai Google =====
