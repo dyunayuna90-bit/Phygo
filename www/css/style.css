@@ -743,3 +743,628 @@ input{ font-family:inherit; }
 }
 .avatar-option img, .avatar-option svg{ width:100%; height:100%; object-fit:cover; }
 .avatar-option.selected{ border-color:var(--primary); transform:scale(1.08); }
+
+/* ===== PROFIL SCREEN — Material 3 Expressive Dark Mode ===== */
+
+.profile-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+  margin-bottom: 20px;
+}
+
+.profile-topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+  letter-spacing: 0px;
+}
+
+.profile-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-container);
+  border-radius: var(--r-m);
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.profile-settings-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.profile-settings-btn:active {
+  transform: scale(0.92);
+}
+
+/* --- Hero Section: Avatar + User Info + Rank --- */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px 24px;
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--r-xl);
+  background: linear-gradient(135deg, var(--primary-container), var(--primary-soft));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--on-primary-container);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.profile-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-username {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--on-surface);
+  margin-bottom: 8px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.profile-rank {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-rank-badge {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: var(--primary-container);
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  display: inline-block;
+}
+
+.profile-rank-poin {
+  font-size: 13px;
+  color: var(--on-surface-var);
+}
+
+/* --- Stats Grid: Nama, Gender, Umur, Musim Ini --- */
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 20px 24px;
+}
+
+.profile-stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--surface-c);
+  padding: 16px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--outline-var);
+}
+
+.profile-stat-label {
+  font-size: 12px;
+  color: var(--on-surface-var);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.profile-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+/* --- Section: Breakdown Poin --- */
+.profile-section {
+  padding: 0 20px 24px;
+}
+
+.profile-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.profile-breakdown {
+  background: var(--surface-c);
+  padding: 16px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--outline-var);
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.breakdown-label {
+  color: var(--on-surface-var);
+  font-weight: 600;
+}
+
+.breakdown-value {
+  color: var(--on-surface);
+  font-weight: 700;
+}
+
+.breakdown-bar {
+  height: 6px;
+  background: var(--surface-c-high);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.breakdown-bar-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* --- Section: Quote Terpasang --- */
+.profile-quote-box {
+  background: linear-gradient(150deg, var(--primary-container), var(--surface-c));
+  padding: 16px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--outline-var);
+}
+
+.profile-quote-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--on-surface);
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.profile-quote-hint {
+  font-size: 12px;
+  color: var(--on-surface-var);
+  margin-top: 8px;
+  display: block;
+}
+
+/* --- Section: Komunitas (Followers/Following) --- */
+.profile-social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.profile-social-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-c);
+  padding: 16px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--outline-var);
+}
+
+.profile-social-count {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.profile-social-label {
+  font-size: 12px;
+  color: var(--on-surface-var);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ===== SETTINGS SCREEN — Topbar + Privacy Toggle ===== */
+
+.settings-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+  margin-bottom: 16px;
+}
+
+.settings-topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.settings-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-container);
+  border-radius: var(--r-m);
+  color: var(--primary);
+}
+
+.settings-back-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.settings-back-btn:active {
+  transform: scale(0.92);
+}
+
+/* --- Privacy Row --- */
+.settings-privacy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--surface-c);
+  padding: 16px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--outline-var);
+}
+
+.settings-privacy-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.settings-privacy-text b {
+  font-size: 15px;
+  color: var(--on-surface);
+  font-weight: 700;
+}
+
+.settings-privacy-text small {
+  font-size: 12px;
+  color: var(--on-surface-var);
+  line-height: 1.4;
+}
+
+/* --- Toggle Switch (untuk Privacy & lainnya) --- */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.toggle-slider {
+  display: block;
+  width: 50px;
+  height: 28px;
+  background: var(--outline-var);
+  border-radius: var(--r-pill);
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: var(--surface-c);
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left 0.3s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--primary);
+}
+
+.toggle-switch input:checked + .toggle-slider::after {
+  left: 24px;
+}
+
+/* --- Existing Settings Section (theme, data, about) --- */
+.settings-section {
+  padding: 0 20px 24px;
+}
+
+.settings-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface-c);
+  border: 2px solid var(--outline-var);
+  border-radius: var(--r-m);
+  transition: all 0.3s ease;
+}
+
+.theme-swatch.active {
+  border-color: var(--primary);
+  background: var(--primary-container);
+}
+
+.theme-swatch-preview {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-m);
+}
+
+.theme-preview-cyan {
+  background: linear-gradient(135deg, #7ED9D3, #3FB6AF);
+}
+
+.theme-preview-pink {
+  background: linear-gradient(135deg, #F2A6C4, #D6779E);
+}
+
+.theme-preview-coklat {
+  background: linear-gradient(135deg, #D8A468, #B97F3E);
+}
+
+.theme-swatch-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface);
+  text-align: center;
+}
+
+.theme-swatch:active {
+  transform: scale(0.95);
+}
+
+/* --- Settings Row (Export, Import, etc.) --- */
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface-c);
+  border: 1px solid var(--outline-var);
+  border-radius: var(--r-m);
+  margin-bottom: 8px;
+  transition: all 0.25s ease;
+}
+
+.settings-row:active {
+  transform: scale(0.98);
+  background: var(--surface-c-high);
+}
+
+.settings-row-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+
+.settings-row-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-row-text b {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.settings-row-text small {
+  font-size: 12px;
+  color: var(--on-surface-var);
+}
+
+.settings-row-chevron {
+  flex-shrink: 0;
+  color: var(--on-surface-var);
+}
+
+.settings-row-chevron svg {
+  width: 20px;
+  height: 20px;
+}
+
+.settings-row-danger {
+  color: var(--error);
+}
+
+.settings-row-danger .settings-row-icon {
+  color: var(--error);
+}
+
+.settings-row-danger .settings-row-text b {
+  color: var(--error);
+}
+
+/* ===== About App Screen ===== */
+.appinfo-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+  margin-bottom: 20px;
+}
+
+.appinfo-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-container);
+  border-radius: var(--r-m);
+  color: var(--primary);
+}
+
+.appinfo-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+.appinfo-back:active {
+  transform: scale(0.92);
+}
+
+.appinfo-topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.appinfo-hero {
+  text-align: center;
+  padding: 0 20px 24px;
+}
+
+.appinfo-logo {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+.appinfo-tagline {
+  font-size: 15px;
+  color: var(--on-surface-var);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.appinfo-section {
+  padding: 0 20px 24px;
+}
+
+.appinfo-section h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--on-surface);
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.appinfo-team-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface-c);
+  border-radius: var(--r-m);
+  margin-bottom: 8px;
+  border: 1px solid var(--outline-var);
+}
+
+.appinfo-team-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-container);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.appinfo-repo-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface-c);
+  border-radius: var(--r-m);
+  border: 1px solid var(--outline-var);
+  color: var(--primary);
+  transition: all 0.25s ease;
+}
+
+.appinfo-repo-link:active {
+  transform: scale(0.98);
+  background: var(--surface-c-high);
+}
+
+.appinfo-repo-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.appinfo-repo-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.appinfo-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--on-surface-var);
+  padding: 40px 20px;
+  line-height: 1.6;
+}
