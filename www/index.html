@@ -168,9 +168,6 @@
           <div id="homeStreakCard"></div>
         </div>
 
-        <!-- Kartu Kutipan Tokoh Fisika -->
-        <div id="homeQuoteCard"></div>
-
         <!-- Wordmark penutup halaman Home -->
         <div class="home-footer-mark">Phygo</div>
       </div>
@@ -288,6 +285,26 @@
             <span class="settings-row-chevron"></span>
           </button>
         </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Akun</h3>
+          <button class="settings-row ripple-host" id="btnEditProfile">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Edit Profil</b>
+              <small>Ubah nama, gender, dan umur kamu</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+          <button class="settings-row settings-row-danger ripple-host" id="btnLogout">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Keluar</b>
+              <small>Logout dari akun ini di perangkat ini</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -317,6 +334,13 @@
         </div>
 
         <div class="appinfo-footer">Dibuat dengan ❤ untuk Pekan Ilmiah, Universitas Negeri Jakarta</div>
+      </div>
+    </section>
+
+    <!-- ===== SOSIAL (Daftar Teman) — dibuka dari tombol di sebelah Pengaturan pada tab Profil ===== -->
+    <section class="screen" id="screen-social">
+      <div class="scroll-pane" id="socialScroll">
+        <!-- Diisi oleh renderSocialScreen() di social.js -->
       </div>
     </section>
 
@@ -453,6 +477,80 @@
   </nav>
 </div>
 
+<!-- =====================================================================
+     MODAL: TAMBAH TEMAN — search username global + aksi follow/terima.
+     Dibuka dari tombol (+) di layar Sosial. Material 3 Expressive dialog,
+     tanpa blur (backdrop solid semi-transparan biasa).
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalAddFriendBackdrop"></div>
+<div class="m3-modal" id="modalAddFriend">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Tambah Teman</span>
+    <button class="m3-modal-close ripple-host" id="addFriendCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="social-search-bar m3-modal-search">
+    <span class="m3-search-icon"></span>
+    <input type="text" id="addFriendSearchInput" placeholder="Cari username teman...">
+  </div>
+  <div class="m3-modal-body" id="addFriendResults"></div>
+</div>
+
+<!-- =====================================================================
+     MODAL: UNDANGAN PERTEMANAN (kotak pesan) — terima/tolak permintaan.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalInboxBackdrop"></div>
+<div class="m3-modal" id="modalInbox">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Undangan Pertemanan</span>
+    <button class="m3-modal-close ripple-host" id="inboxCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body" id="inboxList"></div>
+</div>
+
+<!-- =====================================================================
+     MODAL: LIHAT PROFIL TEMAN — read-only, dibuka dari daftar teman /
+     hasil pencarian / undangan.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalProfileViewBackdrop"></div>
+<div class="m3-modal" id="modalProfileView">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Profil Teman</span>
+    <button class="m3-modal-close ripple-host" id="profileViewCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body" id="profileViewBody"></div>
+</div>
+
+<!-- =====================================================================
+     MODAL: EDIT PROFIL — ubah nama, gender, umur. Dibuka dari Pengaturan.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalEditProfileBackdrop"></div>
+<div class="m3-modal" id="modalEditProfile">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Edit Profil</span>
+    <button class="m3-modal-close ripple-host" id="editProfileCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body">
+    <div class="auth-field">
+      <label>Nama</label>
+      <input type="text" id="editProfileName" placeholder="Nama kamu">
+    </div>
+    <div class="auth-field">
+      <label>Gender</label>
+      <select id="editProfileGender">
+        <option value="">Pilih</option>
+        <option value="L">Laki-laki</option>
+        <option value="P">Perempuan</option>
+      </select>
+    </div>
+    <div class="auth-field">
+      <label>Umur</label>
+      <input type="number" id="editProfileAge" placeholder="Umur kamu" min="5" max="100">
+    </div>
+    <p class="auth-error" id="editProfileError"></p>
+    <button class="btn btn-primary btn-block ripple-host" id="btnSaveEditProfile">Simpan</button>
+  </div>
+</div>
+
 <!-- Libs (lokal) -->
 <script src="libs/gsap/gsap.min.js"></script>
 <script src="libs/katex/katex.min.js"></script>
@@ -471,6 +569,7 @@
 <script src="js/state.js"></script>
 <script src="js/router.js"></script>
 <script src="js/screens.js"></script>
+<script src="js/social.js"></script>
 <script src="js/survival.js"></script>
 <script src="js/level1.js"></script>
 <script src="js/level2.js"></script>
