@@ -25,6 +25,36 @@
 let selectedAvatarId = 1;
 let authBusy = false; // guard anti double-submit global utk semua tombol auth
 
+// =====================================================================
+// FIX BUG "LOGIN SCREEN NGEDIP": sebelumnya loader awal (#appLoader) di
+// app.js cuma nunggu delay tetap (400ms) + font siap, TIDAK nunggu status
+// login (fbAuth.onAuthStateChanged) beneran selesai dicek. Di WebView
+// Android, pengecekan sesi login (baca dari penyimpanan lokal) itu ASYNC
+// dan kadang makan waktu lebih dari 400ms — jadi begitu loader ilang,
+// yang kelihatan sesaat adalah layar login/daftar (state default #screen-auth
+// yang "active" dari HTML), baru sepersekian detik kemudian
+// goToDashboardAfterAuth() jalan dan baru pindah ke dashboard. Efeknya:
+// "ngedip" nampilin form login walau user sebenarnya sudah login.
+//
+// PERBAIKAN: app.js sekarang HARUS ikut nunggu promise `authGateReady`
+// ini sebelum loader di-fade-out. Promise-nya baru resolve begitu
+// listener onAuthStateChanged pertama kali dapat jawaban PASTI (login
+// atau tidak), jadi begitu loader ilang, layar yang benar (dashboard ATAU
+// form login) sudah langsung tampil — tanpa jeda/ngedip sama sekali.
+// Ada juga batas waktu 5 detik sebagai jaring pengaman kalau-kalau event
+// itu nggak pernah nyala (misal WebView yang aneh) — biar app tetap bisa
+// dipakai (fallback ke layar login) daripada nyangkut selamanya di loader.
+// =====================================================================
+let _resolveAuthGateReady;
+window.authGateReady = new Promise((res) => { _resolveAuthGateReady = res; });
+let _authGateSettled = false;
+function _settleAuthGate() {
+  if (_authGateSettled) return;
+  _authGateSettled = true;
+  _resolveAuthGateReady();
+}
+setTimeout(_settleAuthGate, 5000); // jaring pengaman, lihat catatan di atas
+
 function renderAvatarPicker() {
   const picker = document.getElementById('avatarPicker');
   if (!picker) return;
@@ -130,6 +160,9 @@ function goToDashboardAfterAuth() {
     document.getElementById('app').style.display = '';
     history.replaceState({ screen: 'home' }, '', '#home');
     showScreen('home');
+    // Nyalakan listener realtime sistem pertemanan (following/followers) —
+    // lihat social.js. Aman dipanggil berkali-kali (di-reset di dalamnya).
+    if (typeof initSocialListeners === 'function') initSocialListeners();
     phygoLog('DASHBOARD', 'showScreen(home) selesai tanpa error');
   } catch (e) {
     // Kalau sampai render dashboard-nya error, jangan biarkan user
@@ -138,6 +171,23 @@ function goToDashboardAfterAuth() {
     console.error('[Phygo] Gagal render dashboard setelah login:', e);
     phygoLog('DASHBOARD', 'ERROR pas showScreen(home): ' + (e && e.message));
   }
+}
+
+// Dipanggil saat user logout ATAU saat pertama buka app dan ternyata belum
+// pernah login. Membersihkan semua layar dashboard yang mungkin masih
+// "nempel" (misal user logout dari tengah-tengah layar Pengaturan/Sosial),
+// jadi begitu login lagi, app selalu mulai bersih dari Home — bukan
+// nyangkut di layar sebelumnya.
+function resetToAuthScreen() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-auth').classList.add('active');
+  document.getElementById('app').style.display = 'none';
+  showAuthForm('login', false);
+  history.replaceState({ authForm: 'login' }, '', '#masuk');
+  const lu = document.getElementById('loginUsername'); if (lu) lu.value = '';
+  const lp = document.getElementById('loginPassword'); if (lp) lp.value = '';
+  if (typeof teardownSocialListeners === 'function') teardownSocialListeners();
+  if (typeof closeAllSocialModals === 'function') closeAllSocialModals();
 }
 
 function initAuthUI() {
@@ -276,6 +326,33 @@ function initAuthUI() {
   });
 }
 
+// ===== LOGOUT — dipanggil dari tombol "Keluar" di Pengaturan (lihat app.js) =====
+// UI-nya sendiri (pindah ke layar login) TIDAK dipicu manual di sini — cukup
+// panggil logoutUser(), dan watchAuthState() di initAuthGate() akan otomatis
+// mendeteksi perubahan lalu memanggil resetToAuthScreen(). Ini konsisten
+// dengan prinsip "satu sumber kebenaran" yang sudah dipakai untuk login.
+function confirmLogout() {
+  Swal.fire({
+    icon: 'warning',
+    title: 'Keluar dari akun?',
+    text: 'Kamu perlu memasukkan username & kata sandi lagi untuk masuk kembali.',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Keluar',
+    cancelButtonText: 'Batal',
+    background: '#1C2426', color: '#E3E3E6',
+    confirmButtonColor: 'var(--error)',
+    cancelButtonColor: 'var(--surface-c-high)'
+  }).then((res) => {
+    if (!res.isConfirmed) return;
+    phygoLog('LOGOUT', 'user konfirmasi logout');
+    logoutUser().catch((e) => {
+      console.error('[Phygo] Logout gagal:', e);
+      phygoLog('LOGOUT', 'ERROR: ' + (e && e.message));
+      Swal.fire({ icon: 'error', title: 'Gagal Keluar', text: e.message, background: '#1C2426', color: '#E3E3E6', confirmButtonColor: 'var(--error)' });
+    });
+  });
+}
+
 // ===== GATE UTAMA — dipanggil sekali di app.js, GANTIKAN showScreen('home') langsung =====
 function initAuthGate() {
   phygoLog('GATE', 'initAuthGate() mulai jalan');
@@ -295,8 +372,10 @@ function initAuthGate() {
       setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
       goToDashboardAfterAuth();
     } else {
-      document.getElementById('screen-auth').classList.add('active');
-      document.getElementById('app').style.display = 'none';
+      resetToAuthScreen();
     }
+    // Baru sekarang loader awal (#appLoader di app.js) boleh menghilang —
+    // lihat catatan panjang soal `authGateReady` di atas file ini.
+    _settleAuthGate();
   });
 }
