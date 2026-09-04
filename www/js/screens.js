@@ -6,7 +6,6 @@ function renderHome(){
   renderHomeAchievement();
   renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderHomeStreakCard();
-  renderHomeQuote();
 }
 
 // ===== Header â€” sapaan dinamis sesuai jam + tanggal hari ini =====
@@ -122,20 +121,6 @@ function renderHomeStreakCard(){
       <div class="streak-val">${streak}</div>
       <div class="streak-label">Hari Beruntun</div>
       <p class="streak-msg">${msg}</p>
-    </div>
-  `;
-}
-
-function renderHomeQuote(){
-  const holder = document.getElementById('homeQuoteCard');
-  if(!holder) return;
-  const q = PHYSICS_QUOTES[getQuoteIndex() % PHYSICS_QUOTES.length];
-  holder.innerHTML = `
-    <div class="quote-card home-card">
-      <div class="home-card-icon-bg">${svgIcon('quote')}</div>
-      <div class="quote-mark">${svgIcon('quote')}</div>
-      <p class="quote-text">${q.text}</p>
-      <span class="quote-by">${q.by}${q.year ? ', ' + q.year : ''}</span>
     </div>
   `;
 }
@@ -503,9 +488,15 @@ async function renderProfileScreen(){
     holder.innerHTML = `
       <div class="profile-topbar">
         <span class="profile-topbar-title">Profil Saya</span>
-        <button class="profile-settings-btn ripple-host" id="profileSettingsBtn" aria-label="Pengaturan">
-          ${svgIcon('gear')}
-        </button>
+        <div class="profile-topbar-actions">
+          <button class="profile-settings-btn ripple-host" id="profileSocialBtn" aria-label="Sosial">
+            ${svgIcon('users')}
+            <span class="social-req-badge" id="profileSocialBadge" style="display:none;">0</span>
+          </button>
+          <button class="profile-settings-btn ripple-host" id="profileSettingsBtn" aria-label="Pengaturan">
+            ${svgIcon('gear')}
+          </button>
+        </div>
       </div>
 
       <div class="profile-hero">
@@ -569,22 +560,37 @@ async function renderProfileScreen(){
       <div class="profile-section">
         <h3 class="profile-section-title">Komunitas</h3>
         <div class="profile-social-grid">
-          <div class="profile-social-box">
+          <button class="profile-social-box ripple-host" id="profileFollowersBox">
             <span class="profile-social-count" id="profileFollowersCount">0</span>
             <span class="profile-social-label">Pengikut</span>
-          </div>
-          <div class="profile-social-box">
+          </button>
+          <button class="profile-social-box ripple-host" id="profileFollowingBox">
             <span class="profile-social-count" id="profileFollowingCount">0</span>
             <span class="profile-social-label">Mengikuti</span>
-          </div>
+          </button>
         </div>
       </div>
     `;
+
+    // Isi jumlah Pengikut/Mengikuti dari data realtime sistem pertemanan
+    // (lihat social.js) — kalau listener-nya belum sempat nyala, ya
+    // ditampilin 0 dulu, nanti update otomatis begitu data datang karena
+    // renderProfileScreen() dipanggil ulang tiap kali tab Profil dibuka.
+    if (typeof socialState !== 'undefined') {
+      document.getElementById('profileFollowersCount').textContent = socialState.followers.size;
+      document.getElementById('profileFollowingCount').textContent = socialState.following.size;
+    }
+    document.getElementById('profileFollowersBox').addEventListener('click', ()=> navigate('social', {}, false));
+    document.getElementById('profileFollowingBox').addEventListener('click', ()=> navigate('social', {}, false));
 
     // Attach event listeners
     document.getElementById('profileSettingsBtn').addEventListener('click', ()=>{
       navigate('settings', {fromProfile: true}, false);
     });
+    document.getElementById('profileSocialBtn').addEventListener('click', ()=>{
+      navigate('social', {}, false);
+    });
+    if (typeof updateSocialBadge === 'function') updateSocialBadge();
 
     if(window.phygoLog) window.phygoLog('PROFILE RENDER', 'selesai, username=' + userProfile.usernameDisplay);
 
