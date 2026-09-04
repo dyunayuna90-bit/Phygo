@@ -199,12 +199,35 @@
       </div>
     </section>
 
-    <!-- ===== PENGATURAN ===== -->
+    <!-- ===== PROFIL (Tab ke-4, mengganti Pengaturan lama) ===== -->
+    <section class="screen" id="screen-profile">
+      <div class="scroll-pane" id="profileScroll">
+        <!-- Diisi oleh renderProfileScreen() -->
+      </div>
+    </section>
+
+    <!-- ===== PENGATURAN (Layar Modal, bukan Tab) ===== -->
     <section class="screen" id="screen-settings">
+      <div class="settings-topbar">
+        <button class="settings-back-btn ripple-host" id="settingsBackBtn" aria-label="Kembali">
+          <!-- Ikon diisi di app.js -->
+        </button>
+        <span class="settings-topbar-title">Pengaturan</span>
+        <div style="width: 40px;"></div>
+      </div>
       <div class="scroll-pane" id="settingsScroll">
-        <div class="level-header">
-          <h1>Pengaturan</h1>
-          <p>Sesuaikan tampilan dan kelola data progres belajarmu.</p>
+        <div class="settings-section">
+          <h3 class="settings-section-title">Privasi Profil</h3>
+          <div class="settings-privacy-row">
+            <div class="settings-privacy-text">
+              <b>Profil Pribadi</b>
+              <small>Jika aktif, hanya kamu yang bisa lihat data profil lengkapmu</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="privacyToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
 
         <div class="settings-section">
@@ -281,19 +304,15 @@
         </div>
 
         <div class="appinfo-section">
-          <h3 class="settings-section-title">Anggota Kelompok</h3>
-          <div class="appinfo-team" id="appInfoTeam"></div>
+          <h3>Tim Pengembang</h3>
+          <div id="appInfoTeam"></div>
         </div>
 
         <div class="appinfo-section">
-          <h3 class="settings-section-title">Repositori</h3>
-          <a href="#" target="_blank" rel="noopener" class="appinfo-repo ripple-host" id="appInfoRepoLink">
+          <h3>Repository Proyek</h3>
+          <a class="appinfo-repo-link ripple-host" id="appInfoRepoLink" target="_blank">
             <span class="appinfo-repo-icon"></span>
-            <span class="appinfo-repo-text">
-              <b>Lihat di GitHub</b>
-              <small id="appInfoRepoUrl"></small>
-            </span>
-            <span class="settings-row-chevron"></span>
+            <span id="appInfoRepoUrl"></span>
           </a>
         </div>
 
@@ -427,9 +446,9 @@
       <span class="bn-icon"></span>
       <span class="bn-label">Sejarah</span>
     </button>
-    <button class="bn-item ripple-host" data-screen="settings" id="navSettings">
+    <button class="bn-item ripple-host" data-screen="profile" id="navProfile">
       <span class="bn-icon"></span>
-      <span class="bn-label">Pengaturan</span>
+      <span class="bn-label">Profil</span>
     </button>
   </nav>
 </div>
