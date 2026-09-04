@@ -29,34 +29,56 @@
 <div id="appLoader"><div class="al-ring"></div><div class="al-title">Phygo</div></div>
 
 <!-- =====================================================================
-     DEBUG OVERLAY SEMENTARA — nangkep error JS apapun (termasuk yang
-     kejadian SEBELUM auth-ui.js/app.js sempat jalan sama sekali) dan
-     nampilin langsung di layar sebagai pita merah di bawah, biar kebaca
-     tanpa perlu laptop/USB-debug. Taruh paling atas <body> biar aktif
-     duluan sebelum script lain (yang bisa aja error) sempat dimuat.
-     Aman dihapus/dikomentari nanti kalau sudah gak dibutuhkan lagi.
+     PANEL DEBUG SEMENTARA — nyatet SETIAP langkah proses login/daftar
+     (bukan cuma pas error), plus nangkep error JS/promise yang nggak
+     ketangkep. Selalu keliatan (ada tombol kecil "Sembunyikan/Tampilkan")
+     biar bisa dipantau langsung tanpa laptop/USB-debug. Aman
+     dihapus/dikomentari nanti kalau sudah gak dibutuhkan lagi.
      ===================================================================== -->
-<div id="debugOverlay" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; max-height:45vh; overflow:auto; background:#3a0d0d; color:#ffd6d6; font:12px/1.5 monospace; padding:10px 12px; white-space:pre-wrap; word-break:break-word; border-top:2px solid #ff5252;"></div>
+<div id="debugPanel" style="position:fixed; left:0; right:0; bottom:0; z-index:99999; max-height:38vh; display:flex; flex-direction:column; background:#101a1c; border-top:2px solid #4DD0E1;">
+  <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:#17262a;">
+    <span style="font:11px monospace; color:#4DD0E1;">DEBUG LOG</span>
+    <span>
+      <button id="debugClearBtn" style="font:11px monospace; background:#26383c; color:#fff; border:none; border-radius:6px; padding:4px 8px; margin-right:6px;">Bersihkan</button>
+      <button id="debugToggleBtn" style="font:11px monospace; background:#26383c; color:#fff; border:none; border-radius:6px; padding:4px 8px;">Sembunyikan</button>
+    </span>
+  </div>
+  <div id="debugOverlay" style="overflow:auto; color:#c8f0f5; font:11px/1.5 monospace; padding:8px 10px; white-space:pre-wrap; word-break:break-word;"></div>
+</div>
 <script>
 (function(){
-  function showDebug(label, detail){
-    var el = document.getElementById('debugOverlay');
-    if(!el) return;
-    el.style.display = 'block';
+  var logEl = document.getElementById('debugOverlay');
+  var bodyEl = null; // diisi belakangan setelah document.body ada
+  function timeStr(){ var d = new Date(); return d.toTimeString().slice(0,8); }
+  window.phygoLog = function(label, detail){
+    if(!logEl) return;
     var line = document.createElement('div');
-    line.style.marginBottom = '8px';
-    line.textContent = '[' + label + '] ' + detail;
-    el.appendChild(line);
-  }
+    line.textContent = timeStr() + ' [' + label + '] ' + (detail === undefined ? '' : detail);
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  };
   window.addEventListener('error', function(e){
-    showDebug('JS ERROR', (e.message || 'unknown') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+    window.phygoLog('JS ERROR', (e.message || 'unknown') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
   });
   window.addEventListener('unhandledrejection', function(e){
     var reason = e.reason;
     var text = (reason && reason.message) ? reason.message : String(reason);
     var code = (reason && reason.code) ? (' [' + reason.code + ']') : '';
-    showDebug('PROMISE REJECTED', text + code);
+    window.phygoLog('PROMISE REJECTED (unhandled)', text + code);
   });
+  document.addEventListener('DOMContentLoaded', function(){
+    var toggleBtn = document.getElementById('debugToggleBtn');
+    var clearBtn = document.getElementById('debugClearBtn');
+    var panel = document.getElementById('debugPanel');
+    var hidden = false;
+    toggleBtn.addEventListener('click', function(){
+      hidden = !hidden;
+      logEl.style.display = hidden ? 'none' : 'block';
+      toggleBtn.textContent = hidden ? 'Tampilkan' : 'Sembunyikan';
+    });
+    clearBtn.addEventListener('click', function(){ logEl.innerHTML = ''; });
+  });
+  window.phygoLog('BOOT', 'debug panel siap');
 })();
 </script>
 
