@@ -186,11 +186,19 @@ function initAuthUI() {
     phygoLog('LOGIN', 'mulai signInWithEmailAndPassword untuk username=' + username);
     try {
       await withTimeout(loginWithUsername(username, password), 15000, 'Login butuh waktu terlalu lama.');
-      phygoLog('LOGIN', 'signIn RESOLVE (sukses) — nunggu watchAuthState pindah layar');
-      // Navigasi dashboard ditangani otomatis oleh watchAuthState() di
-      // initAuthGate() begitu Firebase konfirmasi status login berubah.
-      // Tombol sengaja TETAP disabled sampai transisi itu terjadi, biar
-      // ga ada klik nyelip di tengah proses pindah layar.
+      phygoLog('LOGIN', 'signIn RESOLVE (sukses) — langsung pindah ke dashboard');
+      authBusy = false;
+      setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
+      // FIX: sebelumnya navigasi 100% ditaruh di watchAuthState() (nunggu
+      // event onAuthStateChanged). Ternyata di WebView Android tertentu,
+      // event itu KADANG nggak pernah nyala walau signIn-nya sendiri sukses
+      // (kelihatan di debug log: "signIn RESOLVE" muncul, tapi "AUTH STATE"
+      // nggak pernah nyusul). Makanya sekarang begitu promise loginnya
+      // resolve, kita LANGSUNG pindah ke dashboard di sini juga — nggak
+      // nunggu event yang mungkin nggak pernah dateng. watchAuthState()
+      // tetap dipertahankan sebagai jalur cadangan (misal dipakai pas buka
+      // app lagi & sesi lama masih tersimpan).
+      goToDashboardAfterAuth();
     } catch (e) {
       console.error('[Phygo] Login gagal:', e);
       phygoLog('LOGIN', 'signIn REJECT: ' + (e && (e.code || e.message)));
@@ -252,8 +260,12 @@ function initAuthUI() {
       } else {
         await withTimeout(registerWithUsername(username, password, profile), 15000, 'Daftar butuh waktu terlalu lama.');
       }
-      phygoLog('DAFTAR', 'RESOLVE (sukses) — nunggu watchAuthState pindah layar');
-      // Sama seperti login: navigasi ditangani watchAuthState().
+      phygoLog('DAFTAR', 'RESOLVE (sukses) — langsung pindah ke dashboard');
+      authBusy = false;
+      setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
+      // Sama seperti login: navigasi langsung dipanggil di sini, nggak
+      // nunggu onAuthStateChanged (lihat catatan panjang di handler login).
+      goToDashboardAfterAuth();
     } catch (e) {
       console.error('[Phygo] Daftar gagal:', e);
       phygoLog('DAFTAR', 'REJECT: ' + (e && (e.code || e.message)));
