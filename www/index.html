@@ -28,6 +28,38 @@
 <!-- Loading screen awal — dibuang otomatis oleh app.js begitu dashboard siap -->
 <div id="appLoader"><div class="al-ring"></div><div class="al-title">Phygo</div></div>
 
+<!-- =====================================================================
+     DEBUG OVERLAY SEMENTARA — nangkep error JS apapun (termasuk yang
+     kejadian SEBELUM auth-ui.js/app.js sempat jalan sama sekali) dan
+     nampilin langsung di layar sebagai pita merah di bawah, biar kebaca
+     tanpa perlu laptop/USB-debug. Taruh paling atas <body> biar aktif
+     duluan sebelum script lain (yang bisa aja error) sempat dimuat.
+     Aman dihapus/dikomentari nanti kalau sudah gak dibutuhkan lagi.
+     ===================================================================== -->
+<div id="debugOverlay" style="display:none; position:fixed; left:0; right:0; bottom:0; z-index:99999; max-height:45vh; overflow:auto; background:#3a0d0d; color:#ffd6d6; font:12px/1.5 monospace; padding:10px 12px; white-space:pre-wrap; word-break:break-word; border-top:2px solid #ff5252;"></div>
+<script>
+(function(){
+  function showDebug(label, detail){
+    var el = document.getElementById('debugOverlay');
+    if(!el) return;
+    el.style.display = 'block';
+    var line = document.createElement('div');
+    line.style.marginBottom = '8px';
+    line.textContent = '[' + label + '] ' + detail;
+    el.appendChild(line);
+  }
+  window.addEventListener('error', function(e){
+    showDebug('JS ERROR', (e.message || 'unknown') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    var reason = e.reason;
+    var text = (reason && reason.message) ? reason.message : String(reason);
+    var code = (reason && reason.code) ? (' [' + reason.code + ']') : '';
+    showDebug('PROMISE REJECTED', text + code);
+  });
+})();
+</script>
+
 <section class="screen active" id="screen-auth">
   <div class="scroll-pane auth-scroll">
     <div class="auth-hero">
