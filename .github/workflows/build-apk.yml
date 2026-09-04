@@ -29,15 +29,17 @@ jobs:
         run: npm install
 
       # ================================================================
-      # BARU: Copy lib offline (KaTeX, SweetAlert2, GSAP, Font Roboto)
-      # dari node_modules ke www/libs, biar app jalan tanpa internet.
+      # BARU: Copy lib offline (KaTeX, SweetAlert2, GSAP, Font Roboto,
+      # Firebase) dari node_modules ke www/libs, biar app jalan tanpa
+      # internet buat asset statisnya. Firebase sendiri TETAP butuh
+      # internet saat runtime (buat login/chat/dst), tapi SDK JS-nya
+      # ga perlu di-fetch dari CDN — dibundling langsung ke APK di sini.
       # Pastikan katex, sweetalert2, gsap, @fontsource-variable/roboto,
-      # dan @fontsource-variable/roboto-mono ada di package.json (lihat
-      # catatan terpisah).
+      # @fontsource-variable/roboto-mono, dan firebase ada di package.json.
       # ================================================================
-      - name: Copy Offline Libs (KaTeX, SweetAlert2, GSAP, Font)
+      - name: Copy Offline Libs (KaTeX, SweetAlert2, GSAP, Font, Firebase)
         run: |
-          mkdir -p www/libs/katex www/libs/sweetalert2 www/libs/gsap
+          mkdir -p www/libs/katex www/libs/sweetalert2 www/libs/gsap www/libs/firebase
           mkdir -p www/libs/fonts/roboto www/libs/fonts/roboto-mono
 
           cp -r node_modules/katex/dist/. www/libs/katex/
@@ -46,6 +48,10 @@ jobs:
           cp node_modules/gsap/dist/gsap.min.js www/libs/gsap/
           cp -r node_modules/@fontsource-variable/roboto/. www/libs/fonts/roboto/
           cp -r node_modules/@fontsource-variable/roboto-mono/. www/libs/fonts/roboto-mono/
+
+          cp node_modules/firebase/firebase-app-compat.js www/libs/firebase/
+          cp node_modules/firebase/firebase-auth-compat.js www/libs/firebase/
+          cp node_modules/firebase/firebase-firestore-compat.js www/libs/firebase/
 
           echo "=== Isi www/libs setelah copy ==="
           find www/libs -maxdepth 3
@@ -64,6 +70,10 @@ jobs:
 
           # 2. Injeksi usesCleartextTraffic="true"
           sed -i 's|<application|<application android:usesCleartextTraffic="true" |' $MANIFEST
+
+          # 3. BARU: Tambah permission INTERNET & ACCESS_NETWORK_STATE — wajib
+          #    buat fitur online (Firebase Auth/Firestore) bisa konek.
+          sed -i 's|<application|<uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>\n    <application|' $MANIFEST
 
           echo "=== AndroidManifest.xml (cek permission & cleartext) ==="
           cat $MANIFEST
