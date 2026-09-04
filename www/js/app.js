@@ -55,8 +55,10 @@ document.querySelectorAll('#themeGrid .theme-swatch').forEach(btn=>{
   });
 });
 
-// Entry point — dijalankan setelah semua module lain ke-load
-history.replaceState({screen:'home'}, '', '#home'); showScreen('home');
+// Entry point — dijalankan setelah semua module lain ke-load.
+// Ga langsung ke home: initAuthGate() cek dulu status login (lihat
+// js/auth-ui.js), baru mutusin tampilin layar auth atau dashboard.
+initAuthGate();
 
 // Loading screen awal: dashboard sebenarnya udah dirender di atas (synchronous),
 // tapi kita tetap kasih jeda kecil + tunggu font siap sebelum loader-nya
