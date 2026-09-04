@@ -14,6 +14,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+if (window.phygoLog) window.phygoLog('FIREBASE', 'initializeApp OK, projectId=' + firebaseConfig.projectId);
 
 // Dipakai di seluruh app.js/auth.js/dst — satu instance global, bukan
 // di-import ulang tiap file (biar konsisten sama pola project ini yang
@@ -23,8 +24,11 @@ const db = firebase.firestore();
 
 // Biar app tetap kepake pas offline sebentar (misal sinyal lemot) —
 // Firestore otomatis nge-cache & sync ulang begitu online lagi.
-db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+db.enablePersistence({ synchronizeTabs: true }).then(() => {
+  if (window.phygoLog) window.phygoLog('FIREBASE', 'Firestore persistence AKTIF');
+}).catch((err) => {
   // Gagal enable persistence itu ga fatal (misal browser lama / private
   // mode) — app tetap jalan, cuma ga ada cache offline.
   console.warn("Firestore persistence gagal diaktifkan:", err.code);
+  if (window.phygoLog) window.phygoLog('FIREBASE', 'Firestore persistence GAGAL: ' + err.code);
 });
