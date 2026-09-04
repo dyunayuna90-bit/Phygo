@@ -7,9 +7,23 @@
 // PENTING: baris terakhir "showScreen('home')" di app.js HARUS DIHAPUS/
 // dikomentari, karena start screen sekarang ditentukan di sini (lewat
 // initAuthGate), bukan langsung lompat ke home.
+//
+// FIX (lihat catatan tanggal terbaru): sebelumnya tombol Daftar/Masuk
+// bisa dipencet berkali-kali sebelum request Firebase sebelumnya selesai
+// (ga ada loading state), jadi klik ke-2 sempat "nyelonong" duluan dan
+// bikin state jadi aneh (nyoba daftar 2x, dsb). Sekarang setiap tombol
+// auth: (1) langsung disable + ganti teks jadi "Memproses..." begitu
+// dipencet, (2) selalu di-re-enable di blok finally, (3) semua error asli
+// dari Firebase di-console.error dulu (biar gampang dilacak lewat
+// `adb logcat` / remote debug pas APK-nya nyangkut), baru ditampilkan versi
+// Indonesianya ke user. Navigasi ke dashboard SEKARANG hanya dipicu oleh
+// watchAuthState() (satu-satunya sumber kebenaran soal "udah login apa
+// belum"), bukan dipanggil manual lagi di tiap handler — ini ngilangin
+// race condition antara handler tombol vs listener auth state.
 // =====================================================================
 
 let selectedAvatarId = 1;
+let authBusy = false; // guard anti double-submit global utk semua tombol auth
 
 function renderAvatarPicker() {
   const picker = document.getElementById('avatarPicker');
@@ -28,9 +42,18 @@ function renderAvatarPicker() {
   });
 }
 
-function showAuthForm(which) {
+// which: 'login' | 'register'. pushHistory: true kalau ini aksi user yang
+// harus bisa "di-undo" pakai tombol back HP (misal pencet link "Daftar").
+// false dipakai pas popstate (back-nya sendiri yang manggil ini, jangan
+// nge-push history baru lagi — nanti malah dobel/loop).
+function showAuthForm(which, pushHistory) {
   document.getElementById('authFormLogin').style.display = which === 'login' ? '' : 'none';
   document.getElementById('authFormRegister').style.display = which === 'register' ? '' : 'none';
+  setAuthError('loginError', '');
+  setAuthError('registerError', '');
+  if (pushHistory) {
+    history.pushState({ authForm: which }, '', which === 'register' ? '#daftar' : '#masuk');
+  }
 }
 
 function setAuthError(elId, message) {
@@ -38,21 +61,62 @@ function setAuthError(elId, message) {
   if (el) el.textContent = message || '';
 }
 
+// Dipakai router.js saat menangani tombol back HP di layar auth.
+// Dipanggil dari popstate handler global (lihat router.js).
+function handleAuthHistoryPop(state) {
+  showAuthForm(state && state.authForm === 'register' ? 'register' : 'login', false);
+}
+
+// Firebase Auth ngelempar error dalam bahasa Inggris + kode teknis
+// (misal "Firebase: Error (auth/network-request-failed)."). Kalau errornya
+// dari Firebase (punya `.code`), terjemahin ke pesan yang enak dibaca user.
+// Kalau bukan (error custom kita sendiri di auth.js, misal "Username sudah
+// dipakai..."), pesannya udah Indonesia dari sono, tinggal dipakai apa adanya.
+function friendlyAuthError(e) {
+  const map = {
+    'auth/network-request-failed': 'Gagal terhubung ke server. Cek koneksi internet kamu.',
+    'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi beberapa saat lagi.',
+    'auth/weak-password': 'Kata sandi terlalu lemah, minimal 6 karakter.',
+    'auth/invalid-email': 'Username tidak valid.',
+    'auth/user-disabled': 'Akun ini dinonaktifkan. Hubungi admin.',
+    'auth/user-not-found': 'Username atau kata sandi salah.',
+    'auth/wrong-password': 'Username atau kata sandi salah.',
+    'auth/email-already-in-use': 'Username sudah dipakai orang lain, coba yang lain.',
+  };
+  if (e && e.code && map[e.code]) return map[e.code];
+  if (e && e.message) return e.message;
+  return 'Terjadi kesalahan, coba lagi.';
+}
+
+function setAuthBusy(btnId, busy, busyLabel, idleLabel) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.textContent = busy ? busyLabel : idleLabel;
+}
+
 function goToDashboardAfterAuth() {
-  document.getElementById('screen-auth').classList.remove('active');
-  document.getElementById('app').style.display = '';
-  history.replaceState({ screen: 'home' }, '', '#home');
-  showScreen('home');
+  try {
+    document.getElementById('screen-auth').classList.remove('active');
+    document.getElementById('app').style.display = '';
+    history.replaceState({ screen: 'home' }, '', '#home');
+    showScreen('home');
+  } catch (e) {
+    // Kalau sampai render dashboard-nya error, jangan biarkan user
+    // "nyangkut" di layar putih tanpa penjelasan — catat ke console biar
+    // kelacak, dan minimal dashboard-nya tetap kebuka (user bisa lapor).
+    console.error('[Phygo] Gagal render dashboard setelah login:', e);
+  }
 }
 
 function initAuthUI() {
   renderAvatarPicker();
 
   document.getElementById('linkGoToRegister').addEventListener('click', (e) => {
-    e.preventDefault(); showAuthForm('register');
+    e.preventDefault(); showAuthForm('register', true);
   });
   document.getElementById('linkGoToLogin').addEventListener('click', (e) => {
-    e.preventDefault(); showAuthForm('login');
+    e.preventDefault(); showAuthForm('login', true);
   });
 
   // Cek ketersediaan username sambil ngetik (debounce ringan)
@@ -66,46 +130,60 @@ function initAuthUI() {
     if (formatErr) { hint.textContent = formatErr; hint.className = 'auth-hint bad'; return; }
     hint.textContent = 'Mengecek...'; hint.className = 'auth-hint';
     usernameCheckTimer = setTimeout(async () => {
-      const ok = await isUsernameAvailable(val);
-      hint.textContent = ok ? 'Username tersedia' : 'Username sudah dipakai';
-      hint.className = 'auth-hint ' + (ok ? 'ok' : 'bad');
+      try {
+        const ok = await isUsernameAvailable(val);
+        hint.textContent = ok ? 'Username tersedia' : 'Username sudah dipakai';
+        hint.className = 'auth-hint ' + (ok ? 'ok' : 'bad');
+      } catch (e) {
+        console.error('[Phygo] Gagal cek username:', e);
+        hint.textContent = 'Gagal mengecek, coba lagi.';
+        hint.className = 'auth-hint bad';
+      }
     }, 400);
   });
 
   document.getElementById('btnLoginSubmit').addEventListener('click', async () => {
+    if (authBusy) return; // abaikan klik dobel selagi masih diproses
     setAuthError('loginError', '');
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     if (!username || !password) { setAuthError('loginError', 'Isi username & kata sandi.'); return; }
+
+    authBusy = true;
+    setAuthBusy('btnLoginSubmit', true, 'Memproses...', 'Masuk');
     try {
       await loginWithUsername(username, password);
-      goToDashboardAfterAuth();
+      // Navigasi dashboard ditangani otomatis oleh watchAuthState() di
+      // initAuthGate() begitu Firebase konfirmasi status login berubah.
+      // Tombol sengaja TETAP disabled sampai transisi itu terjadi, biar
+      // ga ada klik nyelip di tengah proses pindah layar.
     } catch (e) {
-      setAuthError('loginError', 'Username atau kata sandi salah.');
+      console.error('[Phygo] Login gagal:', e);
+      const loginKnownWrongCreds = ['auth/user-not-found', 'auth/wrong-password', 'auth/invalid-email'];
+      setAuthError('loginError', (e && loginKnownWrongCreds.includes(e.code)) ? 'Username atau kata sandi salah.' : friendlyAuthError(e));
+      authBusy = false;
+      setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
     }
   });
 
-  document.getElementById('btnGoogleLogin').addEventListener('click', async () => {
-    setAuthError('loginError', '');
-    try {
-      await loginWithGoogle();
-      const uid = fbAuth.currentUser.uid;
-      if (await hasNoProfile(uid)) {
-        // Pertama kali login via Google — user perlu lengkapi username dkk
-        // dulu sebelum masuk dashboard. Pakai form register yang sama,
-        // tapi tanpa field password (akun udah ada dari Google).
-        showAuthForm('register');
-        document.querySelector('#authFormRegister .auth-field:has(#regPassword)').style.display = 'none';
-        document.getElementById('btnRegisterSubmit').dataset.googleUid = uid;
-      } else {
-        goToDashboardAfterAuth();
-      }
-    } catch (e) {
-      setAuthError('loginError', 'Gagal masuk dengan Google.');
-    }
+  document.getElementById('btnGoogleLogin').addEventListener('click', () => {
+    // Login Google lewat WebView bawaan Capacitor/Android BELUM didukung —
+    // Google secara aktif memblokir OAuth dari embedded webview ("This
+    // browser or app may not be secure"), jadi signInWithPopup/redirect
+    // versi Firebase-JS-biasa ga akan pernah berhasil di APK ini walau
+    // kodenya "benar". Perlu native Google Sign-In plugin (google-services.json
+    // + SHA-1 + setup Firebase Console) — belum ada di project ini.
+    // Sementara disembunyikan fungsinya biar ga bikin user bingung "nge-hang".
+    Swal.fire({
+      icon: 'info',
+      title: 'Login Google belum tersedia',
+      text: 'Untuk sekarang, daftar/masuk pakai username & kata sandi dulu ya. Login Google butuh setup tambahan yang belum kepasang di APK ini.',
+      background: '#1C2426', color: '#E3E3E6', confirmButtonColor: 'var(--primary)'
+    });
   });
 
   document.getElementById('btnRegisterSubmit').addEventListener('click', async () => {
+    if (authBusy) return; // abaikan klik dobel selagi masih diproses
     setAuthError('registerError', '');
     const username = document.getElementById('regUsername').value.trim();
     const password = document.getElementById('regPassword').value;
@@ -115,16 +193,31 @@ function initAuthUI() {
     const profile = { name, gender, age, avatarId: selectedAvatarId };
 
     const googleUid = document.getElementById('btnRegisterSubmit').dataset.googleUid;
+    if (!googleUid) {
+      if (!password || password.length < 6) {
+        setAuthError('registerError', 'Kata sandi minimal 6 karakter.');
+        return;
+      }
+    }
+    if (!username) {
+      setAuthError('registerError', 'Isi username dulu ya.');
+      return;
+    }
+
+    authBusy = true;
+    setAuthBusy('btnRegisterSubmit', true, 'Memproses...', 'Daftar');
     try {
       if (googleUid) {
         await completeGoogleProfile(googleUid, username, profile);
       } else {
-        if (!password || password.length < 6) throw new Error('Kata sandi minimal 6 karakter.');
         await registerWithUsername(username, password, profile);
       }
-      goToDashboardAfterAuth();
+      // Sama seperti login: navigasi ditangani watchAuthState().
     } catch (e) {
-      setAuthError('registerError', e.message || 'Gagal mendaftar, coba lagi.');
+      console.error('[Phygo] Daftar gagal:', e);
+      setAuthError('registerError', friendlyAuthError(e));
+      authBusy = false;
+      setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
     }
   });
 }
@@ -134,8 +227,15 @@ function initAuthGate() {
   document.getElementById('app').style.display = 'none'; // sembunyikan dashboard dulu
   initAuthUI();
 
+  // Entry history awal buat layar auth, biar tombol back HP di form Daftar
+  // punya "tempat" buat balik (lihat handleAuthHistoryPop di router.js).
+  history.replaceState({ authForm: 'login' }, '', '#masuk');
+
   watchAuthState((user) => {
     if (user) {
+      authBusy = false;
+      setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
+      setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
       goToDashboardAfterAuth();
     } else {
       document.getElementById('screen-auth').classList.add('active');
