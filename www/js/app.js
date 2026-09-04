@@ -35,11 +35,23 @@ document.getElementById('btnExportData').querySelector('.settings-row-icon').inn
 document.getElementById('btnImportData').querySelector('.settings-row-icon').innerHTML = svgIcon('upload');
 document.getElementById('btnResetData').querySelector('.settings-row-icon').innerHTML = svgIcon('trash');
 document.getElementById('btnAppInfo').querySelector('.settings-row-icon').innerHTML = svgIcon('info');
+document.getElementById('btnEditProfile').querySelector('.settings-row-icon').innerHTML = svgIcon('edit');
+document.getElementById('btnLogout').querySelector('.settings-row-icon').innerHTML = svgIcon('logout');
 document.querySelectorAll('.settings-row-chevron').forEach(el => el.innerHTML = svgIcon('chevronRight'));
 
 document.getElementById('btnExportData').addEventListener('click', exportDataJson);
 document.getElementById('btnResetData').addEventListener('click', resetAllData);
 document.getElementById('btnAppInfo').addEventListener('click', ()=> navigate('appinfo', {}, false));
+document.getElementById('btnEditProfile').addEventListener('click', openEditProfileModal);
+document.getElementById('btnLogout').addEventListener('click', confirmLogout);
+
+// ===== Fitur Sosial — sambungkan tombol statis modal (Tambah Teman, Undangan,
+// Lihat Profil, Edit Profil). Modal-modal ini ada di luar #app (langsung anak
+// <body>) supaya posisinya fixed & selalu di atas layar apa pun yang aktif.
+initAddFriendModalOnce();
+initInboxModalOnce();
+initProfileViewModalOnce();
+initEditProfileModalOnce();
 
 // ===== Halaman "Tentang Aplikasi" =====
 document.getElementById('btnAppInfoBack').innerHTML = svgIcon('arrowBack');
@@ -77,12 +89,23 @@ initAuthGate();
 // Loading screen awal: dashboard sebenarnya udah dirender di atas (synchronous),
 // tapi kita tetap kasih jeda kecil + tunggu font siap sebelum loader-nya
 // di-fade-out, biar transisinya mulus dan gak "ngedip"/patah pas pertama kali dibuka.
+//
+// FIX BUG "LOGIN SCREEN NGEDIP SEBENTAR PAS BUKA APP LAGI": sebelumnya loader
+// ini cuma nunggu `minDelay` + `fontsReady`, TIDAK nunggu status login
+// selesai dicek (fbAuth.onAuthStateChanged). Kalau pengecekan sesi login
+// belum selesai pas loader keburu hilang, yang kelihatan sesaat adalah
+// form login (tampilan default #screen-auth), baru pindah ke dashboard
+// begitu status login-nya diketahui — jadi kelihatan "ngedip". Sekarang
+// loader ini IKUT menunggu `window.authGateReady` (dibuat di auth-ui.js,
+// baru resolve setelah status login benar-benar diketahui pasti), jadi
+// begitu loader hilang, layar yang tampil sudah pasti benar sejak awal.
 (function initialLoadFadeOut(){
   const loader = document.getElementById('appLoader');
   if(!loader) return;
   const minDelay = new Promise(res => setTimeout(res, 400));
   const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
-  Promise.all([minDelay, fontsReady]).then(() => {
+  const authReady = window.authGateReady || Promise.resolve();
+  Promise.all([minDelay, fontsReady, authReady]).then(() => {
     requestAnimationFrame(() => {
       loader.classList.add('hide');
       setTimeout(() => loader.remove(), 400);
