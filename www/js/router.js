@@ -13,17 +13,17 @@ function showScreen(name, opts){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
 
-  // Bottom nav hanya untuk 4 tab dashboard (home/level/history/settings);
+  // Bottom nav hanya untuk 4 tab dashboard (home/level/history/profile);
   // disembunyikan saat masuk mode belajar (materi/simulasi/survival/history-wizard)
   // supaya lebih fokus.
-  const TAB_SCREENS = ['home', 'level', 'history', 'settings'];
+  const TAB_SCREENS = ['home', 'level', 'history', 'profile'];
   const bottomNav = document.getElementById('bottomNav');
   if(bottomNav){
     bottomNav.classList.toggle('hide', !TAB_SCREENS.includes(name));
     document.querySelectorAll('.bn-item').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
   }
 
-  // FIX: ingat tab dashboard (home/level/history/settings) terakhir yang
+  // FIX: ingat tab dashboard (home/level/history/profile) terakhir yang
   // aktif SEBELUM user masuk ke mode belajar (materi/simulasi/survival/dll).
   // Dipakai supaya saat keluar/selesai dari mode belajar itu, user balik ke
   // tab asalnya (misal: 'level'), bukan selalu dilempar ke 'home'.
@@ -41,6 +41,7 @@ function showScreen(name, opts){
       gsap.fromTo(hwEls.body, {opacity:0, y:20}, {opacity:1, y:0, duration:0.5, ease:'back.out(1.2)'});
     });
   }
+  else if(name==='profile') { renderProfileScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('profileScroll'))); }
   else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
   else if(name==='appinfo') { renderAppInfo(); requestAnimationFrame(()=>animateIn(document.getElementById('appInfoScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
@@ -94,4 +95,3 @@ window.addEventListener('popstate', (e)=>{
   }
   showScreen(e.state?e.state.screen:'home', e.state);
 });
-
