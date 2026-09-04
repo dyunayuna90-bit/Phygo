@@ -13,7 +13,8 @@
     "sweetalert2": "^11",
     "gsap": "^3.12.5",
     "@fontsource-variable/roboto": "^5",
-    "@fontsource-variable/roboto-mono": "^5"
+    "@fontsource-variable/roboto-mono": "^5",
+    "firebase": "^10.14.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.0.0",
