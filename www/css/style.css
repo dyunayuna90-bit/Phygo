@@ -691,3 +691,36 @@ input{ font-family:inherit; }
 .history-image-fallback svg{ width:100%; height:100%; }
 .history-image-frame.img-missing .history-image-fallback{ display:flex; }
 .history-figure-card{ margin-bottom:18px; }
+/* ===== TEMPEL snippet ini di akhir style.css ===== */
+
+.auth-scroll{ padding:32px 24px 40px; display:flex; flex-direction:column; min-height:100%; justify-content:center; }
+.auth-hero{ text-align:center; margin-bottom:32px; }
+.auth-logo{ font-size:38px; font-weight:900; letter-spacing:-1px; color:var(--primary); margin-bottom:6px; }
+.auth-tagline{ font-size:14px; color:var(--on-surface-var); }
+
+.auth-form{ display:flex; flex-direction:column; gap:14px; }
+.auth-field{ display:flex; flex-direction:column; gap:6px; }
+.auth-field label{ font-size:12.5px; font-weight:700; color:var(--on-surface-var); letter-spacing:0.3px; }
+.auth-field input, .auth-field select{
+  background:var(--surface-c); color:var(--on-surface); border:1.5px solid var(--outline-var);
+  border-radius:16px 16px 16px 6px; padding:14px 16px; font-size:15px; font-family:var(--font);
+  outline:none; transition:border-color .2s ease;
+}
+.auth-field input:focus, .auth-field select:focus{ border-color:var(--primary); }
+.auth-hint{ font-size:11.5px; color:var(--on-surface-var); min-height:14px; }
+.auth-hint.ok{ color:var(--success); }
+.auth-hint.bad{ color:var(--error); }
+
+.auth-error{ font-size:13px; color:var(--error); min-height:16px; margin:0; }
+
+.auth-switch{ text-align:center; font-size:13px; color:var(--on-surface-var); margin-top:6px; }
+.auth-switch a{ color:var(--primary); font-weight:700; text-decoration:none; }
+
+.avatar-picker{ display:flex; gap:12px; justify-content:center; padding:6px 0; }
+.avatar-option{
+  width:64px; height:64px; border-radius:22px 22px 22px 8px; overflow:hidden;
+  border:2.5px solid var(--outline-var); cursor:pointer; transition:all .2s cubic-bezier(0.34,1.56,0.64,1);
+  background:var(--surface-c);
+}
+.avatar-option img, .avatar-option svg{ width:100%; height:100%; object-fit:cover; }
+.avatar-option.selected{ border-color:var(--primary); transform:scale(1.08); }
