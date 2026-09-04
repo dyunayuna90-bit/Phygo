@@ -88,6 +88,34 @@ function friendlyAuthError(e) {
   return 'Terjadi kesalahan, coba lagi.';
 }
 
+// FIX BARU: kalau kamu cuma modal HP (ga selalu pegang PC buat remote-debug
+// console lewat chrome://inspect), error yang cuma nyangkut di console.error
+// gak kebaca sama sekali. Jadi sekarang kode error teknis-nya (misal
+// "auth/network-request-failed") IKUT ditulis di pesan errornya, dalam
+// kurung — biar kalau masih nyangkut, kamu tinggal screenshot pesannya
+// dan kasih ke saya, ga perlu alat tambahan.
+function withErrorCode(msg, e) {
+  if (e && e.code) return `${msg} (${e.code})`;
+  return msg;
+}
+
+// FIX BARU: sebelumnya kalau request Firebase-nya hang/gantung tanpa
+// pernah resolve ATAU reject (bisa kejadian kalau koneksi jelek/aneh di
+// WebView), tombol "Memproses..." bisa nyangkut SELAMANYA — ga ada error,
+// ga ada dashboard, buntu. Sekarang tiap request auth dikasih batas waktu
+// 15 detik; kalau lewat, otomatis dianggap gagal & tombolnya balik normal
+// + errornya ditampilin, jadi minimal ga nyangkut diem2 kayak sebelumnya.
+function withTimeout(promise, ms, timeoutMessage) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => {
+      const err = new Error(timeoutMessage);
+      err.code = 'auth/timeout-15s';
+      reject(err);
+    }, ms)),
+  ]);
+}
+
 function setAuthBusy(btnId, busy, busyLabel, idleLabel) {
   const btn = document.getElementById(btnId);
   if (!btn) return;
@@ -152,7 +180,7 @@ function initAuthUI() {
     authBusy = true;
     setAuthBusy('btnLoginSubmit', true, 'Memproses...', 'Masuk');
     try {
-      await loginWithUsername(username, password);
+      await withTimeout(loginWithUsername(username, password), 15000, 'Login butuh waktu terlalu lama.');
       // Navigasi dashboard ditangani otomatis oleh watchAuthState() di
       // initAuthGate() begitu Firebase konfirmasi status login berubah.
       // Tombol sengaja TETAP disabled sampai transisi itu terjadi, biar
@@ -160,7 +188,8 @@ function initAuthUI() {
     } catch (e) {
       console.error('[Phygo] Login gagal:', e);
       const loginKnownWrongCreds = ['auth/user-not-found', 'auth/wrong-password', 'auth/invalid-email'];
-      setAuthError('loginError', (e && loginKnownWrongCreds.includes(e.code)) ? 'Username atau kata sandi salah.' : friendlyAuthError(e));
+      const msg = (e && loginKnownWrongCreds.includes(e.code)) ? 'Username atau kata sandi salah.' : friendlyAuthError(e);
+      setAuthError('loginError', withErrorCode(msg, e));
       authBusy = false;
       setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
     }
@@ -208,14 +237,14 @@ function initAuthUI() {
     setAuthBusy('btnRegisterSubmit', true, 'Memproses...', 'Daftar');
     try {
       if (googleUid) {
-        await completeGoogleProfile(googleUid, username, profile);
+        await withTimeout(completeGoogleProfile(googleUid, username, profile), 15000, 'Daftar butuh waktu terlalu lama.');
       } else {
-        await registerWithUsername(username, password, profile);
+        await withTimeout(registerWithUsername(username, password, profile), 15000, 'Daftar butuh waktu terlalu lama.');
       }
       // Sama seperti login: navigasi ditangani watchAuthState().
     } catch (e) {
       console.error('[Phygo] Daftar gagal:', e);
-      setAuthError('registerError', friendlyAuthError(e));
+      setAuthError('registerError', withErrorCode(friendlyAuthError(e), e));
       authBusy = false;
       setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
     }
