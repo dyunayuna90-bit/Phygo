@@ -699,7 +699,6 @@ input{ font-family:inherit; }
    (kejadian pas form Daftar, field-nya banyak). */
 #screen-auth{
   position:fixed; inset:0; z-index:9000;
-  display:flex; flex-direction:column;
   background:var(--bg);
   height:100vh; height:100dvh;
 }
