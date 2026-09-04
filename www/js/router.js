@@ -43,6 +43,7 @@ function showScreen(name, opts){
   }
   else if(name==='profile') { renderProfileScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('profileScroll'))); }
   else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
+  else if(name==='social') { renderSocialScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('socialScroll'))); }
   else if(name==='appinfo') { renderAppInfo(); requestAnimationFrame(()=>animateIn(document.getElementById('appInfoScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
   else if(name==='survival'){
@@ -91,6 +92,13 @@ window.addEventListener('popstate', (e)=>{
   if(window.quizFbOpen){
     window.quizFbOpen = false;
     handleQuizFbHistoryPop();
+    return;
+  }
+  // Sama seperti sheet kuis di atas: kalau ada modal fitur Sosial yang lagi
+  // terbuka (Tambah Teman / Undangan / Lihat Profil Teman / Edit Profil),
+  // tombol back HP cukup menutup modal itu, JANGAN pindah screen di baliknya.
+  if(window.socialModalOpen && typeof handleSocialModalHistoryPop === 'function'){
+    handleSocialModalHistoryPop();
     return;
   }
   showScreen(e.state?e.state.screen:'home', e.state);
