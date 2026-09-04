@@ -142,6 +142,19 @@ async function logoutUser() {
   await fbAuth.signOut();
 }
 
+// ===== EDIT PROFIL — update nama/gender/umur user yang lagi login =====
+// (dipakai oleh modal "Edit Profil" di Pengaturan, lihat social.js)
+async function updateOwnProfile(fields) {
+  const user = fbAuth.currentUser;
+  if (!user) throw new Error("Anda belum login.");
+  const payload = {};
+  if (typeof fields.name === "string") payload.name = fields.name.trim();
+  if (typeof fields.gender === "string") payload.gender = fields.gender;
+  if (fields.age !== undefined) payload.age = fields.age ? parseInt(fields.age, 10) : null;
+  await db.collection("users").doc(user.uid).update(payload);
+  return payload;
+}
+
 // ===== Helper: pantau status login, dipanggil sekali di app.js saat start =====
 // callback(user) dipanggil tiap kali status login berubah (login/logout).
 // user bakal null kalau belum login.
