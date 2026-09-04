@@ -771,6 +771,7 @@ input{ font-family:inherit; }
   border-radius: var(--r-m);
   color: var(--primary);
   font-size: 20px;
+  position: relative;
 }
 
 .profile-settings-btn svg {
@@ -780,6 +781,36 @@ input{ font-family:inherit; }
 
 .profile-settings-btn:active {
   transform: scale(0.92);
+}
+
+/* Wadah dua tombol (Sosial + Pengaturan) di topbar Profil, berdampingan */
+.profile-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+/* Titik notifikasi merah kecil (badge) untuk jumlah undangan pertemanan
+   yang belum dibalas — dipakai di 2 tempat: tombol Sosial pada topbar
+   Profil, dan ikon kotak-pesan di dalam layar Sosial itu sendiri. */
+.social-req-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--r-pill);
+  background: var(--error);
+  color: var(--bg);
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
+  line-height: 1;
 }
 
 /* --- Hero Section: Avatar + User Info + Rank --- */
@@ -965,7 +996,14 @@ input{ font-family:inherit; }
   padding: 16px;
   border-radius: var(--r-m);
   border: 1px solid var(--outline-var);
+  /* dulu <div>, sekarang <button> supaya bisa diklik ke layar Sosial —
+     reset tampilan default tombol biar hasilnya identik kayak sebelumnya */
+  width: 100%;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+.profile-social-box:active { transform: scale(.96); }
 
 .profile-social-count {
   font-size: 24px;
@@ -1368,3 +1406,210 @@ input{ font-family:inherit; }
   padding: 40px 20px;
   line-height: 1.6;
 }
+
+/* =====================================================================
+   FITUR SOSIAL — Layar Sosial, Modal Tambah Teman/Undangan/Profil/Edit
+   Gaya: Material 3 Expressive, dark, TANPA blur & TANPA emoji.
+   ===================================================================== */
+
+/* ---------- Topbar layar Sosial (sama pola dgn topbar layar lain) ---------- */
+.social-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 20px 0;
+  margin-bottom: 16px;
+}
+.social-back-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: var(--r-m);
+  background: var(--surface-c-high); color: var(--on-surface); flex-shrink: 0;
+}
+.social-back-btn:active { transform: scale(0.92); }
+.social-topbar-title {
+  flex: 1; font-size: 18px; font-weight: 700; color: var(--on-surface);
+}
+.social-topbar-actions { display: flex; align-items: center; gap: 10px; }
+.social-icon-btn {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: var(--r-m);
+  background: var(--primary-container); color: var(--primary); flex-shrink: 0;
+}
+.social-icon-btn:active { transform: scale(0.92); }
+
+/* ---------- Search bar (dipakai di layar Sosial & di dalam modal Tambah Teman) ---------- */
+.social-search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface-c); border: 1.5px solid var(--outline-var);
+  border-radius: var(--r-l); padding: 12px 16px; margin: 0 20px 18px;
+  color: var(--on-surface-var);
+}
+.social-search-bar svg { flex-shrink: 0; }
+.social-search-bar input {
+  flex: 1; min-width: 0; background: transparent; border: none; outline: none;
+  color: var(--on-surface); font-size: 14.5px; font-family: var(--font);
+}
+.social-search-bar input::placeholder { color: var(--on-surface-var); }
+
+/* ---------- Daftar Teman ---------- */
+.social-friends-list { padding: 0 20px 40px; display: flex; flex-direction: column; gap: 10px; }
+.social-friend-row {
+  width: 100%; display: flex; align-items: center; gap: 14px; text-align: left;
+  background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c));
+  border-radius: var(--r-l); padding: 12px 16px; box-shadow: var(--shadow-sm);
+  transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.social-friend-row:active { transform: scale(.98); }
+.social-friend-avatar {
+  width: 46px; height: 46px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  display: block; background: var(--surface-c);
+}
+.social-friend-avatar svg { width: 100%; height: 100%; display: block; }
+.social-friend-name {
+  flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: var(--on-surface);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.social-friend-chevron { flex-shrink: 0; color: var(--on-surface-var); }
+.social-friend-chevron svg { width: 18px; height: 18px; }
+
+/* ---------- Empty state (dipakai di banyak tempat: daftar teman kosong,
+   hasil pencarian kosong, kotak undangan kosong) ---------- */
+.social-empty-state {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 8px; padding: 48px 24px; color: var(--on-surface-var);
+}
+.social-empty-state-sm { padding: 32px 20px; }
+.social-empty-icon {
+  width: 56px; height: 56px; border-radius: 50%; background: var(--surface-c-high);
+  display: flex; align-items: center; justify-content: center; color: var(--outline);
+  margin-bottom: 4px;
+}
+.social-empty-state h3 { font-size: 15px; font-weight: 800; color: var(--on-surface); margin: 0; }
+.social-empty-state p { font-size: 13px; line-height: 1.5; margin: 0; max-width: 280px; }
+.social-search-loading {
+  text-align: center; padding: 32px 20px; color: var(--on-surface-var); font-size: 13.5px;
+}
+
+/* =====================================================================
+   MODAL SISTEM UMUM (M3 Expressive bottom-sheet dialog) — dipakai untuk
+   Tambah Teman, Undangan Pertemanan, Lihat Profil Teman, Edit Profil.
+   Backdrop SOLID semi-transparan (BUKAN blur, sesuai permintaan).
+   ===================================================================== */
+.m3-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.72);
+  z-index: 500; opacity: 0; pointer-events: none; transition: opacity .25s ease-out;
+}
+.m3-modal-backdrop.show { opacity: 1; pointer-events: auto; }
+
+.m3-modal {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  max-width: 620px; margin: 0 auto;
+  max-height: 82vh; display: flex; flex-direction: column;
+  background: var(--surface-c-high);
+  border-radius: 28px 28px 0 0;
+  box-shadow: var(--shadow-lg);
+  z-index: 501;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .32s cubic-bezier(0.34, 1.11, 0.4, 1), opacity .25s ease-out;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.m3-modal.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+.m3-modal-topbar {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 20px 12px; position: relative;
+}
+.m3-modal-topbar::before {
+  content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 4px; border-radius: var(--r-pill); background: var(--outline-var);
+}
+.m3-modal-title { font-size: 17px; font-weight: 800; color: var(--on-surface); }
+.m3-modal-close {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--surface-c);
+  color: var(--on-surface-var); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.m3-modal-close:active { transform: scale(0.9); }
+.m3-modal-close::before,
+.m3-modal-close::after {
+  content: ''; position: absolute; width: 14px; height: 2px; background: currentColor; border-radius: 2px;
+}
+.m3-modal-close::before { transform: rotate(45deg); }
+.m3-modal-close::after { transform: rotate(-45deg); }
+
+.m3-modal-search { margin: 0 20px 14px; }
+.m3-modal-search .m3-search-icon { width: 22px; height: 22px; flex-shrink: 0; display: inline-block; position: relative; }
+.m3-modal-search .m3-search-icon::before {
+  content: ''; position: absolute; left: 0; top: 0; width: 15px; height: 15px;
+  border: 2.3px solid var(--on-surface-var); border-radius: 50%;
+}
+.m3-modal-search .m3-search-icon::after {
+  content: ''; position: absolute; left: 12px; top: 12px; width: 8px; height: 2.3px;
+  background: var(--on-surface-var); border-radius: 2px; transform: rotate(45deg); transform-origin: left center;
+}
+
+.m3-modal-body {
+  flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 0 20px 24px; scrollbar-width: none;
+}
+.m3-modal-body::-webkit-scrollbar { display: none; }
+
+/* ---------- Baris hasil pencarian (modal Tambah Teman) & baris undangan (modal Inbox) ---------- */
+.social-result-row, .social-inbox-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--surface-c); border-radius: var(--r-l); padding: 10px 12px; margin-bottom: 10px;
+}
+.social-result-profile {
+  display: flex; align-items: center; gap: 12px; text-align: left; flex: 1; min-width: 0;
+}
+.social-result-name {
+  font-size: 14px; font-weight: 700; color: var(--on-surface);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.social-result-action { flex-shrink: 0; }
+.social-inbox-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.btn-chip {
+  padding: 8px 16px; border-radius: var(--r-pill); font-size: 12.5px; font-weight: 800;
+  white-space: nowrap; transition: transform .2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn-chip:active { transform: scale(0.92); }
+.btn-chip:disabled { opacity: 0.5; }
+.btn-chip-primary { background: var(--primary); color: var(--on-primary); }
+.btn-chip-outline { background: transparent; border: 1.5px solid var(--outline-var); color: var(--on-surface-var); }
+
+.social-status-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 8px 14px; border-radius: var(--r-pill); font-size: 12.5px; font-weight: 800;
+}
+.social-status-chip.friend { background: var(--success-container); color: var(--on-success-container); }
+.social-status-chip.friend svg { width: 14px; height: 14px; }
+.social-status-chip.waiting { background: var(--surface-c-high); color: var(--on-surface-var); }
+
+/* ---------- Modal Lihat Profil Teman ---------- */
+.profile-view-hero { text-align: center; padding: 8px 0 20px; }
+.profile-view-avatar {
+  display: block; width: 88px; height: 88px; border-radius: 50%; overflow: hidden;
+  margin: 0 auto 14px; background: var(--surface-c);
+}
+.profile-view-avatar svg { width: 100%; height: 100%; display: block; }
+.profile-view-hero h2 { font-size: 17px; font-weight: 800; color: var(--on-surface); margin: 0 0 8px; }
+.profile-view-actions { display: flex; flex-direction: column; padding-top: 4px; }
+
+/* Grid statistik dipakai ulang untuk modal Lihat Profil Teman (mirip pola
+   .settings-section tapi 2 kolom, biar konsisten dgn kartu2 lain) */
+.profile-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.profile-stat-box {
+  background: var(--surface-c); border-radius: var(--r-m); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--outline-var);
+}
+.profile-stat-label { font-size: 11px; font-weight: 700; color: var(--on-surface-var); text-transform: uppercase; letter-spacing: 0.4px; }
+.profile-stat-value { font-size: 14px; font-weight: 800; color: var(--on-surface); }
+
+/* Tombol Simpan pada modal Edit Profil butuh sedikit jarak dari field terakhir */
+#modalEditProfile .btn { margin-top: 8px; }
