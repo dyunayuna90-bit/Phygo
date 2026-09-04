@@ -693,7 +693,27 @@ input{ font-family:inherit; }
 .history-figure-card{ margin-bottom:18px; }
 /* ===== TEMPEL snippet ini di akhir style.css ===== */
 
-.auth-scroll{ padding:32px 24px 40px; display:flex; flex-direction:column; min-height:100%; justify-content:center; }
+/* FIX: #screen-auth ada di LUAR #app/#main, jadi ga kebagian konteks
+   flex-height dari sana. Kasih #screen-auth konteks full-viewport-nya
+   sendiri, biar .auth-scroll bisa scroll beneran pas kontennya kepanjangan
+   (kejadian pas form Daftar, field-nya banyak). */
+#screen-auth{
+  position:fixed; inset:0; z-index:9000;
+  display:flex; flex-direction:column;
+  background:var(--bg);
+  height:100vh; height:100dvh;
+}
+.auth-scroll{
+  flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:32px 24px 40px;
+  display:flex; flex-direction:column;
+}
+.auth-scroll::-webkit-scrollbar{ display:none; }
+/* Ganti dari justify-content:center (bikin bagian atas ke-clip pas overflow)
+   jadi margin:auto di wrapper form — hasilnya tetep center kalau muat,
+   tapi bisa discroll penuh dari atas kalau kepanjangan. */
+.auth-scroll .auth-form{ margin-top:auto; margin-bottom:auto; }
 .auth-hero{ text-align:center; margin-bottom:32px; }
 .auth-logo{ font-size:38px; font-weight:900; letter-spacing:-1px; color:var(--primary); margin-bottom:6px; }
 .auth-tagline{ font-size:14px; color:var(--on-surface-var); }
