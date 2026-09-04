@@ -124,16 +124,19 @@ function setAuthBusy(btnId, busy, busyLabel, idleLabel) {
 }
 
 function goToDashboardAfterAuth() {
+  phygoLog('DASHBOARD', 'goToDashboardAfterAuth() dipanggil');
   try {
     document.getElementById('screen-auth').classList.remove('active');
     document.getElementById('app').style.display = '';
     history.replaceState({ screen: 'home' }, '', '#home');
     showScreen('home');
+    phygoLog('DASHBOARD', 'showScreen(home) selesai tanpa error');
   } catch (e) {
     // Kalau sampai render dashboard-nya error, jangan biarkan user
     // "nyangkut" di layar putih tanpa penjelasan — catat ke console biar
     // kelacak, dan minimal dashboard-nya tetap kebuka (user bisa lapor).
     console.error('[Phygo] Gagal render dashboard setelah login:', e);
+    phygoLog('DASHBOARD', 'ERROR pas showScreen(home): ' + (e && e.message));
   }
 }
 
@@ -171,22 +174,26 @@ function initAuthUI() {
   });
 
   document.getElementById('btnLoginSubmit').addEventListener('click', async () => {
-    if (authBusy) return; // abaikan klik dobel selagi masih diproses
+    phygoLog('LOGIN', 'tombol Masuk diklik');
+    if (authBusy) { phygoLog('LOGIN', 'diabaikan, masih authBusy=true'); return; }
     setAuthError('loginError', '');
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
-    if (!username || !password) { setAuthError('loginError', 'Isi username & kata sandi.'); return; }
+    if (!username || !password) { phygoLog('LOGIN', 'username/password kosong'); setAuthError('loginError', 'Isi username & kata sandi.'); return; }
 
     authBusy = true;
     setAuthBusy('btnLoginSubmit', true, 'Memproses...', 'Masuk');
+    phygoLog('LOGIN', 'mulai signInWithEmailAndPassword untuk username=' + username);
     try {
       await withTimeout(loginWithUsername(username, password), 15000, 'Login butuh waktu terlalu lama.');
+      phygoLog('LOGIN', 'signIn RESOLVE (sukses) — nunggu watchAuthState pindah layar');
       // Navigasi dashboard ditangani otomatis oleh watchAuthState() di
       // initAuthGate() begitu Firebase konfirmasi status login berubah.
       // Tombol sengaja TETAP disabled sampai transisi itu terjadi, biar
       // ga ada klik nyelip di tengah proses pindah layar.
     } catch (e) {
       console.error('[Phygo] Login gagal:', e);
+      phygoLog('LOGIN', 'signIn REJECT: ' + (e && (e.code || e.message)));
       const loginKnownWrongCreds = ['auth/user-not-found', 'auth/wrong-password', 'auth/invalid-email'];
       const msg = (e && loginKnownWrongCreds.includes(e.code)) ? 'Username atau kata sandi salah.' : friendlyAuthError(e);
       setAuthError('loginError', withErrorCode(msg, e));
@@ -212,7 +219,8 @@ function initAuthUI() {
   });
 
   document.getElementById('btnRegisterSubmit').addEventListener('click', async () => {
-    if (authBusy) return; // abaikan klik dobel selagi masih diproses
+    phygoLog('DAFTAR', 'tombol Daftar diklik');
+    if (authBusy) { phygoLog('DAFTAR', 'diabaikan, masih authBusy=true'); return; }
     setAuthError('registerError', '');
     const username = document.getElementById('regUsername').value.trim();
     const password = document.getElementById('regPassword').value;
@@ -224,26 +232,31 @@ function initAuthUI() {
     const googleUid = document.getElementById('btnRegisterSubmit').dataset.googleUid;
     if (!googleUid) {
       if (!password || password.length < 6) {
+        phygoLog('DAFTAR', 'password < 6 karakter');
         setAuthError('registerError', 'Kata sandi minimal 6 karakter.');
         return;
       }
     }
     if (!username) {
+      phygoLog('DAFTAR', 'username kosong');
       setAuthError('registerError', 'Isi username dulu ya.');
       return;
     }
 
     authBusy = true;
     setAuthBusy('btnRegisterSubmit', true, 'Memproses...', 'Daftar');
+    phygoLog('DAFTAR', 'mulai proses untuk username=' + username);
     try {
       if (googleUid) {
         await withTimeout(completeGoogleProfile(googleUid, username, profile), 15000, 'Daftar butuh waktu terlalu lama.');
       } else {
         await withTimeout(registerWithUsername(username, password, profile), 15000, 'Daftar butuh waktu terlalu lama.');
       }
+      phygoLog('DAFTAR', 'RESOLVE (sukses) — nunggu watchAuthState pindah layar');
       // Sama seperti login: navigasi ditangani watchAuthState().
     } catch (e) {
       console.error('[Phygo] Daftar gagal:', e);
+      phygoLog('DAFTAR', 'REJECT: ' + (e && (e.code || e.message)));
       setAuthError('registerError', withErrorCode(friendlyAuthError(e), e));
       authBusy = false;
       setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
@@ -253,14 +266,17 @@ function initAuthUI() {
 
 // ===== GATE UTAMA — dipanggil sekali di app.js, GANTIKAN showScreen('home') langsung =====
 function initAuthGate() {
+  phygoLog('GATE', 'initAuthGate() mulai jalan');
   document.getElementById('app').style.display = 'none'; // sembunyikan dashboard dulu
   initAuthUI();
+  phygoLog('GATE', 'initAuthUI() selesai, listener tombol sudah terpasang');
 
   // Entry history awal buat layar auth, biar tombol back HP di form Daftar
   // punya "tempat" buat balik (lihat handleAuthHistoryPop di router.js).
   history.replaceState({ authForm: 'login' }, '', '#masuk');
 
   watchAuthState((user) => {
+    phygoLog('AUTH STATE', user ? ('user login, uid=' + user.uid) : 'user = null (belum/nggak login)');
     if (user) {
       authBusy = false;
       setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
