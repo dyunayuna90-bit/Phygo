@@ -65,6 +65,24 @@ function showScreen(name, opts){
 function navigate(name, opts, replace){ const state = Object.assign({screen:name}, opts||{}); if(replace) history.replaceState(state, '', '#'+name); else history.pushState(state, '', '#'+name); showScreen(name, opts); }
 
 window.addEventListener('popstate', (e)=>{
+  // FIX: layar auth (login/daftar) sebelumnya sama sekali gak nyambung ke
+  // history, jadi tombol back HP di form Daftar nembus keluar app (atau
+  // "diem aja") alih-alih balik ke form Masuk. Sekarang entry history-nya
+  // ditandai {authForm:'login'|'register'} (lihat auth-ui.js) — kalau ini
+  // yang lagi aktif, cukup toggle form-nya, JANGAN sentuh showScreen sama
+  // sekali (dashboard belum tentu ke-render/ke-init sama sekali kalau user
+  // masih di layar auth).
+  if(e.state && e.state.authForm){
+    handleAuthHistoryPop(e.state);
+    return;
+  }
+  // Kalau lagi di layar auth (belum login) TAPI entry-nya bukan authForm
+  // (misal history awal sebelum fix ini), tetap fallback ke form login,
+  // jangan malah nyoba render dashboard yang belum tentu siap.
+  if(document.getElementById('screen-auth').classList.contains('active') && document.getElementById('app').style.display === 'none'){
+    handleAuthHistoryPop({ authForm: 'login' });
+    return;
+  }
   // Kalau sheet kuis (ijo/merah) lagi aktif, history entry yang baru saja
   // "dimakan" oleh tombol back adalah entry dummy milik sheet itu sendiri.
   // Jadi cukup tutup sheet-nya lewat handleQuizFbHistoryPop() dan JANGAN
