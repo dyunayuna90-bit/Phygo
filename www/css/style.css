@@ -598,7 +598,7 @@ input{ font-family:inherit; }
 .surv-shell{ display:flex; flex-direction:column; flex:1; min-height:0; width:100%; position:relative; }
 .surv-header{ display:flex; align-items:flex-start; justify-content:space-between; padding:4px 20px 18px; flex-shrink:0; }
 .surv-lives{ display:flex; gap:5px; min-width:78px; padding-top:6px; }
-.surv-timerwrap{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+.surv-timerwrap{ display:flex; flex-direction:column; align-items:center; gap:6px; }
 .surv-timer{ font-family:var(--font-mono); font-weight:800; font-size:24px; color:var(--on-surface); letter-spacing:0.5px; transition:color .2s; }
 .surv-timer.panic{ color:#E53E3E; animation: survPulse .5s ease-in-out infinite; }
 .surv-progress-track{ width:130px; height:4px; border-radius:4px; background:var(--surface-c-high); overflow:hidden; }
@@ -607,12 +607,26 @@ input{ font-family:inherit; }
 .surv-score{ font-family:var(--font-mono); font-weight:800; font-size:19px; color:var(--primary-soft); min-width:64px; text-align:right; padding-top:6px; text-shadow:0 2px 4px rgba(0,0,0,.4); position:relative; }
 @keyframes survPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.15); } }
 
+/* ===== Badge "Rekor:" CENTERED di bawah progress bar (posisi baru) ===== */
+.surv-record-badge-new{
+  display:flex; align-items:center; justify-content:center; gap:3px;
+  color:var(--on-surface); font-size:11px; font-weight:800; letter-spacing:0.1px;
+  transition: color .3s ease;
+  white-space:nowrap;
+}
+.surv-record-badge-new .surv-record-icon{ display:flex; align-items:center; color:var(--primary-soft); }
+.surv-record-badge-new .surv-record-icon svg{ width:12px; height:12px; }
+.surv-record-badge-new b{ font-family:var(--font-mono); font-weight:800; color:var(--on-surface); }
+.surv-record-badge-new.broken{ color:var(--success); }
+.surv-record-badge-new.broken .surv-record-icon{ color:var(--success); }
+.surv-record-badge-new.broken b{ color:var(--success); }
+
 /* ===== Badge "Rekor:" di atas skor live (HUD Survival) — nunjukin rekor
    tertinggi SEBELUM sesi ini dimulai, dibekukan sepanjang sesi (lihat
    renderSurvivalRecordBadge di survival.js). position:relative dipasang di
    wrapper kolomnya (bukan di badge-nya sendiri) supaya toast "Rekor Baru!"
    (.surv-record-toast) bisa nempel pas di atas kolom skor+badge sekaligus. */
-.surv-score-col{ display:flex; flex-direction:column; align-items:flex-end; gap:5px; padding-top:2px; position:relative; }
+.surv-score-col{ display:flex; flex-direction:column; align-items:flex-end; gap:0; padding-top:0; position:relative; }
 .surv-record-badge{
   display:flex; align-items:center; gap:4px;
   background:var(--surface-c-high); color:var(--on-surface-var);
@@ -1779,215 +1793,4 @@ input{ font-family:inherit; }
   width: 100%; text-align: left; padding: 20px 20px 20px 18px;
   border-radius: 26px 26px 26px 10px; margin-bottom: 16px;
   background: linear-gradient(135deg, var(--duel-grad-1) 0%, var(--duel-grad-2) 65%, var(--duel-grad-3) 100%);
-  color: #fff; box-shadow: 0 6px 0 var(--duel-shadow), var(--shadow-md);
-  border: 1px solid rgba(255,255,255,0.14);
-  transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
-}
-.duel-card:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--duel-shadow); }
-.duel-card-icon-box {
-  flex-shrink: 0; width: 52px; height: 52px; border-radius: 16px 16px 16px 6px;
-  background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
-}
-.duel-card-icon-box svg { width: 26px; height: 26px; }
-.duel-card-text { flex: 1; min-width: 0; }
-.duel-card-eyebrow { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 4px; }
-.duel-card-title { font-size: 18px; font-weight: 900; line-height: 1.28; margin-bottom: 2px; }
-.duel-card-sub { font-size: 12.5px; font-weight: 500; opacity: 0.88; }
-.duel-card-go { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 13px 13px 13px 4px; background: rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); }
-.duel-card-go svg { width: 19px; height: 19px; }
-
-/* --- Layar Matchmaking --- */
-.duel-match-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px; text-align: center; }
-.duel-match-avatars { display: flex; align-items: center; gap: 20px; }
-.duel-match-avatar-box {
-  width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: var(--surface-c-high);
-  display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--on-surface-var);
-  box-shadow: var(--shadow-md);
-}
-.duel-match-avatar-box svg, .duel-match-avatar-box img { width: 100%; height: 100%; display: block; }
-.duel-match-avatar-searching { border: 2px dashed var(--outline-var); animation: duelPulseBox 1.4s ease-in-out infinite; }
-@keyframes duelPulseBox { 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
-.duel-match-vs-mark { font-family: var(--font-mono); font-weight: 900; font-size: 18px; color: var(--on-surface-var); }
-.duel-match-spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--surface-c-high); border-top-color: var(--primary); animation: alSpin .8s linear infinite; }
-.duel-match-status { font-size: 14.5px; font-weight: 600; color: var(--on-surface-var); max-width: 280px; }
-
-/* --- Layar VS + Countdown --- */
-.duel-vs-shell { flex: 1; display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px; }
-.duel-vs-player { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; max-width: 140px; }
-.duel-vs-avatar { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; background: var(--surface-c-high); box-shadow: var(--shadow-lg); }
-.duel-vs-avatar svg { width: 100%; height: 100%; display: block; }
-.duel-vs-player h3 { font-size: 15px; font-weight: 800; color: var(--on-surface); text-align: center; word-break: break-word; }
-.duel-vs-rank { font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: var(--r-pill); background: var(--primary-container); color: var(--primary); }
-.duel-vs-mark { font-family: var(--font-mono); font-weight: 900; font-size: 30px; color: var(--error); flex-shrink: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-
-/* --- HUD Gameplay Duel (mirip Survival + sisi lawan) --- */
-.duel-hud-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 4px 16px 18px; flex-shrink: 0; gap: 8px; }
-.duel-hud-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
-.duel-hud-side.opp { align-items: center; }
-.duel-hud-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; color: var(--on-surface-var); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Nyawa Duel: 3 heart-icon berjejer, dikasih gap renggang biar rapi &
-   gak dempet-dempetan di layar sempit (lihat renderDuelLives di duel.js). */
-.duel-hud-lives { display: flex; align-items: center; gap: 7px; }
-.duel-hud-lives .heart-icon { width: 17px; height: 17px; color: var(--primary-soft); transition: all .3s ease-out; }
-.duel-hud-lives .heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
-.duel-hud-score { font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: var(--on-surface); position: relative; padding: 2px 4px; }
-
-/* #duelOpts pakai shell gelap yang sama seperti #survOpts (.surv-shell) —
-   samakan juga gaya pill-shape morphing + warna benar/salahnya. */
-#duelOpts{ padding:0 20px; }
-#duelOpts.frozen{ pointer-events:none; opacity:0.92; }
-#duelOpts .quiz-opt{
-  background:var(--surface-c-high);
-  border:2px solid transparent;
-  border-radius:50px;
-  transition: border-radius .3s cubic-bezier(0.34,1.56,0.64,1), background-color .3s ease, border-color .3s ease, transform .2s;
-}
-#duelOpts .quiz-opt:active{ transform:scale(0.98); }
-#duelOpts .quiz-opt.correct,
-#duelOpts .quiz-opt.wrong{ border-radius:16px; }
-#duelOpts .quiz-opt.correct{ background:var(--primary-container); border-color:var(--primary); }
-#duelOpts .quiz-opt.wrong{ background:#D64545; border-color:#D64545; }
-#duelOpts .quiz-opt-letter{ background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.12); }
-#duelOpts .quiz-opt.correct .quiz-opt-letter,
-#duelOpts .quiz-opt.wrong .quiz-opt-letter{ color:#fff; border-color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.16); }
-
-/* --- Halaman Hasil Duel (Material 3 Expressive) ---
-   Palet per-hasil (menang/kalah/seri) di-drive lewat custom property
-   --result-c / --result-on-c / --result-shadow yang di-set oleh class
-   .win / .lose / .draw (ditambahkan dinamis oleh duel.js). Ini biar 1 set
-   CSS bisa dipakai buat 3 kondisi sekaligus tanpa duplikasi style. */
-.duel-result-shell {
-  flex: 1; display: flex; flex-direction: column; align-items: flex-start;
-  justify-content: center; gap: 22px; padding: 36px 28px; text-align: left;
-}
-/* Palet per-hasil didefinisikan di SINI (bukan di .duel-result-icon-wrap
-   saja) supaya ikut kewarisi ke elemen lain yang BUKAN anak dari icon-wrap
-   juga, misalnya tombol "Cari Lawan Lagi" di bawah. */
-.duel-result-shell.win  { --result-c: var(--success-container); --result-on-c: var(--success); --result-shadow: color-mix(in srgb, var(--success) 35%, transparent); }
-.duel-result-shell.lose { --result-c: var(--error-container);   --result-on-c: var(--error);   --result-shadow: color-mix(in srgb, var(--error) 30%, transparent); }
-.duel-result-shell.draw { --result-c: var(--surface-c-high);    --result-on-c: var(--on-surface-var); }
-
-.duel-result-icon-wrap {
-  position: relative;
-  width: 64px; height: 64px;
-  border-radius: 24px 24px 24px 8px; /* squircle asimetris ala M3 Expressive */
-  display: flex; align-items: center; justify-content: center;
-  background: var(--result-c, var(--surface-c-high));
-  color: var(--result-on-c, var(--on-surface));
-  box-shadow: 0 8px 20px var(--result-shadow, rgba(0,0,0,0.3));
-}
-.duel-result-icon-wrap svg { width: 32px; height: 32px; display: block; }
-.duel-result-title-group { display: flex; flex-direction: column; gap: 0; }
-.duel-result-title-top {
-  font-size: 26px; font-weight: 800; color: var(--on-surface);
-  text-transform: uppercase; letter-spacing: 0.5px; margin: 0;
-}
-.duel-result-title-main {
-  font-size: 42px; font-weight: 900; line-height: 1.08; letter-spacing: 0.3px;
-  text-transform: uppercase; margin: 0; display: flex; flex-wrap: wrap;
-}
-.duel-result-title-main.win  { color: var(--success); }
-.duel-result-title-main.lose { color: var(--error); }
-.duel-result-title-main.draw { color: var(--primary); }
-/* Tiap huruf dibungkus span sendiri (lihat duel.js) supaya bisa di-stagger
-   satu-satu pas animasi masuk — efek "teks meletup" khas M3 Expressive. */
-.drt-letter { display: inline-block; will-change: transform, opacity; }
-
-.duel-result-scorelist { display: flex; flex-direction: column; gap: 6px; }
-.duel-result-score-row { font-size: 16.5px; font-weight: 600; color: var(--on-surface-var); }
-.duel-result-score-row b { color: var(--on-surface); font-weight: 800; }
-.duel-result-score-row.me b { color: var(--result-on-c, var(--on-surface)); }
-
-.duel-result-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 8px; }
-.duel-result-actions .btn { justify-content: flex-start; padding-left: 22px; }
-.duel-result-actions .btn-icon-slot { display: inline-flex; width: 20px; height: 20px; flex-shrink: 0; }
-.duel-result-actions .btn-icon-slot svg { width: 100%; height: 100%; display: block; }
-/* Tombol utama "Cari Lawan Lagi" ikut mewarnai tonalnya sesuai hasil
-   (senada sama ikon di atas) biar satu palet, bukan cuma default teal. */
-.duel-result-actions #duelResultRetryBtn,
-.duel-result-actions #survResultRetryBtn {
-  background: linear-gradient(to bottom, var(--result-on-c, var(--primary)), color-mix(in srgb, var(--result-on-c, var(--primary)) 75%, black));
-  color: var(--result-c, var(--on-primary));
-}
-/* Teks koreksi jawaban soal terakhir di layar Hasil Survival — dudukin
-   selaras dengan daftar skor di atasnya (sama-sama rata kiri, lihat
-   .duel-result-shell), sedikit diberi jarak dari tombol aksi di bawahnya. */
-.surv-result-correction {
-  font-size: 13.5px; color: var(--on-surface-var); line-height: 1.6;
-  font-weight: 500; margin: -8px 0 0;
-}
-
-/* Wrapper posisi buat area soal/jawaban duel — overlay "nunggu lawan" di
-   bawah ini di-scope ke wrapper ini SAJA (bukan .surv-shell secara utuh),
-   supaya HUD row di atasnya (skor & nyawa lawan) gak ketutupan. */
-.duel-body-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
-
-/* =====================================================================
-   Overlay "Nyawa Kamu Habis, Menunggu Lawan" (Tugas 6) — muncul DI ATAS
-   area soal/jawaban duel (bukan pindah screen, dan bukan nutup HUD di
-   atasnya) begitu nyawa sendiri habis duluan, TAPI lawan masih hidup.
-   HUD lawan tetap kelihatan & tetap update realtime, jadi user masih
-   bisa nontonin skor/nyawa lawan sambil nunggu (dulu ini ketutupan
-   karena overlay-nya inset:0 relatif ke .surv-shell yang notabene juga
-   membungkus HUD row). Tombol "Menyerah" buat langsung nyerah tanpa
-   nunggu sampai lawan juga kehabisan nyawa.
-   ===================================================================== */
-.duel-waiting-overlay {
-  display: none;
-  position: absolute; inset: 0; z-index: 20;
-  background: rgba(10,14,15,0.82); backdrop-filter: blur(3px);
-  align-items: center; justify-content: center; padding: 24px;
-}
-.duel-waiting-overlay.show { display: flex; }
-.duel-waiting-box {
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  text-align: center; max-width: 300px;
-}
-.duel-waiting-icon { color: var(--surface-c-high); filter: grayscale(1); opacity: 0.7; }
-.duel-waiting-box h3 { font-size: 18px; font-weight: 800; color: var(--on-surface); margin: 4px 0 0; }
-.duel-waiting-box p { font-size: 13.5px; color: var(--on-surface-var); margin: 0; }
-.duel-waiting-spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--surface-c-high); border-top-color: var(--primary); animation: alSpin .8s linear infinite; margin: 6px 0 10px; }
-
-/* =====================================================================
-   TUGAS 5: Banner ajakan duel (muncul selagi app kebuka, di atas semua
-   layar/modal). Sebelumnya CUMA ada markup HTML + toggle display/opacity
-   dari duel.js, TAPI ga ada CSS-nya sama sekali -> banner ke-render tanpa
-   position, jadi cuma numpuk di paling bawah <body> (di luar viewport),
-   bukan ngambang di atas layar. Makanya "keliatan sukses" di debug log
-   (display=block, opacity=1) tapi user ga pernah liat wujudnya.
-   ===================================================================== */
-.duel-invite-banner {
-  display: none; /* di-toggle jadi 'flex' oleh duel.js pas ada undangan masuk */
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top));
-  left: 12px;
-  right: 12px;
-  z-index: 2000; /* di atas modal (500) & auth overlay biasa, biar ga ketutup apapun */
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c));
-  border: 1px solid var(--outline-var);
-  border-radius: var(--r-l);
-  padding: 12px 14px;
-  box-shadow: var(--shadow-lg);
-  opacity: 0;
-  transform: translateY(-12px);
-  transition: opacity .25s ease-out, transform .25s ease-out;
-  pointer-events: none;
-}
-.duel-invite-banner.show {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-.duel-invite-avatar {
-  width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
-  display: block; background: var(--surface-c);
-}
-.duel-invite-avatar svg { width: 100%; height: 100%; display: block; }
-.duel-invite-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.duel-invite-text b { font-size: 14.5px; font-weight: 800; color: var(--on-surface); }
-.duel-invite-text small { font-size: 12px; color: var(--on-surface-var); font-weight: 600; }
-.duel-invite-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  color: #fff; box-shadow: 0 6px 0 var(--duel-shad
