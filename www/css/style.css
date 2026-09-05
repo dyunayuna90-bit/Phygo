@@ -1613,3 +1613,145 @@ input{ font-family:inherit; }
 
 /* Tombol Simpan pada modal Edit Profil butuh sedikit jarak dari field terakhir */
 #modalEditProfile .btn { margin-top: 8px; }
+
+/* =====================================================================
+   FIX BUG "BADGE NOTIFIKASI KEPOTONG": .ripple-host WAJIB overflow:hidden
+   (buat efek ripple), tapi badge titik merah butuh nongol SEDIKIT di luar
+   batas tombolnya. Solusinya: badge sekarang jadi child dari WRAPPER
+   terpisah (.badge-anchor, position:relative TANPA overflow:hidden),
+   sejajar (sibling) dengan tombol ripple-host-nya, bukan child dari
+   tombol itu sendiri. Dipakai di: tombol Sosial (tab Profil) & tombol
+   Undangan (layar Sosial).
+   ===================================================================== */
+.badge-anchor { position: relative; display: inline-flex; }
+.badge-anchor .social-req-badge { top: -4px; right: -4px; }
+
+/* =====================================================================
+   TOGGLE RANK SOLO / DUEL — di Profil sendiri (Tugas 3)
+   ===================================================================== */
+.rank-toggle {
+  display: inline-flex; gap: 4px; background: var(--surface-c);
+  border-radius: var(--r-pill); padding: 3px; margin-bottom: 10px;
+}
+.rank-toggle-btn {
+  padding: 6px 14px; border-radius: var(--r-pill); font-size: 12px; font-weight: 800;
+  color: var(--on-surface-var); transition: all .2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.rank-toggle-btn.active { background: var(--primary-container); color: var(--primary); }
+
+.rankinfo-link {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 10px;
+  font-size: 12.5px; font-weight: 700; color: var(--primary);
+}
+.rankinfo-link svg { width: 14px; height: 14px; }
+
+/* Rank badges berdampingan di modal Lihat Profil Teman (read-only, tanpa toggle) */
+.profile-view-ranks { display: flex; justify-content: center; gap: 24px; margin-top: 8px; }
+.profile-view-rank-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.profile-view-rank-label { font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--on-surface-var); }
+
+/* =====================================================================
+   HALAMAN INFO TINGKATAN RANK
+   ===================================================================== */
+.rankinfo-hero { text-align: center; padding: 24px 20px 28px; }
+.rankinfo-eyebrow { display: block; font-size: 12px; font-weight: 700; color: var(--on-surface-var); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.rankinfo-current .profile-rank-badge { font-size: 20px; padding: 8px 22px; }
+.rankinfo-poin { display: block; margin-top: 10px; font-size: 13px; color: var(--on-surface-var); }
+.rankinfo-list { padding: 0 20px 32px; display: flex; flex-direction: column; gap: 10px; }
+.rankinfo-row {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface-c); border-radius: var(--r-l); padding: 14px 16px;
+  border: 1px solid var(--outline-var);
+}
+.rankinfo-row.active { border-color: var(--primary); background: linear-gradient(135deg, var(--primary-container), var(--surface-c)); }
+.rankinfo-row-badge { flex-shrink: 0; padding: 8px 14px; border-radius: var(--r-pill); font-size: 12px; font-weight: 900; letter-spacing: 0.4px; }
+.rankinfo-row-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rankinfo-row-text b { font-size: 14.5px; color: var(--on-surface); }
+.rankinfo-row-text small { font-size: 12px; color: var(--on-surface-var); }
+.rankinfo-row-you { flex-shrink: 0; font-size: 11px; font-weight: 800; color: var(--primary); background: var(--primary-container); padding: 4px 10px; border-radius: var(--r-pill); }
+
+/* =====================================================================
+   MODE DUEL — semua tampilan (Tugas 4 & 5)
+   ===================================================================== */
+
+/* --- Kartu entry point di Home --- */
+.duel-card {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px;
+  width: 100%; text-align: left; padding: 20px 20px 20px 18px;
+  border-radius: 26px 26px 26px 10px; margin-bottom: 16px;
+  background: linear-gradient(135deg, #6B4CE6 0%, #B23FD8 65%, #E63F7A 100%);
+  color: #fff; box-shadow: 0 6px 0 #4A2E9E, var(--shadow-md);
+  border: 1px solid rgba(255,255,255,0.14);
+  transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
+}
+.duel-card:active { transform: translateY(5px); box-shadow: 0 1px 0 #4A2E9E; }
+.duel-card-icon-box {
+  flex-shrink: 0; width: 52px; height: 52px; border-radius: 16px 16px 16px 6px;
+  background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28);
+}
+.duel-card-icon-box svg { width: 26px; height: 26px; }
+.duel-card-text { flex: 1; min-width: 0; }
+.duel-card-eyebrow { display: block; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 4px; }
+.duel-card-title { font-size: 18px; font-weight: 900; line-height: 1.28; margin-bottom: 2px; }
+.duel-card-sub { font-size: 12.5px; font-weight: 500; opacity: 0.88; }
+.duel-card-go { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 13px 13px 13px 4px; background: rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); }
+.duel-card-go svg { width: 19px; height: 19px; }
+
+/* --- Layar Matchmaking --- */
+.duel-match-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px; text-align: center; }
+.duel-match-avatars { display: flex; align-items: center; gap: 20px; }
+.duel-match-avatar-box {
+  width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: var(--surface-c-high);
+  display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--on-surface-var);
+  box-shadow: var(--shadow-md);
+}
+.duel-match-avatar-box svg, .duel-match-avatar-box img { width: 100%; height: 100%; display: block; }
+.duel-match-avatar-searching { border: 2px dashed var(--outline-var); animation: duelPulseBox 1.4s ease-in-out infinite; }
+@keyframes duelPulseBox { 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
+.duel-match-vs-mark { font-family: var(--font-mono); font-weight: 900; font-size: 18px; color: var(--on-surface-var); }
+.duel-match-spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--surface-c-high); border-top-color: var(--primary); animation: alSpin .8s linear infinite; }
+.duel-match-status { font-size: 14.5px; font-weight: 600; color: var(--on-surface-var); max-width: 280px; }
+
+/* --- Layar VS + Countdown --- */
+.duel-vs-shell { flex: 1; display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px; }
+.duel-vs-player { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; max-width: 140px; }
+.duel-vs-avatar { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; background: var(--surface-c-high); box-shadow: var(--shadow-lg); }
+.duel-vs-avatar svg { width: 100%; height: 100%; display: block; }
+.duel-vs-player h3 { font-size: 15px; font-weight: 800; color: var(--on-surface); text-align: center; word-break: break-word; }
+.duel-vs-rank { font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: var(--r-pill); background: var(--primary-container); color: var(--primary); }
+.duel-vs-mark { font-family: var(--font-mono); font-weight: 900; font-size: 30px; color: var(--error); flex-shrink: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+/* --- HUD Gameplay Duel (mirip Survival + sisi lawan) --- */
+.duel-hud-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 4px 16px 18px; flex-shrink: 0; gap: 8px; }
+.duel-hud-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
+.duel-hud-side.opp { align-items: center; }
+.duel-hud-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; color: var(--on-surface-var); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-hud-lives { display: flex; gap: 3px; }
+.duel-hud-lives .heart-icon { width: 15px; height: 15px; color: var(--primary-soft); }
+.duel-hud-lives .heart-icon.lost { color: var(--surface-c-high); }
+.duel-hud-score { font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: var(--on-surface); }
+
+/* #duelOpts pakai shell gelap yang sama seperti #survOpts (.surv-shell) —
+   samakan juga gaya pill-shape morphing + warna benar/salahnya. */
+#duelOpts{ padding:0 20px; }
+#duelOpts.frozen{ pointer-events:none; opacity:0.92; }
+#duelOpts .quiz-opt{
+  background:var(--surface-c-high);
+  border:2px solid transparent;
+  border-radius:50px;
+  transition: border-radius .3s cubic-bezier(0.34,1.56,0.64,1), background-color .3s ease, border-color .3s ease, transform .2s;
+}
+#duelOpts .quiz-opt:active{ transform:scale(0.98); }
+#duelOpts .quiz-opt.correct,
+#duelOpts .quiz-opt.wrong{ border-radius:16px; }
+#duelOpts .quiz-opt.correct{ background:var(--primary-container); border-color:var(--primary); }
+#duelOpts .quiz-opt.wrong{ background:#D64545; border-color:#D64545; }
+#duelOpts .quiz-opt-letter{ background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.12); }
+#duelOpts .quiz-opt.correct .quiz-opt-letter,
+#duelOpts .quiz-opt.wrong .quiz-opt-letter{ color:#fff; border-color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.16); }
+
+/* --- Halaman Hasil Duel --- */
+.duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+.duel-result-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.duel-result-shell
