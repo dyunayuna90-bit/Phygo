@@ -820,7 +820,7 @@ input{ font-family:inherit; }
   line-height: 1;
 }
 
-/* --- Hero Section: Avatar + User Info + Rank --- */
+/* --- Hero Section: User Info + Rank (kiri) + Avatar (kanan) --- */
 .profile-hero {
   display: flex;
   align-items: center;
@@ -841,6 +841,7 @@ input{ font-family:inherit; }
   font-weight: 900;
   color: var(--on-primary-container);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  margin-left: auto;
 }
 
 .profile-user-info {
@@ -852,24 +853,26 @@ input{ font-family:inherit; }
   font-size: 22px;
   font-weight: 900;
   color: var(--on-surface);
-  margin-bottom: 4px;
+  margin-bottom: 10px;
   line-height: 1.2;
   word-break: break-word;
 }
 
-.profile-realname {
-  font-size: 14px;
-  color: var(--on-surface-var);
-  margin: 0 0 12px 0;
-  font-weight: 500;
-  word-break: break-word;
-}
-
+/* Rank badge = tombol (dulu cuma div info, sekarang dipencet langsung
+   masuk ke halaman "Tingkatan Rank", gantiin link teks terpisah). */
 .profile-rank {
   display: flex;
   align-items: center;
   gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
 }
+
+.profile-rank svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.8; }
 
 .profile-rank-badge {
   font-size: 12px;
@@ -1654,12 +1657,6 @@ input{ font-family:inherit; }
 }
 .rank-toggle-btn.active { background: var(--primary-container); color: var(--primary); }
 
-.rankinfo-link {
-  display: inline-flex; align-items: center; gap: 4px; margin-top: 10px;
-  font-size: 12.5px; font-weight: 700; color: var(--primary);
-}
-.rankinfo-link svg { width: 14px; height: 14px; }
-
 /* Rank badges berdampingan di modal Lihat Profil Teman (read-only, tanpa toggle) */
 .profile-view-ranks { display: flex; justify-content: center; gap: 24px; margin-top: 8px; }
 .profile-view-rank-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -1742,14 +1739,11 @@ input{ font-family:inherit; }
 .duel-hud-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
 .duel-hud-side.opp { align-items: center; }
 .duel-hud-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; color: var(--on-surface-var); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Nyawa Duel: DULU 3 heart-icon berjejer (dempet/tumpang tindih di layar
-   sempit) — SEKARANG cuma 1 heart-icon + label "×N" (lihat renderDuelLives
-   di duel.js). */
-.duel-hud-lives { display: flex; align-items: center; gap: 4px; }
+/* Nyawa Duel: 3 heart-icon berjejer, dikasih gap renggang biar rapi &
+   gak dempet-dempetan di layar sempit (lihat renderDuelLives di duel.js). */
+.duel-hud-lives { display: flex; align-items: center; gap: 7px; }
 .duel-hud-lives .heart-icon { width: 17px; height: 17px; color: var(--primary-soft); transition: all .3s ease-out; }
 .duel-hud-lives .heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
-.duel-hud-lives-count { font-family: var(--font-mono); font-weight: 800; font-size: 13px; color: var(--on-surface-var); }
-.duel-hud-lives-count.lost { color: var(--surface-c-high); }
 .duel-hud-score { font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: var(--on-surface); position: relative; padding: 2px 4px; }
 
 /* #duelOpts pakai shell gelap yang sama seperti #survOpts (.surv-shell) —
@@ -1774,12 +1768,19 @@ input{ font-family:inherit; }
 /* --- Halaman Hasil Duel --- */
 .duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
 
+/* Wrapper posisi buat area soal/jawaban duel — overlay "nunggu lawan" di
+   bawah ini di-scope ke wrapper ini SAJA (bukan .surv-shell secara utuh),
+   supaya HUD row di atasnya (skor & nyawa lawan) gak ketutupan. */
+.duel-body-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
 /* =====================================================================
    Overlay "Nyawa Kamu Habis, Menunggu Lawan" (Tugas 6) — muncul DI ATAS
-   #screen-duelgame (bukan pindah screen) begitu nyawa sendiri habis
-   duluan, TAPI lawan masih hidup. HUD lawan di baliknya tetap kelihatan
-   & tetap update realtime, jadi user masih bisa nontonin skor/nyawa
-   lawan sambil nunggu. Tombol "Menyerah" buat langsung nyerah tanpa
+   area soal/jawaban duel (bukan pindah screen, dan bukan nutup HUD di
+   atasnya) begitu nyawa sendiri habis duluan, TAPI lawan masih hidup.
+   HUD lawan tetap kelihatan & tetap update realtime, jadi user masih
+   bisa nontonin skor/nyawa lawan sambil nunggu (dulu ini ketutupan
+   karena overlay-nya inset:0 relatif ke .surv-shell yang notabene juga
+   membungkus HUD row). Tombol "Menyerah" buat langsung nyerah tanpa
    nunggu sampai lawan juga kehabisan nyawa.
    ===================================================================== */
 .duel-waiting-overlay {
