@@ -211,10 +211,12 @@ function renderSocialScreen() {
       <button class="social-back-btn ripple-host" id="socialBackBtn" aria-label="Kembali">${svgIcon('arrowBack')}</button>
       <span class="social-topbar-title">Sosial</span>
       <div class="social-topbar-actions">
-        <button class="social-icon-btn ripple-host" id="socialInboxBtn" aria-label="Undangan Pertemanan">
-          ${svgIcon('mail')}
+        <div class="badge-anchor">
+          <button class="social-icon-btn ripple-host" id="socialInboxBtn" aria-label="Undangan Pertemanan">
+            ${svgIcon('mail')}
+          </button>
           <span class="social-req-badge" id="socialReqBadgeInScreen" style="display:none;">0</span>
-        </button>
+        </div>
         <button class="social-icon-btn ripple-host" id="socialAddFriendBtn" aria-label="Tambah Teman">${svgIcon('personAdd')}</button>
       </div>
     </div>
@@ -290,9 +292,16 @@ function openAddFriendModal() {
   setTimeout(() => document.getElementById('addFriendSearchInput').focus(), 200);
 }
 
+// FIX BUG "MODAL SOSIAL BIKIN LAYAR DI BELAKANGNYA IKUT ANIMASI ULANG":
+// dulu window.socialModalOpen di-null-in DI SINI, SEBELUM history.back()
+// dipanggil. Padahal event popstate yang muncul abis history.back() BUTUH
+// status ini masih keisi buat tahu "oh ini nutup modal, jangan render ulang
+// layar di belakangnya" (lihat cek `window.socialModalOpen` di router.js).
+// Karena sudah ke-null-in duluan, popstate-nya nganggep ini navigasi biasa.
+// FIX: null-in status SEKARANG hanya terjadi di dalam handleSocialModalHistoryPop
+// (dipanggil oleh popstate), BUKAN di sini sebelum history.back() dipanggil.
 function closeAddFriendModal(fromHistoryPop) {
   _setModalVisible('modalAddFriend', 'modalAddFriendBackdrop', false);
-  window.socialModalOpen = null;
   if (!fromHistoryPop) history.back();
 }
 
@@ -418,7 +427,6 @@ function openInboxModal() {
 
 function closeInboxModal(fromHistoryPop) {
   _setModalVisible('modalInbox', 'modalInboxBackdrop', false);
-  window.socialModalOpen = null;
   if (!fromHistoryPop) history.back();
 }
 
@@ -516,14 +524,21 @@ async function openProfileViewModal(uid, fallbackInfo) {
         <div class="profile-view-actions" id="profileViewActions"></div>
       `;
     } else {
-      const rank = getRankBadge(u.totalPoin || 0);
+      const rankSolo = getRankBadge(u.poinSolo || 0);
+      const rankDuel = getRankBadge(u.poinDuel || 0);
       body.innerHTML = `
         <div class="profile-view-hero">
           <span class="profile-view-avatar">${avatarSvg(u.avatarId)}</span>
           <h2>${escapeHtml(u.usernameDisplay || 'User')}</h2>
-          <div class="profile-rank" style="color:${rank.color}; justify-content:center;">
-            <span class="profile-rank-badge">${rank.rank}</span>
-            <span class="profile-rank-poin">${(u.totalPoin || 0).toLocaleString('id-ID')} Poin</span>
+          <div class="profile-view-ranks">
+            <div class="profile-view-rank-item">
+              <span class="profile-view-rank-label">Solo</span>
+              <div class="profile-rank-badge" style="background:color-mix(in srgb, ${rankSolo.color} 22%, var(--surface-c)); color:${rankSolo.color};">${rankSolo.rank}</div>
+            </div>
+            <div class="profile-view-rank-item">
+              <span class="profile-view-rank-label">Duel</span>
+              <div class="profile-rank-badge" style="background:color-mix(in srgb, ${rankDuel.color} 22%, var(--surface-c)); color:${rankDuel.color};">${rankDuel.rank}</div>
+            </div>
           </div>
         </div>
         <div class="profile-stats-grid" style="padding:0 0 20px;">
@@ -542,6 +557,12 @@ async function openProfileViewModal(uid, fallbackInfo) {
           <div class="profile-stat-box">
             <span class="profile-stat-label">Musim Ini</span>
             <span class="profile-stat-value">${(u.seasonPoin || 0).toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+        <div class="profile-section" style="padding:0 0 20px;">
+          <h3 class="profile-section-title">Quote Terpasang</h3>
+          <div class="profile-quote-box">
+            <p class="profile-quote-text">${u.quoteEquipped ? escapeHtml(u.quoteEquipped) : 'Belum ada quote terpasang'}</p>
           </div>
         </div>
         <div class="profile-view-actions" id="profileViewActions"></div>
@@ -582,7 +603,13 @@ function renderProfileViewActions(uid, info, status) {
   if (!slot) return;
   if (status === 'me') { slot.innerHTML = ''; return; }
   if (status === 'friend') {
-    slot.innerHTML = `<button class="btn btn-ghost btn-block ripple-host" id="pvActionBtn">Berhenti Berteman</button>`;
+    slot.innerHTML = `
+      <button class="btn btn-primary btn-block ripple-host" id="pvDuelBtn">${svgIcon('swords')} Ajak Duel</button>
+      <button class="btn btn-ghost btn-block ripple-host" id="pvActionBtn" style="margin-top:8px;">Berhenti Berteman</button>
+    `;
+    document.getElementById('pvDuelBtn').addEventListener('click', () => {
+      if (typeof sendDuelInvite === 'function') sendDuelInvite(uid, info);
+    });
     document.getElementById('pvActionBtn').addEventListener('click', () => {
       Swal.fire({
         icon: 'warning', title: 'Berhenti berteman?', text: `Kamu tidak akan lagi berteman dengan ${info.usernameDisplay || 'user ini'}.`,
@@ -619,7 +646,6 @@ function renderProfileViewActions(uid, info, status) {
 
 function closeProfileViewModal(fromHistoryPop) {
   _setModalVisible('modalProfileView', 'modalProfileViewBackdrop', false);
-  window.socialModalOpen = null;
   if (!fromHistoryPop) history.back();
 }
 
@@ -652,7 +678,6 @@ async function openEditProfileModal() {
 
 function closeEditProfileModal(fromHistoryPop) {
   _setModalVisible('modalEditProfile', 'modalEditProfileBackdrop', false);
-  window.socialModalOpen = null;
   if (!fromHistoryPop) history.back();
 }
 
