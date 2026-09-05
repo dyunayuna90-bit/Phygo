@@ -586,8 +586,15 @@ input{ font-family:inherit; }
 .surv-progress-track{ width:130px; height:4px; border-radius:4px; background:var(--surface-c-high); overflow:hidden; }
 .surv-progress-fill{ height:100%; width:100%; background:var(--primary-soft); border-radius:4px; transform-origin:left center; transition: width .12s linear, background .2s; }
 .surv-progress-fill.panic{ background:#E53E3E; animation: survPulse .5s ease-in-out infinite; }
-.surv-score{ font-family:var(--font-mono); font-weight:800; font-size:19px; color:var(--primary-soft); min-width:64px; text-align:right; padding-top:6px; text-shadow:0 2px 4px rgba(0,0,0,.4); }
+.surv-score{ font-family:var(--font-mono); font-weight:800; font-size:19px; color:var(--primary-soft); min-width:64px; text-align:right; padding-top:6px; text-shadow:0 2px 4px rgba(0,0,0,.4); position:relative; }
 @keyframes survPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.15); } }
+
+/* ===== POPUP SKOR (+100 / +80 / +0) — dipakai di Survival & Duel, lihat
+   spawnScorePopup() di animation.js. Elemen skor pemiliknya WAJIB
+   position:relative (sudah diset di .surv-score & .duel-hud-score). */
+.score-popup{ position:absolute; right:0; top:0; font-family:var(--font-mono); font-weight:800; font-size:15px; pointer-events:none; white-space:nowrap; }
+.score-popup.positive{ color:var(--success, #3DD68C); }
+.score-popup.zero{ color:var(--on-surface-var); }
 
 .surv-scroll{ padding:0 0 24px; }
 .surv-question-box{ padding:0 20px; margin-bottom:14px; }
@@ -1735,10 +1742,15 @@ input{ font-family:inherit; }
 .duel-hud-side { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
 .duel-hud-side.opp { align-items: center; }
 .duel-hud-label { font-size: 10.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; color: var(--on-surface-var); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.duel-hud-lives { display: flex; gap: 3px; }
-.duel-hud-lives .heart-icon { width: 15px; height: 15px; color: var(--primary-soft); }
-.duel-hud-lives .heart-icon.lost { color: var(--surface-c-high); }
-.duel-hud-score { font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: var(--on-surface); }
+/* Nyawa Duel: DULU 3 heart-icon berjejer (dempet/tumpang tindih di layar
+   sempit) — SEKARANG cuma 1 heart-icon + label "×N" (lihat renderDuelLives
+   di duel.js). */
+.duel-hud-lives { display: flex; align-items: center; gap: 4px; }
+.duel-hud-lives .heart-icon { width: 17px; height: 17px; color: var(--primary-soft); transition: all .3s ease-out; }
+.duel-hud-lives .heart-icon.lost { color: var(--surface-c-high); filter: grayscale(1); transform: scale(0.7); opacity: 0.5; }
+.duel-hud-lives-count { font-family: var(--font-mono); font-weight: 800; font-size: 13px; color: var(--on-surface-var); }
+.duel-hud-lives-count.lost { color: var(--surface-c-high); }
+.duel-hud-score { font-family: var(--font-mono); font-weight: 800; font-size: 15px; color: var(--on-surface); position: relative; padding: 2px 4px; }
 
 /* #duelOpts pakai shell gelap yang sama seperti #survOpts (.surv-shell) —
    samakan juga gaya pill-shape morphing + warna benar/salahnya. */
@@ -1761,6 +1773,30 @@ input{ font-family:inherit; }
 
 /* --- Halaman Hasil Duel --- */
 .duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+
+/* =====================================================================
+   Overlay "Nyawa Kamu Habis, Menunggu Lawan" (Tugas 6) — muncul DI ATAS
+   #screen-duelgame (bukan pindah screen) begitu nyawa sendiri habis
+   duluan, TAPI lawan masih hidup. HUD lawan di baliknya tetap kelihatan
+   & tetap update realtime, jadi user masih bisa nontonin skor/nyawa
+   lawan sambil nunggu. Tombol "Menyerah" buat langsung nyerah tanpa
+   nunggu sampai lawan juga kehabisan nyawa.
+   ===================================================================== */
+.duel-waiting-overlay {
+  display: none;
+  position: absolute; inset: 0; z-index: 20;
+  background: rgba(10,14,15,0.82); backdrop-filter: blur(3px);
+  align-items: center; justify-content: center; padding: 24px;
+}
+.duel-waiting-overlay.show { display: flex; }
+.duel-waiting-box {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center; max-width: 300px;
+}
+.duel-waiting-icon { color: var(--surface-c-high); filter: grayscale(1); opacity: 0.7; }
+.duel-waiting-box h3 { font-size: 18px; font-weight: 800; color: var(--on-surface); margin: 4px 0 0; }
+.duel-waiting-box p { font-size: 13.5px; color: var(--on-surface-var); margin: 0; }
+.duel-waiting-spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--surface-c-high); border-top-color: var(--primary); animation: alSpin .8s linear infinite; margin: 6px 0 10px; }
 
 /* =====================================================================
    TUGAS 5: Banner ajakan duel (muncul selagi app kebuka, di atas semua
