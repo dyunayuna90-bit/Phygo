@@ -4,11 +4,27 @@
 // MODE SURVIVAL — Kuis arcade cepat berbasis Kurikulum Merdeka (GLB/GLBB/GJB)
 // =====================================================================
 
-const SURV_HS_KEY = 'phygo_survival_highscore';
+// v2: skala poin berubah jadi ratusan (dulu cuma +1/soal) — key dibedakan
+// dari versi lama supaya highscore lama (skala kecil) ga nyampur/nyasar
+// jadi kelihatan "kecil" dibanding skala baru.
+const SURV_HS_KEY = 'phygo_survival_highscore_v2';
 const SURV_QUESTION_TIME = 60; // detik per soal
 const SURV_PANIC_AT = 5;       // detik tersisa saat efek panik aktif
 const SURV_LIVES_START = 3;
 const SURV_ANSWER_DELAY = 1000; // ms — jeda validasi jawaban (morphing + feedback warna)
+
+// ===== SISTEM POIN (dipakai SAMA PERSIS oleh Survival & Duel) =====
+// Jawab benar <10 detik = +100, jawab benar >=10 detik = +80,
+// jawab salah ATAU waktu habis = -20 (dan kehilangan 1 nyawa).
+const SURV_POIN_CEPAT = 100;
+const SURV_POIN_LAMBAT = 80;
+const SURV_POIN_SALAH = -20;
+const SURV_BATAS_CEPAT = 10; // detik
+
+function survHitungPoin(isCorrect, waktuJawabDetik){
+  if(!isCorrect) return SURV_POIN_SALAH;
+  return waktuJawabDetik < SURV_BATAS_CEPAT ? SURV_POIN_CEPAT : SURV_POIN_LAMBAT;
+}
 
 function survGetHighScore(){ try{ return parseInt(localStorage.getItem(SURV_HS_KEY) || '0', 10) || 0; }catch(e){ return 0; } }
 function survSaveHighScore(v){ try{ localStorage.setItem(SURV_HS_KEY, String(v)); }catch(e){} }
@@ -165,7 +181,7 @@ function survGenerateQuestion(lastTopic){
 }
 
 // ===== State & Alur Permainan =====
-const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false };
+const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false, questionStartedAt: null };
 
 function renderSurvivalCard(holder){
   if(!holder) return;
@@ -251,6 +267,7 @@ function survNextQuestion(){
 
   gsap.fromTo([qText, ...opts.querySelectorAll('.quiz-opt')], {opacity:0, y:14}, {opacity:1, y:0, duration:0.4, stagger:0.05, ease:'back.out(1.4)'});
 
+  survState.questionStartedAt = Date.now();
   survStartTimer();
 }
 
@@ -307,6 +324,13 @@ function survHandleTimeout(){
   survState.answering = true;
   const opts = document.getElementById('survOpts');
   opts.classList.add('frozen');
+
+  // Waktu habis diperlakukan SAMA seperti jawab salah: -20 poin + kehilangan nyawa.
+  const delta = survHitungPoin(false, SURV_QUESTION_TIME);
+  survState.score += delta;
+  renderSurvivalScore();
+  awardPoin('solo', delta);
+
   survLoseLife();
 }
 
@@ -321,11 +345,17 @@ function survHandleAnswer(idx){
   const isCorrect = idx === survState.current.correctIdx;
   if(optEl) optEl.classList.add(isCorrect ? 'correct' : 'wrong');
 
+  const waktuJawab = (Date.now() - (survState.questionStartedAt || Date.now())) / 1000;
+  const delta = survHitungPoin(isCorrect, waktuJawab);
+  survState.score += delta;
+  renderSurvivalScore();
+  // Pipeline poin sebenarnya: BENERAN nulis ke Firestore (poinSolo + totalPoin)
+  // tiap kali dapat/kehilangan poin — bukan cuma ke localStorage.
+  awardPoin('solo', delta);
+
   // Validasi jeda 1 detik penuh (morphing bentuk + feedback warna) + anti-spam click
   setTimeout(()=>{
     if(isCorrect){
-      survState.score++;
-      renderSurvivalScore();
       survNextQuestion();
     } else {
       survLoseLife();
