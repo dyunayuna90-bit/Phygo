@@ -604,27 +604,27 @@ let duelInviteShownFrom = null; // uid pengirim undangan yang lagi ditampilkan d
 function initDuelInviteListener(){
   const me = fbAuth.currentUser;
   if(!me) return;
+  const phygoLog = window.phygoLog || ((tag, msg)=> console.log(`[${tag}] ${msg}`));
+  phygoLog('DUEL_INVITE_LISTEN', 'Init listener');
+  
   teardownDuelInviteListener();
-  console.log('[Phygo] initDuelInviteListener: starting listener untuk uid', me.uid);
   duelInviteUnsub = db.collection('users').doc(me.uid).collection('duelInvites')
     .where('status', '==', 'pending')
     .onSnapshot((snap)=>{
-      console.log('[Phygo] duelInvites listener fired, doc count:', snap.size);
+      phygoLog('DUEL_INVITE_LISTEN', `Received: ${snap.size} invites`);
       // Jangan ganggu kalau lagi di tengah VS/gameplay Duel.
       const busyScreens = ['screen-duelvs', 'screen-duelgame'];
       const isBusy = busyScreens.some(id => document.getElementById(id) && document.getElementById(id).classList.contains('active'));
-      console.log('[Phygo] isBusy:', isBusy);
-      if(isBusy) return;
-      if(snap.empty){ console.log('[Phygo] no pending invites'); hideDuelInviteBanner(); return; }
-      // Tampilkan undangan TERBARU (yang lain menunggu giliran, cukup dibiarkan di data).
+      if(isBusy) { phygoLog('DUEL_INVITE_LISTEN', 'Busy'); return; }
+      if(snap.empty){ phygoLog('DUEL_INVITE_LISTEN', 'No invites'); hideDuelInviteBanner(); return; }
+      // Tampilkan undangan TERBARU
       let latest = null;
       snap.forEach(doc => {
         const d = doc.data();
-        console.log('[Phygo] invite found:', doc.id, d.fromUsername);
         if(!latest || (d.createdAt && latest.createdAt && d.createdAt.toMillis() > latest.createdAt.toMillis())) latest = Object.assign({ inviteId: doc.id }, d);
       });
-      if(latest) { console.log('[Phygo] showing banner for:', latest.fromUsername); showDuelInviteBanner(latest); }
-    }, (err)=> console.error('[Phygo] listener undangan duel gagal:', err));
+      if(latest) { phygoLog('DUEL_INVITE_LISTEN', `Show: ${latest.fromUsername}`); showDuelInviteBanner(latest); }
+    }, (err)=> { phygoLog('DUEL_INVITE_LISTEN', `ERROR: ${err.message}`); console.error('[Phygo] listener undangan duel gagal:', err); });
 }
 
 function teardownDuelInviteListener(){
@@ -685,10 +685,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
 async function sendDuelInvite(targetUid, targetInfo){
   const me = fbAuth.currentUser;
   if(!me) return;
+  const phygoLog = window.phygoLog || ((tag, msg)=> console.log(`[${tag}] ${msg}`));
+  
+  phygoLog('DUEL_INVITE', `START: target=${targetInfo?.usernameDisplay||'unknown'}`);
   const linkRef = db.collection('duelInviteLinks').doc(`${me.uid}_${targetUid}`);
   let myProfile;
   try{
     myProfile = await getCurrentUserProfile();
+    phygoLog('DUEL_INVITE', `Profile loaded: ${myProfile?.usernameDisplay}`);
+    
+    phygoLog('DUEL_INVITE', 'Writing invite...');
     await db.collection('users').doc(targetUid).collection('duelInvites').doc(me.uid).set({
       fromUid: me.uid,
       fromUsername: (myProfile && myProfile.usernameDisplay) || 'User',
@@ -696,11 +702,17 @@ async function sendDuelInvite(targetUid, targetInfo){
       status: 'pending',
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    phygoLog('DUEL_INVITE', 'Invite written OK');
+    
+    phygoLog('DUEL_INVITE', 'Writing link...');
     await linkRef.set({
       fromUid: me.uid, targetUid, status: 'pending', duelId: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    phygoLog('DUEL_INVITE', 'SUCCESS - terkirim');
+    
   } catch(e){
+    phygoLog('DUEL_INVITE', `ERROR: ${e.code} - ${e.message}`);
     console.error('[Phygo] Gagal mengirim ajakan duel:', e);
     Swal.fire({ icon:'error', title:'Gagal Mengirim Ajakan', text: e.message, background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--error)' });
     return;
@@ -712,6 +724,7 @@ async function sendDuelInvite(targetUid, targetInfo){
   const unsub = linkRef.onSnapshot((snap)=>{
     if(!snap.exists || settled) return;
     const d = snap.data();
+    phygoLog('DUEL_INVITE', `Link status: ${d.status}`);
     if(d.status === 'accepted' && d.duelId){
       settled = true;
       unsub();
@@ -723,7 +736,10 @@ async function sendDuelInvite(targetUid, targetInfo){
       Swal.close();
       Swal.fire({ icon:'info', title:'Ajakan Ditolak', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)', timer:1800, showConfirmButton:false });
     }
-  }, (err)=> console.error('[Phygo] listener status ajakan duel gagal:', err));
+  }, (err)=> {
+    phygoLog('DUEL_INVITE', `Listener error: ${err.code}`);
+    console.error('[Phygo] listener status ajakan duel gagal:', err);
+  });
 
   await Swal.fire({
     icon: 'info',
@@ -737,6 +753,7 @@ async function sendDuelInvite(targetUid, targetInfo){
   });
 
   if(!settled){
+    phygoLog('DUEL_INVITE', 'Cancelled');
     unsub();
     db.collection('users').doc(targetUid).collection('duelInvites').doc(me.uid).delete().catch(()=>{});
     linkRef.delete().catch(()=>{});
