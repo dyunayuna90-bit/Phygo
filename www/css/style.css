@@ -768,14 +768,24 @@ input{ font-family:inherit; }
 .auth-switch{ text-align:center; font-size:13px; color:var(--on-surface-var); margin-top:6px; }
 .auth-switch a{ color:var(--primary); font-weight:700; text-decoration:none; }
 
-.avatar-picker{ display:flex; gap:12px; justify-content:center; padding:6px 0; }
+.avatar-picker{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:6px 0; }
 .avatar-option{
   width:64px; height:64px; border-radius:22px 22px 22px 8px; overflow:hidden;
   border:2.5px solid var(--outline-var); cursor:pointer; transition:all .2s cubic-bezier(0.34,1.56,0.64,1);
-  background:var(--surface-c);
+  background:var(--surface-c); flex-shrink:0;
 }
 .avatar-option img, .avatar-option svg{ width:100%; height:100%; object-fit:cover; }
 .avatar-option.selected{ border-color:var(--primary); transform:scale(1.08); }
+/* Grid avatar di modal "Ganti Foto Profil" (tab Profil) — tile-nya sedikit
+   lebih besar dibanding avatar-picker form Daftar biar enak dipencet. */
+.avatar-picker-modal{ padding:8px 4px 4px; }
+.avatar-picker-modal .avatar-option{ width:76px; height:76px; }
+
+/* Output avatarSvg() (js/avatars.js) SELALU berupa <img class="avatar-img">
+   — 1 rule global ini yang bikin gambarnya otomatis penuh & ke-crop rapi
+   di kontainer manapun ia di-insert (list teman, modal profil, VS Duel,
+   dst), tanpa perlu nambah selector "img" satu-satu di tiap kontainer. */
+.avatar-img{ width:100%; height:100%; object-fit:cover; display:block; }
 
 /* ===== PROFIL SCREEN — Material 3 Expressive Dark Mode ===== */
 
@@ -854,11 +864,17 @@ input{ font-family:inherit; }
   padding: 0 20px 24px;
 }
 
+/* Wrapper cuma buat naruh tombol pensil nempel di pojok kanan-bawah
+   avatar tanpa ganggu ukuran avatar itu sendiri (pola sama seperti
+   .social-friend-avatar-wrap buat dot status online/offline). */
+.profile-avatar-wrap { position: relative; flex-shrink: 0; margin-left: auto; }
+
 .profile-avatar {
   flex-shrink: 0;
   width: 80px;
   height: 80px;
   border-radius: var(--r-xl);
+  overflow: hidden;
   background: linear-gradient(135deg, var(--primary-container), var(--primary-soft));
   display: flex;
   align-items: center;
@@ -867,8 +883,18 @@ input{ font-family:inherit; }
   font-weight: 900;
   color: var(--on-primary-container);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  margin-left: auto;
 }
+
+.profile-avatar-edit-btn {
+  position: absolute; right: -4px; bottom: -4px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--primary); color: var(--on-primary);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-md);
+  border: 2.5px solid var(--surface);
+}
+.profile-avatar-edit-btn svg { width: 15px; height: 15px; display: block; }
+.profile-avatar-edit-btn:active { transform: scale(0.9); }
 
 .profile-user-info {
   flex: 1;
@@ -1801,9 +1827,75 @@ input{ font-family:inherit; }
 #duelOpts .quiz-opt.correct .quiz-opt-letter,
 #duelOpts .quiz-opt.wrong .quiz-opt-letter{ color:#fff; border-color:rgba(255,255,255,0.35); background:rgba(255,255,255,0.16); }
 
-/* --- Halaman Hasil Duel --- */
-.duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
-.duel-result-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+/* --- Halaman Hasil Duel (Material 3 Expressive) ---
+   Palet per-hasil (menang/kalah/seri) di-drive lewat custom property
+   --result-c / --result-on-c / --result-shadow yang di-set oleh class
+   .win / .lose / .draw (ditambahkan dinamis oleh duel.js). Ini biar 1 set
+   CSS bisa dipakai buat 3 kondisi sekaligus tanpa duplikasi style. */
+.duel-result-shell {
+  flex: 1; display: flex; flex-direction: column; align-items: flex-start;
+  justify-content: center; gap: 22px; padding: 36px 28px; text-align: left;
+}
+/* Palet per-hasil didefinisikan di SINI (bukan di .duel-result-icon-wrap
+   saja) supaya ikut kewarisi ke elemen lain yang BUKAN anak dari icon-wrap
+   juga, misalnya tombol "Cari Lawan Lagi" di bawah. */
+.duel-result-shell.win  { --result-c: var(--success-container); --result-on-c: var(--success); --result-shadow: color-mix(in srgb, var(--success) 35%, transparent); }
+.duel-result-shell.lose { --result-c: var(--error-container);   --result-on-c: var(--error);   --result-shadow: color-mix(in srgb, var(--error) 30%, transparent); }
+.duel-result-shell.draw { --result-c: var(--surface-c-high);    --result-on-c: var(--on-surface-var); }
+
+.duel-result-icon-wrap {
+  position: relative;
+  width: 64px; height: 64px;
+  border-radius: 24px 24px 24px 8px; /* squircle asimetris ala M3 Expressive */
+  display: flex; align-items: center; justify-content: center;
+  background: var(--result-c, var(--surface-c-high));
+  color: var(--result-on-c, var(--on-surface));
+  box-shadow: 0 8px 20px var(--result-shadow, rgba(0,0,0,0.3));
+}
+.duel-result-icon-wrap svg { width: 32px; height: 32px; display: block; }
+/* Blob cahaya lembut di belakang ikon, berdenyut pelan — sentuhan
+   "expressive" biar halaman hasil gak kaku/diem aja. */
+.duel-result-icon-wrap::after {
+  content: ''; position: absolute; inset: -16px; z-index: -1;
+  border-radius: inherit; background: var(--result-c, var(--surface-c-high));
+  opacity: 0.32; filter: blur(16px);
+  animation: duelResultGlow 2.4s ease-in-out infinite;
+}
+@keyframes duelResultGlow {
+  0%, 100% { transform: scale(1); opacity: 0.26; }
+  50% { transform: scale(1.22); opacity: 0.48; }
+}
+.duel-result-title-group { display: flex; flex-direction: column; gap: 0; }
+.duel-result-title-top {
+  font-size: 26px; font-weight: 800; color: var(--on-surface);
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 0;
+}
+.duel-result-title-main {
+  font-size: 42px; font-weight: 900; line-height: 1.08; letter-spacing: 0.3px;
+  text-transform: uppercase; margin: 0; display: flex; flex-wrap: wrap;
+}
+.duel-result-title-main.win  { color: var(--success); }
+.duel-result-title-main.lose { color: var(--error); }
+.duel-result-title-main.draw { color: var(--primary); }
+/* Tiap huruf dibungkus span sendiri (lihat duel.js) supaya bisa di-stagger
+   satu-satu pas animasi masuk — efek "teks meletup" khas M3 Expressive. */
+.drt-letter { display: inline-block; will-change: transform, opacity; }
+
+.duel-result-scorelist { display: flex; flex-direction: column; gap: 6px; }
+.duel-result-score-row { font-size: 16.5px; font-weight: 600; color: var(--on-surface-var); }
+.duel-result-score-row b { color: var(--on-surface); font-weight: 800; }
+.duel-result-score-row.me b { color: var(--result-on-c, var(--on-surface)); }
+
+.duel-result-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 8px; }
+.duel-result-actions .btn { justify-content: flex-start; padding-left: 22px; }
+.duel-result-actions .btn-icon-slot { display: inline-flex; width: 20px; height: 20px; flex-shrink: 0; }
+.duel-result-actions .btn-icon-slot svg { width: 100%; height: 100%; display: block; }
+/* Tombol utama "Cari Lawan Lagi" ikut mewarnai tonalnya sesuai hasil
+   (senada sama ikon di atas) biar satu palet, bukan cuma default teal. */
+.duel-result-actions #duelResultRetryBtn {
+  background: linear-gradient(to bottom, var(--result-on-c, var(--primary)), color-mix(in srgb, var(--result-on-c, var(--primary)) 75%, black));
+  color: var(--result-c, var(--on-primary));
+}
 
 /* Wrapper posisi buat area soal/jawaban duel — overlay "nunggu lawan" di
    bawah ini di-scope ke wrapper ini SAJA (bukan .surv-shell secara utuh),
