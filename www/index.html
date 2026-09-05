@@ -520,23 +520,28 @@
             <div class="duel-hud-score" id="duelOppScoreVal">0</div>
           </div>
         </div>
-        <div class="scroll-pane surv-scroll" id="duelScroll">
-          <div class="surv-question-box">
-            <p class="step-text" id="duelQuestionText" style="font-size:16px; font-weight:600;"></p>
-          </div>
-          <div class="quiz-options" id="duelOpts"></div>
-        </div>
-
-        <!-- Nyawa sendiri habis duluan tapi lawan masih main -->
-        <div class="duel-waiting-overlay" id="duelWaitingOverlay">
-          <div class="duel-waiting-box">
-            <div class="duel-waiting-icon">
-              <svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <div class="duel-body-wrap">
+          <div class="scroll-pane surv-scroll" id="duelScroll">
+            <div class="surv-question-box">
+              <p class="step-text" id="duelQuestionText" style="font-size:16px; font-weight:600;"></p>
             </div>
-            <h3>Nyawa Kamu Habis!</h3>
-            <p>Menunggu <b id="duelWaitingOppName">lawan</b> menyelesaikan permainannya...</p>
-            <div class="duel-waiting-spinner"></div>
-            <button class="btn btn-ghost btn-block ripple-host" id="duelWaitingSurrenderBtn">Menyerah</button>
+            <div class="quiz-options" id="duelOpts"></div>
+          </div>
+
+          <!-- Nyawa sendiri habis duluan tapi lawan masih main. SENGAJA cuma
+               nutup area soal/jawaban ini (bukan seluruh .surv-shell) supaya
+               HUD di atas (skor & nyawa lawan, live update) tetap kelihatan
+               — biar user gak bosen nunggu tanpa tau posisi lawan. -->
+          <div class="duel-waiting-overlay" id="duelWaitingOverlay">
+            <div class="duel-waiting-box">
+              <div class="duel-waiting-icon">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </div>
+              <h3>Nyawa Kamu Habis!</h3>
+              <p>Menunggu <b id="duelWaitingOppName">lawan</b> menyelesaikan permainannya...</p>
+              <div class="duel-waiting-spinner"></div>
+              <button class="btn btn-ghost btn-block ripple-host" id="duelWaitingSurrenderBtn">Menyerah</button>
+            </div>
           </div>
         </div>
       </div>
@@ -546,7 +551,7 @@
     <section class="screen" id="screen-duelresult">
       <div class="duel-result-shell">
         <div class="duel-result-icon" id="duelResultIcon"></div>
-        <h2 id="duelResultTitle">Menang!</h2>
+        <h2 id="duelResultTitle">Memuat Hasil...</h2>
         <div class="duel-result-scores">
           <div class="duel-result-score-box">
             <span>Kamu</span>
