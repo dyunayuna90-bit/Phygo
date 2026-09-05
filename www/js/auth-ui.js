@@ -163,6 +163,9 @@ function goToDashboardAfterAuth() {
     // Nyalakan listener realtime sistem pertemanan (following/followers) —
     // lihat social.js. Aman dipanggil berkali-kali (di-reset di dalamnya).
     if (typeof initSocialListeners === 'function') initSocialListeners();
+    // Nyalakan listener realtime undangan Duel (lihat duel.js) — supaya
+    // banner "Diajak Duel" bisa muncul kapan saja selama app kebuka.
+    if (typeof initDuelInviteListener === 'function') initDuelInviteListener();
     phygoLog('DASHBOARD', 'showScreen(home) selesai tanpa error');
   } catch (e) {
     // Kalau sampai render dashboard-nya error, jangan biarkan user
@@ -188,6 +191,7 @@ function resetToAuthScreen() {
   const lp = document.getElementById('loginPassword'); if (lp) lp.value = '';
   if (typeof teardownSocialListeners === 'function') teardownSocialListeners();
   if (typeof closeAllSocialModals === 'function') closeAllSocialModals();
+  if (typeof teardownDuelInviteListener === 'function') teardownDuelInviteListener();
 }
 
 function initAuthUI() {
