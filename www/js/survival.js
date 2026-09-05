@@ -15,10 +15,11 @@ const SURV_ANSWER_DELAY = 1000; // ms — jeda validasi jawaban (morphing + feed
 
 // ===== SISTEM POIN (dipakai SAMA PERSIS oleh Survival & Duel) =====
 // Jawab benar <10 detik = +100, jawab benar >=10 detik = +80,
-// jawab salah ATAU waktu habis = -20 (dan kehilangan 1 nyawa).
+// jawab salah ATAU waktu habis = 0 (TIDAK ada pengurangan/"mines" lagi —
+// nyawa tetap berkurang seperti biasa, tapi skor tidak pernah turun).
 const SURV_POIN_CEPAT = 100;
 const SURV_POIN_LAMBAT = 80;
-const SURV_POIN_SALAH = -20;
+const SURV_POIN_SALAH = 0;
 const SURV_BATAS_CEPAT = 10; // detik
 
 function survHitungPoin(isCorrect, waktuJawabDetik){
@@ -325,11 +326,12 @@ function survHandleTimeout(){
   const opts = document.getElementById('survOpts');
   opts.classList.add('frozen');
 
-  // Waktu habis diperlakukan SAMA seperti jawab salah: -20 poin + kehilangan nyawa.
+  // Waktu habis diperlakukan SAMA seperti jawab salah: 0 poin (TIDAK ada
+  // "mines"/pengurangan lagi) + tetap kehilangan 1 nyawa.
   const delta = survHitungPoin(false, SURV_QUESTION_TIME);
   survState.score += delta;
   renderSurvivalScore();
-  awardPoin('solo', delta);
+  if(delta !== 0) spawnScorePopup('survScoreVal', delta);
 
   survLoseLife();
 }
@@ -349,9 +351,11 @@ function survHandleAnswer(idx){
   const delta = survHitungPoin(isCorrect, waktuJawab);
   survState.score += delta;
   renderSurvivalScore();
-  // Pipeline poin sebenarnya: BENERAN nulis ke Firestore (poinSolo + totalPoin)
-  // tiap kali dapat/kehilangan poin — bukan cuma ke localStorage.
-  awardPoin('solo', delta);
+  if(delta !== 0) spawnScorePopup('survScoreVal', delta);
+  // CATATAN: poin Survival TIDAK lagi ditulis ke Firestore per-soal.
+  // poinSolo di profil sekarang berarti "skor tertinggi dalam 1 sesi"
+  // (tinggi-tinggian), bukan akumulasi — makanya baru dikirim SEKALI di
+  // akhir permainan lewat submitSurvivalScore() (lihat survGameOver()).
 
   // Validasi jeda 1 detik penuh (morphing bentuk + feedback warna) + anti-spam click
   setTimeout(()=>{
@@ -378,6 +382,10 @@ function survGameOver(){
   survState.deadline = null;
   const hs = survGetHighScore();
   if(survState.score > hs) survSaveHighScore(survState.score);
+
+  // Kirim skor sesi ini ke Firestore — HANYA dipakai kalau lebih tinggi
+  // dari rekor sebelumnya (poinSolo = "tinggi-tinggian", bukan akumulasi).
+  submitSurvivalScore(survState.score);
 
   document.getElementById('survGoScore').textContent = survState.score;
   const corrEl = document.getElementById('survGoCorrection');
