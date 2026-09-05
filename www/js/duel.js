@@ -676,9 +676,6 @@ async function renderDuelResultScreen(opts){
     document.getElementById('duelResultMyScore').textContent = myScore;
     document.getElementById('duelResultOppScore').textContent = oppScore;
     document.getElementById('duelResultOppName').textContent = oppName;
-    const iconEl = document.getElementById('duelResultIcon');
-    iconEl.style.background = isDraw ? 'var(--surface-c-high)' : (iWon ? 'var(--success-container)' : 'var(--error-container)');
-    iconEl.innerHTML = `<span style="color:${isDraw ? 'var(--on-surface-var)' : (iWon ? 'var(--success)' : 'var(--error)')};">${svgIcon(isDraw ? 'swords' : (iWon ? 'trophy' : 'cross'))}</span>`;
 
     if(shell) shell.style.opacity = '1';
     gsap.fromTo('.duel-result-shell > *', {opacity:0, y:16}, {opacity:1, y:0, duration:0.45, stagger:0.08, ease:'back.out(1.4)'});
