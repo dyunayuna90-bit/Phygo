@@ -555,7 +555,7 @@ async function renderProfileScreen(){
           <h1 class="profile-username">${userProfile.usernameDisplay || 'User'}</h1>
           ${userProfile.name ? `<p class="profile-realname">${userProfile.name}</p>` : ''}
           <div class="rank-toggle" id="profileRankToggle">
-            <button class="rank-toggle-btn active ripple-host" data-track="solo">Solo</button>
+            <button class="rank-toggle-btn active ripple-host" data-track="solo">Survival</button>
             <button class="rank-toggle-btn ripple-host" data-track="duel">Duel</button>
           </div>
           <div class="profile-rank" id="profileRankDisplay" style="color: ${rankSolo.color};">
@@ -589,7 +589,7 @@ async function renderProfileScreen(){
         <h3 class="profile-section-title">Breakdown Poin</h3>
         <div class="profile-breakdown">
           <div class="breakdown-row">
-            <span class="breakdown-label">Poin Solo</span>
+            <span class="breakdown-label">Poin Survival</span>
             <span class="breakdown-value">${pctSolo}% (${poinSolo.toLocaleString('id-ID')})</span>
           </div>
           <div class="breakdown-bar">
@@ -668,7 +668,7 @@ async function renderProfileScreen(){
       });
     });
     document.getElementById('profileRankInfoBtn').addEventListener('click', ()=>{
-      navigate('rankinfo', { track: activeRankTrack, poin: activeRankTrack === 'solo' ? poinSolo : poinDuel, label: activeRankTrack === 'solo' ? 'Solo' : 'Duel' }, false);
+      navigate('rankinfo', { track: activeRankTrack, poin: activeRankTrack === 'solo' ? poinSolo : poinDuel, label: activeRankTrack === 'solo' ? 'Survival' : 'Duel' }, false);
     });
 
     if(window.phygoLog) window.phygoLog('PROFILE RENDER', 'selesai, username=' + userProfile.usernameDisplay);
