@@ -634,11 +634,23 @@ function teardownDuelInviteListener(){
 }
 
 function showDuelInviteBanner(invite){
+  const phygoLog = window.phygoLog || ((tag, msg)=> console.log(`[${tag}] ${msg}`));
   duelInviteShownFrom = invite.fromUid;
-  document.getElementById('duelInviteAvatar').innerHTML = avatarSvg(invite.fromAvatarId);
+  // PENTING: avatarSvg() dibungkus try/catch sendiri — kalau ini throw
+  // (misal fromAvatarId gak cocok format yang diharapkan avatars.js),
+  // dulu itu bikin SELURUH fungsi berhenti SEBELUM sempat nge-show
+  // banner-nya, dan errornya sering ke-telan diam-diam oleh callback
+  // onSnapshot Firestore (gak nyampe ke window.onerror). Sekarang avatar
+  // yang gagal di-skip, banner-nya tetap WAJIB muncul.
+  try{
+    document.getElementById('duelInviteAvatar').innerHTML = avatarSvg(invite.fromAvatarId);
+  } catch(e){
+    phygoLog('DUEL_INVITE_LISTEN', `avatarSvg GAGAL: ${e.message} (fromAvatarId=${invite.fromAvatarId})`);
+  }
   document.getElementById('duelInviteName').textContent = invite.fromUsername || 'User';
   const banner = document.getElementById('duelInviteBanner');
   banner.classList.add('show');
+  phygoLog('DUEL_INVITE_LISTEN', 'Banner .show ditambahkan');
 }
 
 function hideDuelInviteBanner(){
