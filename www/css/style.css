@@ -27,6 +27,17 @@
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.16);
   --shadow-md: 0 4px 8px rgba(0,0,0,0.18);
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.25);
+
+  /* --- Kartu Mode Duel di Home: dulu warnanya di-hardcode ungu-magenta-pink
+     (vibes-nya emang pas banget kalau lagi di tema Pink, tapi nyasar di
+     tema lain). Sekarang tiap tema punya palet sendiri (di-override per
+     data-theme di bawah), tapi tetap gradient diagonal 3 warna + shadow
+     gelap yang sama "energik/kompetitif" vibe-nya. Ini nilai default
+     buat tema dasar (Cyan). */
+  --duel-grad-1: #1B5FA6;
+  --duel-grad-2: #2FA8C9;
+  --duel-grad-3: #7EE8D9;
+  --duel-shadow: #0B3D6B;
 }
 
 /* ===== Tema Alternatif ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Pink Pastel & Coklat (tetap dark mode) ===== */
@@ -35,12 +46,19 @@ html[data-theme="pink"]{
   --on-surface:#F3E6EC; --on-surface-var:#D3B8C6; --outline:#A88696; --outline-var:#4A3038;
   --primary:#F2A6C4; --primary-soft:#D6779E; --on-primary:#4A0026; --primary-container:#6B2142; --on-primary-container:#FFD9E6;
   --secondary-container:#3D2B34; --on-secondary-container:#F0D8E0;
+  /* Palet asli kartu Duel — udah pas banget vibe-nya sama tema Pink ini,
+     jadi dipertahankan apa adanya di sini. */
+  --duel-grad-1: #6B4CE6; --duel-grad-2: #B23FD8; --duel-grad-3: #E63F7A; --duel-shadow: #4A2E9E;
 }
 html[data-theme="coklat"]{
   --bg:#160F0A; --surface:#1D1610; --surface-c:#251C14; --surface-c-high:#33271B;
   --on-surface:#F0E4D6; --on-surface-var:#CBB79E; --outline:#9C8265; --outline-var:#453425;
   --primary:#D8A468; --primary-soft:#B97F3E; --on-primary:#3B2200; --primary-container:#5C3D14; --on-primary-container:#FFDCB0;
   --secondary-container:#3A2F22; --on-secondary-container:#EAD9C4;
+  /* Duel card versi Coklat: merah-bata gelap -> oranye bakar -> amber
+     (--primary tema ini persis), tetap kerasa "panas/kompetitif" tapi
+     sewarna dengan palet coklat, bukan ungu-pink yang tema ini gak nyambung. */
+  --duel-grad-1: #7A2E12; --duel-grad-2: #C1541F; --duel-grad-3: #D8A468; --duel-shadow: #4A1C08;
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none !important; user-select:none; -webkit-user-select:none; margin:0; padding:0; }
@@ -1484,6 +1502,16 @@ input{ font-family:inherit; }
   display: block; background: var(--surface-c);
 }
 .social-friend-avatar svg { width: 100%; height: 100%; display: block; }
+/* Wrapper cuma buat naruh dot status online/offline nempel di pojok
+   kanan-bawah avatar tanpa ganggu ukuran avatar itu sendiri. */
+.social-friend-avatar-wrap { position: relative; flex-shrink: 0; width: 46px; height: 46px; }
+.social-friend-avatar-wrap .social-friend-avatar { width: 46px; height: 46px; }
+.social-friend-status-dot {
+  position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px;
+  border-radius: 50%; border: 2.5px solid var(--surface-c-high);
+  background: var(--outline-var); transition: background-color .2s ease;
+}
+.social-friend-status-dot.online { background: #3ED17E; }
 .social-friend-name {
   flex: 1; min-width: 0; font-size: 14.5px; font-weight: 700; color: var(--on-surface);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -1691,12 +1719,12 @@ input{ font-family:inherit; }
   position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px;
   width: 100%; text-align: left; padding: 20px 20px 20px 18px;
   border-radius: 26px 26px 26px 10px; margin-bottom: 16px;
-  background: linear-gradient(135deg, #6B4CE6 0%, #B23FD8 65%, #E63F7A 100%);
-  color: #fff; box-shadow: 0 6px 0 #4A2E9E, var(--shadow-md);
+  background: linear-gradient(135deg, var(--duel-grad-1) 0%, var(--duel-grad-2) 65%, var(--duel-grad-3) 100%);
+  color: #fff; box-shadow: 0 6px 0 var(--duel-shadow), var(--shadow-md);
   border: 1px solid rgba(255,255,255,0.14);
   transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
 }
-.duel-card:active { transform: translateY(5px); box-shadow: 0 1px 0 #4A2E9E; }
+.duel-card:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--duel-shadow); }
 .duel-card-icon-box {
   flex-shrink: 0; width: 52px; height: 52px; border-radius: 16px 16px 16px 6px;
   background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
