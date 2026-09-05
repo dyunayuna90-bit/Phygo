@@ -6,6 +6,9 @@ function renderHome(){
   renderHomeAchievement();
   renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderHomeStreakCard();
+  // Kartu entry point Mode Duel (lihat duel.js) — dirender belakangan di
+  // Home, di bawah bento Pencapaian/Survival/Streak.
+  if (typeof renderDuelCard === 'function') renderDuelCard(document.getElementById('homeDuelCard'));
 }
 
 // ===== Header â€” sapaan dinamis sesuai jam + tanggal hari ini =====
@@ -444,18 +447,55 @@ function renderHistoryWizardStep(isInitial){
   hwEls.primary.onclick = isLast ? closeHistoryWizard : (()=> hwGoStep(1));
 }
 
-// ===== BADGE RANK SYSTEM — flexible tier berdasarkan totalPoin =====
-// Ini sistem yang gampang diubah: cukup edit object ini, gaperlu ubah banyak tempat.
+// ===== BADGE RANK SYSTEM — 2 TRACK TERPISAH (Solo & Duel) =====
+// Dulu cuma 1 tier berdasarkan totalPoin gabungan (dan gapernah jalan karena
+// totalPoin gapernah keisi). Sekarang rank dihitung TERPISAH dari poinSolo
+// dan poinDuel masing-masing (lihat getRankBadge dipanggil 2x di bawah).
+// Threshold sengaja dibuat SAMA untuk kedua track biar simpel (boleh diubah
+// beda-beda nanti tinggal edit array ini) — yang penting NOOB tetap paling
+// bawah. Skala disesuaikan dgn sistem poin baru (+100/+80 per soal benar,
+// -20 per soal salah), jadi threshold-nya lebih besar dari versi lama.
 const RANK_TIERS = [
-  { minPoin: 0, maxPoin: 999, rank: 'NOOB', color: 'var(--on-surface-low)' },
-  { minPoin: 1000, maxPoin: 4999, rank: 'LEARNER', color: 'var(--primary)' },
-  { minPoin: 5000, maxPoin: 9999, rank: 'MASTER', color: 'var(--secondary)' },
-  { minPoin: 10000, maxPoin: Infinity, rank: 'LEGEND', color: 'var(--tertiary)' },
+  { minPoin: -Infinity, maxPoin: 1999, rank: 'NOOB', color: 'var(--on-surface-var)' },
+  { minPoin: 2000, maxPoin: 7999, rank: 'LEARNER', color: 'var(--primary)' },
+  { minPoin: 8000, maxPoin: 19999, rank: 'MASTER', color: 'var(--secondary)' },
+  { minPoin: 20000, maxPoin: Infinity, rank: 'LEGEND', color: 'var(--tertiary)' },
 ];
 
-function getRankBadge(totalPoin) {
-  const tier = RANK_TIERS.find(t => totalPoin >= t.minPoin && totalPoin <= t.maxPoin);
+function getRankBadge(poin) {
+  const p = poin || 0;
+  const tier = RANK_TIERS.find(t => p >= t.minPoin && p <= t.maxPoin);
   return tier || RANK_TIERS[0];
+}
+
+// ===== HALAMAN INFO TINGKATAN RANK — daftar semua tier, dipakai utk track
+// Solo maupun Duel (lihat renderRankInfoScreen). trackLabel & currentPoin
+// dipakai buat highlight tier yang lagi ditempati user. =====
+function renderRankInfoScreen(trackLabel, currentPoin){
+  const holder = document.getElementById('rankInfoScroll');
+  if(!holder) return;
+  const current = getRankBadge(currentPoin);
+  holder.innerHTML = `
+    <div class="rankinfo-hero">
+      <span class="rankinfo-eyebrow">Rank ${trackLabel} Kamu Saat Ini</span>
+      <div class="rankinfo-current" style="color:${current.color};">
+        <span class="profile-rank-badge">${current.rank}</span>
+      </div>
+      <span class="rankinfo-poin">${(currentPoin||0).toLocaleString('id-ID')} Poin</span>
+    </div>
+    <div class="rankinfo-list">
+      ${RANK_TIERS.map((t, i) => `
+        <div class="rankinfo-row ${t.rank === current.rank ? 'active' : ''}">
+          <div class="rankinfo-row-badge" style="background:color-mix(in srgb, ${t.color} 22%, var(--surface-c)); color:${t.color};">${t.rank}</div>
+          <div class="rankinfo-row-text">
+            <b>${t.rank}</b>
+            <small>${t.maxPoin === Infinity ? `${t.minPoin.toLocaleString('id-ID')}+ Poin` : (t.minPoin <= 0 ? `0 – ${t.maxPoin.toLocaleString('id-ID')} Poin` : `${t.minPoin.toLocaleString('id-ID')} – ${t.maxPoin.toLocaleString('id-ID')} Poin`)}</small>
+          </div>
+          ${t.rank === current.rank ? `<span class="rankinfo-row-you">Kamu</span>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 // ===== PROFIL TAB — tampil data user + poin breakdown =====
@@ -473,14 +513,18 @@ async function renderProfileScreen(){
       return;
     }
 
-    const rank = getRankBadge(userProfile.totalPoin || 0);
-    
-    // Hitung persentase poin solo vs coop
+    // Hitung persentase poin solo vs duel (buat breakdown bar) — patokan
+    // totalPoin tetap dipakai di sini cuma buat proporsi visual bar, BUKAN
+    // buat rank (rank sekarang dipisah, lihat blok toggle Solo/Duel di bawah).
     const totalPoin = userProfile.totalPoin || 0;
     const poinSolo = userProfile.poinSolo || 0;
-    const poinCoop = userProfile.poinCoop || 0;
-    const pctSolo = totalPoin > 0 ? Math.round((poinSolo / totalPoin) * 100) : 0;
-    const pctCoop = totalPoin > 0 ? Math.round((poinCoop / totalPoin) * 100) : 0;
+    const poinDuel = userProfile.poinDuel || 0;
+    const totalAbs = Math.abs(poinSolo) + Math.abs(poinDuel);
+    const pctSolo = totalAbs > 0 ? Math.round((Math.abs(poinSolo) / totalAbs) * 100) : 0;
+    const pctDuel = totalAbs > 0 ? Math.round((Math.abs(poinDuel) / totalAbs) * 100) : 0;
+
+    const rankSolo = getRankBadge(poinSolo);
+    const rankDuel = getRankBadge(poinDuel);
 
     // Avatar placeholder (bisa dikembang jadi actual avatar system nanti)
     const avatarInitial = (userProfile.usernameDisplay || '?').charAt(0).toUpperCase();
@@ -489,10 +533,12 @@ async function renderProfileScreen(){
       <div class="profile-topbar">
         <span class="profile-topbar-title">Profil Saya</span>
         <div class="profile-topbar-actions">
-          <button class="profile-settings-btn ripple-host" id="profileSocialBtn" aria-label="Sosial">
-            ${svgIcon('users')}
+          <div class="badge-anchor">
+            <button class="profile-settings-btn ripple-host" id="profileSocialBtn" aria-label="Sosial">
+              ${svgIcon('users')}
+            </button>
             <span class="social-req-badge" id="profileSocialBadge" style="display:none;">0</span>
-          </button>
+          </div>
           <button class="profile-settings-btn ripple-host" id="profileSettingsBtn" aria-label="Pengaturan">
             ${svgIcon('gear')}
           </button>
@@ -503,10 +549,15 @@ async function renderProfileScreen(){
         <div class="profile-avatar">${avatarInitial}</div>
         <div class="profile-user-info">
           <h1 class="profile-username">${userProfile.usernameDisplay || 'User'}</h1>
-          <div class="profile-rank" style="color: ${rank.color};">
-            <span class="profile-rank-badge">${rank.rank}</span>
-            <span class="profile-rank-poin">${totalPoin.toLocaleString('id-ID')} Poin</span>
+          <div class="rank-toggle" id="profileRankToggle">
+            <button class="rank-toggle-btn active ripple-host" data-track="solo">Solo</button>
+            <button class="rank-toggle-btn ripple-host" data-track="duel">Duel</button>
           </div>
+          <div class="profile-rank" id="profileRankDisplay" style="color: ${rankSolo.color};">
+            <span class="profile-rank-badge">${rankSolo.rank}</span>
+            <span class="profile-rank-poin">${poinSolo.toLocaleString('id-ID')} Poin</span>
+          </div>
+          <button class="rankinfo-link ripple-host" id="profileRankInfoBtn">Lihat Tingkatan Rank ${svgIcon('chevronRight')}</button>
         </div>
       </div>
 
@@ -540,11 +591,11 @@ async function renderProfileScreen(){
             <div class="breakdown-bar-fill solo" style="width: ${pctSolo}%; background: var(--primary);"></div>
           </div>
           <div class="breakdown-row" style="margin-top: 16px;">
-            <span class="breakdown-label">Poin Koop</span>
-            <span class="breakdown-value">${pctCoop}% (${poinCoop.toLocaleString('id-ID')})</span>
+            <span class="breakdown-label">Poin Duel</span>
+            <span class="breakdown-value">${pctDuel}% (${poinDuel.toLocaleString('id-ID')})</span>
           </div>
           <div class="breakdown-bar">
-            <div class="breakdown-bar-fill coop" style="width: ${pctCoop}%; background: var(--secondary);"></div>
+            <div class="breakdown-bar-fill duel" style="width: ${pctDuel}%; background: var(--secondary);"></div>
           </div>
         </div>
       </div>
@@ -591,6 +642,29 @@ async function renderProfileScreen(){
       navigate('social', {}, false);
     });
     if (typeof updateSocialBadge === 'function') updateSocialBadge();
+
+    // Toggle badge rank Solo <-> Duel (2 track terpisah, lihat Tugas 3)
+    let activeRankTrack = 'solo';
+    const rankDisplayEl = document.getElementById('profileRankDisplay');
+    function paintRankDisplay(){
+      const rank = activeRankTrack === 'solo' ? rankSolo : rankDuel;
+      const poin = activeRankTrack === 'solo' ? poinSolo : poinDuel;
+      rankDisplayEl.style.color = rank.color;
+      rankDisplayEl.innerHTML = `
+        <span class="profile-rank-badge">${rank.rank}</span>
+        <span class="profile-rank-poin">${poin.toLocaleString('id-ID')} Poin</span>
+      `;
+    }
+    document.querySelectorAll('#profileRankToggle .rank-toggle-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        activeRankTrack = btn.dataset.track;
+        document.querySelectorAll('#profileRankToggle .rank-toggle-btn').forEach(b=> b.classList.toggle('active', b === btn));
+        paintRankDisplay();
+      });
+    });
+    document.getElementById('profileRankInfoBtn').addEventListener('click', ()=>{
+      navigate('rankinfo', { track: activeRankTrack, poin: activeRankTrack === 'solo' ? poinSolo : poinDuel, label: activeRankTrack === 'solo' ? 'Solo' : 'Duel' }, false);
+    });
 
     if(window.phygoLog) window.phygoLog('PROFILE RENDER', 'selesai, username=' + userProfile.usernameDisplay);
 
