@@ -417,13 +417,19 @@ function duelTeardownListeners(){
   duelState.unsubOpponent = null; duelState.unsubDuelDoc = null;
 }
 
-// Nyawa Duel: DULU 3 heart-icon berjejer (dempet/tumpang tindih di layar
-// sempit) — SEKARANG cuma 1 heart-icon + label "×N" (Tugas 4).
+// Nyawa Duel: 3 heart-icon berjejer, dikasih gap yang cukup renggang
+// (lihat .duel-hud-lives di style.css) supaya gak dempet/tumpang tindih
+// di layar sempit — masing-masing heart pudar sendiri-sendiri begitu
+// nyawa berkurang, bukan 1 heart + label "×N".
 function renderDuelLives(elId, livesLeft){
   const el = document.getElementById(elId);
   if(!el) return;
-  const isLost = livesLeft <= 0;
-  el.innerHTML = `<div class="heart-icon ${isLost ? 'lost' : ''}">${svgIcon('heart')}</div><span class="duel-hud-lives-count ${isLost ? 'lost' : ''}">×${Math.max(livesLeft, 0)}</span>`;
+  let html = '';
+  for(let i = 0; i < DUEL_LIVES_START; i++){
+    const isLost = i >= livesLeft;
+    html += `<div class="heart-icon ${isLost ? 'lost' : ''}">${svgIcon('heart')}</div>`;
+  }
+  el.innerHTML = html;
 }
 
 function duelNextQuestion(){
@@ -640,6 +646,13 @@ async function renderDuelResultScreen(opts){
   clearInterval(duelState.timerId);
   if(!duelId || !me){ navigate('home', {}, true); return; }
 
+  // Sembunyikan dulu shell hasil SEBELUM data selesai di-fetch — kalau
+  // enggak, layar ini sempat kelihatan pakai konten default/sisa duel
+  // sebelumnya (misal masih "Menang!") selama beberapa milidetik sebelum
+  // ke-timpa dengan hasil yang sebenarnya.
+  const shell = document.querySelector('.duel-result-shell');
+  if(shell) shell.style.opacity = '0';
+
   try{
     const [myDoc, oppDoc, duelDoc] = await Promise.all([
       db.collection('duels').doc(duelId).collection('players').doc(me.uid).get(),
@@ -667,9 +680,11 @@ async function renderDuelResultScreen(opts){
     iconEl.style.background = isDraw ? 'var(--surface-c-high)' : (iWon ? 'var(--success-container)' : 'var(--error-container)');
     iconEl.innerHTML = `<span style="color:${isDraw ? 'var(--on-surface-var)' : (iWon ? 'var(--success)' : 'var(--error)')};">${svgIcon(isDraw ? 'swords' : (iWon ? 'trophy' : 'cross'))}</span>`;
 
+    if(shell) shell.style.opacity = '1';
     gsap.fromTo('.duel-result-shell > *', {opacity:0, y:16}, {opacity:1, y:0, duration:0.45, stagger:0.08, ease:'back.out(1.4)'});
   } catch(e){
     console.error('[Phygo] Gagal memuat hasil duel:', e);
+    if(shell) shell.style.opacity = '1';
   }
 }
 

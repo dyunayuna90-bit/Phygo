@@ -550,20 +550,19 @@ async function renderProfileScreen(){
       </div>
 
       <div class="profile-hero">
-        <div class="profile-avatar">${avatarInitial}</div>
         <div class="profile-user-info">
-          <h1 class="profile-username">${userProfile.usernameDisplay || 'User'}</h1>
-          ${userProfile.name ? `<p class="profile-realname">${userProfile.name}</p>` : ''}
+          <h1 class="profile-username">@${userProfile.usernameDisplay || 'user'}</h1>
           <div class="rank-toggle" id="profileRankToggle">
             <button class="rank-toggle-btn active ripple-host" data-track="solo">Survival</button>
             <button class="rank-toggle-btn ripple-host" data-track="duel">Duel</button>
           </div>
-          <div class="profile-rank" id="profileRankDisplay" style="color: ${rankSolo.color};">
+          <button class="profile-rank ripple-host" id="profileRankDisplay" style="color: ${rankSolo.color};">
             <span class="profile-rank-badge">${rankSolo.rank}</span>
             <span class="profile-rank-poin">${poinSolo.toLocaleString('id-ID')} Poin</span>
-          </div>
-          <button class="rankinfo-link ripple-host" id="profileRankInfoBtn">Lihat Tingkatan Rank ${svgIcon('chevronRight')}</button>
+            ${svgIcon('chevronRight')}
+          </button>
         </div>
+        <div class="profile-avatar">${avatarInitial}</div>
       </div>
 
       <div class="profile-stats-grid">
@@ -658,6 +657,7 @@ async function renderProfileScreen(){
       rankDisplayEl.innerHTML = `
         <span class="profile-rank-badge">${rank.rank}</span>
         <span class="profile-rank-poin">${poin.toLocaleString('id-ID')} Poin</span>
+        ${svgIcon('chevronRight')}
       `;
     }
     document.querySelectorAll('#profileRankToggle .rank-toggle-btn').forEach(btn=>{
@@ -667,7 +667,10 @@ async function renderProfileScreen(){
         paintRankDisplay();
       });
     });
-    document.getElementById('profileRankInfoBtn').addEventListener('click', ()=>{
+    // "Lihat Tingkatan Rank" dulu tombol teks terpisah — sekarang badge
+    // rank-nya sendiri yang dipencet buat masuk ke halaman info rank,
+    // biar hero profil gak menuh-menuhin.
+    rankDisplayEl.addEventListener('click', ()=>{
       navigate('rankinfo', { track: activeRankTrack, poin: activeRankTrack === 'solo' ? poinSolo : poinDuel, label: activeRankTrack === 'solo' ? 'Survival' : 'Duel' }, false);
     });
 
