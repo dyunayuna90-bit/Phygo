@@ -120,5 +120,15 @@ window.addEventListener('popstate', (e)=>{
   if(document.getElementById('screen-duelmatch').classList.contains('active') && typeof cancelDuelMatchmaking === 'function'){
     cancelDuelMatchmaking();
   }
+  
+  // Tombol back HP saat lagi di tengah Duel (VS screen atau gameplay): BLOCK,
+  // jangan boleh keluar sampai duel selesai. User harus main sampai selesai.
+  const duelvsBusy = document.getElementById('screen-duelvs') && document.getElementById('screen-duelvs').classList.contains('active');
+  const duelgameBusy = document.getElementById('screen-duelgame') && document.getElementById('screen-duelgame').classList.contains('active');
+  if(duelvsBusy || duelgameBusy){
+    console.log('[Phygo] Back button blocked during duel');
+    return; // BLOCK back button, jangan lanjut ke showScreen
+  }
+  
   showScreen(e.state?e.state.screen:'home', e.state);
 });
