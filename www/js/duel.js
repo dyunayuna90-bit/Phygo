@@ -651,6 +651,17 @@ function showDuelInviteBanner(invite){
   const banner = document.getElementById('duelInviteBanner');
   banner.classList.add('show');
   phygoLog('DUEL_INVITE_LISTEN', 'Banner .show ditambahkan');
+  // ===== DIAGNOSTIK SEMENTARA — biar ketahuan pasti kenapa gak keliatan
+  // secara visual walau class .show udah nempel. Aman dihapus lagi nanti
+  // kalau bannernya udah kebukti muncul normal. =====
+  try{
+    const rect = banner.getBoundingClientRect();
+    const cs = getComputedStyle(banner);
+    phygoLog('DUEL_INVITE_LISTEN', `DIAG rect: top=${rect.top.toFixed(0)} left=${rect.left.toFixed(0)} w=${rect.width.toFixed(0)} h=${rect.height.toFixed(0)}`);
+    phygoLog('DUEL_INVITE_LISTEN', `DIAG style: display=${cs.display} visibility=${cs.visibility} opacity=${cs.opacity} zIndex=${cs.zIndex} transform=${cs.transform}`);
+  } catch(e){
+    phygoLog('DUEL_INVITE_LISTEN', `DIAG gagal: ${e.message}`);
+  }
 }
 
 function hideDuelInviteBanner(){
