@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="theme-color" content="#0E1416">
+<title>Phygo — Belajar Fisika Interaktif</title>
+
+<!-- Font & lib lokal (offline-ready, tidak ada CDN) -->
+<link rel="stylesheet" href="libs/fonts/roboto/index.css">
+<link rel="stylesheet" href="libs/fonts/roboto-mono/index.css">
+<link rel="stylesheet" href="libs/katex/katex.min.css">
+<link rel="stylesheet" href="libs/sweetalert2/sweetalert2.min.css">
+<link rel="stylesheet" href="css/style.css?v=2">
+
+<!-- Critical CSS loading screen — inline & gak nunggu style.css/font eksternal,
+     jadi langsung muncul begitu HTML diparse, gak ada jeda "blank/ngelag" di awal. -->
+<style>
+  #appLoader{ position:fixed; inset:0; z-index:9999; background:#0E1416; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .35s ease-out; }
+  #appLoader.hide{ opacity:0; pointer-events:none; }
+  #appLoader .al-ring{ width:40px; height:40px; border-radius:50%; border:3px solid rgba(255,255,255,0.12); border-top-color:#4DD0E1; animation:alSpin .8s linear infinite; }
+  #appLoader .al-title{ font-family:-apple-system,Roboto,sans-serif; font-size:15px; font-weight:700; letter-spacing:2px; color:rgba(255,255,255,0.55); text-transform:uppercase; }
+  @keyframes alSpin{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Loading screen awal — dibuang otomatis oleh app.js begitu dashboard siap -->
+<div id="appLoader"><div class="al-ring"></div><div class="al-title">Phygo</div></div>
+
+<script>
+(function(){
+  // window.phygoLog dipakai di banyak file (auth-ui.js, duel.js, dll) buat
+  // nyatet jejak proses login/daftar/duel dsb. Panel visualnya (DEBUG LOG)
+  // udah dihapus karena udah gak kepake, tapi fungsi ini SENGAJA dipertahankan
+  // sebagai stub yang cuma nulis ke console — biar semua pemanggil di file
+  // lain (yang manggil phygoLog(...) langsung tanpa cek "if(window.phygoLog)")
+  // tetap aman jalan, gak error.
+  window.phygoLog = function(label, detail){
+    console.log('[' + label + ']', detail === undefined ? '' : detail);
+  };
+  window.addEventListener('error', function(e){
+    window.phygoLog('JS ERROR', (e.message || 'unknown') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    var reason = e.reason;
+    var text = (reason && reason.message) ? reason.message : String(reason);
+    var code = (reason && reason.code) ? (' [' + reason.code + ']') : '';
+    window.phygoLog('PROMISE REJECTED (unhandled)', text + code);
+  });
+})();
+</script>
+
+<section class="screen active" id="screen-auth">
+  <div class="scroll-pane auth-scroll">
+    <div class="auth-hero">
+      <div class="auth-logo">Phygo</div>
+      <p class="auth-tagline">Belajar fisika, bareng temen.</p>
+    </div>
+
+    <!-- ===== FORM LOGIN ===== -->
+    <div class="auth-form" id="authFormLogin">
+      <div class="auth-field">
+        <label>Username</label>
+        <div class="auth-field-input-wrap">
+          <span class="auth-field-prefix">@</span>
+          <input type="text" id="loginUsername" autocomplete="username" placeholder="usernamekamu">
+        </div>
+      </div>
+      <div class="auth-field">
+        <label>Kata Sandi</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <p class="auth-error" id="loginError"></p>
+      <button class="btn btn-primary btn-block ripple-host" id="btnLoginSubmit">Masuk</button>
+      <p class="auth-switch">Belum punya akun? <a href="#" id="linkGoToRegister">Daftar</a></p>
+    </div>
+
+    <!-- ===== FORM DAFTAR ===== -->
+    <div class="auth-form" id="authFormRegister" style="display:none;">
+      <div class="auth-field">
+        <label>Username</label>
+        <div class="auth-field-input-wrap">
+          <span class="auth-field-prefix">@</span>
+          <input type="text" id="regUsername" autocomplete="username" placeholder="3-16 karakter, tanpa spasi">
+        </div>
+        <small class="auth-hint" id="regUsernameHint"></small>
+      </div>
+      <div class="auth-field">
+        <label>Kata Sandi</label>
+        <input type="password" id="regPassword" autocomplete="new-password" placeholder="Minimal 6 karakter">
+      </div>
+      <div class="auth-field">
+        <label>Nama</label>
+        <input type="text" id="regName" placeholder="Nama kamu">
+      </div>
+      <div class="auth-field">
+        <label>Gender</label>
+        <select id="regGender">
+          <option value="">Pilih</option>
+          <option value="L">Laki-laki</option>
+          <option value="P">Perempuan</option>
+        </select>
+      </div>
+      <div class="auth-field">
+        <label>Umur</label>
+        <input type="number" id="regAge" placeholder="Umur kamu" min="5" max="100">
+      </div>
+      <div class="auth-field">
+        <label>Avatar</label>
+        <div class="avatar-picker" id="avatarPicker">
+          <!-- 3 opsi avatar di-render lewat JS -->
+        </div>
+      </div>
+      <p class="auth-error" id="registerError"></p>
+      <button class="btn btn-primary btn-block ripple-host" id="btnRegisterSubmit">Daftar</button>
+      <p class="auth-switch">Udah punya akun? <a href="#" id="linkGoToLogin">Masuk</a></p>
+    </div>
+  </div>
+</section>
+
+<div id="app">
+  <main id="main">
+    <!-- ===== HOME ===== -->
+    <section class="screen active" id="screen-home">
+      <div class="scroll-pane" id="homeScroll">
+
+        <!-- Header sapaan + tanggal -->
+        <div class="home-header" id="homeHeader"></div>
+
+        <!-- Kartu CTA utama (adaptif: lanjutkan / mulai level / survival) -->
+        <div id="homeContinueCard"></div>
+
+        <!-- Bento: Pencapaian (lebar penuh) + Survival & Streak (2 kolom) -->
+        <div class="home-bento" id="homeBento">
+          <div id="homeAchievementCard"></div>
+          <div id="homeSurvivalCard"></div>
+          <div id="homeStreakCard"></div>
+        </div>
+
+        <!-- Entry point Mode Duel — lihat duel.js -->
+        <div id="homeDuelCard"></div>
+
+        <!-- Wordmark penutup halaman Home -->
+        <div class="home-footer-mark">Phygo</div>
+      </div>
+    </section>
+
+    <!-- ===== LEVEL (Peta Zig-zag) ===== -->
+    <section class="screen" id="screen-level">
+      <div class="scroll-pane" id="levelScroll">
+        <div class="level-header">
+          <h1>Peta Level</h1>
+          <p>Selesaikan tantangan secara berurutan untuk membuka level berikutnya.</p>
+        </div>
+        <div class="journey-map" id="journeyMap">
+          <svg class="j-path-svg" id="jPathSvg"></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEJARAH (Dashboard Tumpukan Kartu) ===== -->
+    <section class="screen" id="screen-history">
+      <div class="scroll-pane" id="historyScroll" style="display:flex; flex-direction:column;">
+        <div class="level-header">
+          <h1>Arsip Sejarah Fisika</h1>
+        </div>
+        <div class="history-stack" id="historyStackHolder"></div>
+      </div>
+    </section>
+
+    <!-- ===== PROFIL (Tab ke-4, mengganti Pengaturan lama) ===== -->
+    <section class="screen" id="screen-profile">
+      <div class="scroll-pane" id="profileScroll">
+        <!-- Diisi oleh renderProfileScreen() -->
+      </div>
+    </section>
+
+    <!-- ===== INFO TINGKATAN RANK — daftar tier Solo/Duel, dibuka dari Profil ===== -->
+    <section class="screen" id="screen-rankinfo">
+      <div class="appinfo-topbar" style="padding:0 20px 14px;">
+        <button class="appinfo-back ripple-host" id="rankInfoBackBtn" aria-label="Kembali"></button>
+        <span class="appinfo-topbar-title">Tingkatan Rank</span>
+      </div>
+      <div class="scroll-pane" id="rankInfoScroll"></div>
+    </section>
+
+    <!-- ===== PENGATURAN (Layar Modal, bukan Tab) ===== -->
+    <section class="screen" id="screen-settings">
+      <div class="settings-topbar">
+        <button class="settings-back-btn ripple-host" id="settingsBackBtn" aria-label="Kembali">
+          <!-- Ikon diisi di app.js -->
+        </button>
+        <span class="settings-topbar-title">Pengaturan</span>
+        <div style="width: 40px;"></div>
+      </div>
+      <div class="scroll-pane" id="settingsScroll">
+        <div class="settings-section">
+          <h3 class="settings-section-title">Privasi Profil</h3>
+          <div class="settings-privacy-row">
+            <div class="settings-privacy-text">
+              <b>Profil Pribadi</b>
+              <small>Jika aktif, hanya kamu yang bisa lihat data profil lengkapmu</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="privacyToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Tema Tampilan</h3>
+          <div class="theme-grid" id="themeGrid">
+            <button class="theme-swatch ripple-host" data-theme="cyan" aria-label="Tema Cyan Blue">
+              <span class="theme-swatch-preview theme-preview-cyan"></span>
+              <span class="theme-swatch-label">Cyan Blue</span>
+            </button>
+            <button class="theme-swatch ripple-host" data-theme="pink" aria-label="Tema Pink Pastel">
+              <span class="theme-swatch-preview theme-preview-pink"></span>
+              <span class="theme-swatch-label">Pink Pastel</span>
+            </button>
+            <button class="theme-swatch ripple-host" data-theme="coklat" aria-label="Tema Coklat">
+              <span class="theme-swatch-preview theme-preview-coklat"></span>
+              <span class="theme-swatch-label">Coklat</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Data &amp; Progres</h3>
+          <button class="settings-row ripple-host" id="btnExportData">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Ekspor Data</b>
+              <small>Simpan progres ke file JSON</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+          <button class="settings-row ripple-host" id="btnImportData">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Impor Data</b>
+              <small>Pulihkan progres dari file JSON</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+          <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+          <button class="settings-row settings-row-danger ripple-host" id="btnResetData">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Reset Semua Data</b>
+              <small>Hapus seluruh pencapaian dan mulai dari awal</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Tentang</h3>
+          <button class="settings-row ripple-host" id="btnAppInfo">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Tentang Aplikasi</b>
+              <small>Informasi tim dan repositori proyek</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h3 class="settings-section-title">Akun</h3>
+          <button class="settings-row ripple-host" id="btnEditProfile">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Edit Profil</b>
+              <small>Ubah nama, gender, dan umur kamu</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+          <button class="settings-row settings-row-danger ripple-host" id="btnLogout">
+            <span class="settings-row-icon"></span>
+            <span class="settings-row-text">
+              <b>Keluar</b>
+              <small>Logout dari akun ini di perangkat ini</small>
+            </span>
+            <span class="settings-row-chevron"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TENTANG APLIKASI (halaman penuh, bukan pop-up) ===== -->
+    <section class="screen" id="screen-appinfo">
+      <div class="appinfo-topbar">
+        <button class="appinfo-back ripple-host" id="btnAppInfoBack" aria-label="Kembali"></button>
+        <span class="appinfo-topbar-title">Tentang Aplikasi</span>
+      </div>
+      <div class="scroll-pane" id="appInfoScroll">
+        <div class="appinfo-hero">
+          <div class="appinfo-logo">Phygo</div>
+          <p class="appinfo-tagline" id="appInfoPurpose"></p>
+        </div>
+
+        <div class="appinfo-section">
+          <h3>Tim Pengembang</h3>
+          <div id="appInfoTeam"></div>
+        </div>
+
+        <div class="appinfo-section">
+          <h3>Repository Proyek</h3>
+          <a class="appinfo-repo-link ripple-host" id="appInfoRepoLink" target="_blank">
+            <span class="appinfo-repo-icon"></span>
+            <span id="appInfoRepoUrl"></span>
+          </a>
+        </div>
+
+        <div class="appinfo-footer">Dibuat dengan ❤ untuk Pekan Ilmiah, Universitas Negeri Jakarta</div>
+      </div>
+    </section>
+
+    <!-- ===== SOSIAL (Daftar Teman) — dibuka dari tombol di sebelah Pengaturan pada tab Profil ===== -->
+    <section class="screen" id="screen-social">
+      <div class="scroll-pane" id="socialScroll">
+        <!-- Diisi oleh renderSocialScreen() di social.js -->
+      </div>
+    </section>
+
+    <!-- ===== MATERI ===== -->
+    <section class="screen" id="screen-materi">
+      <div class="wizard-shell">
+        <div class="scroll-pane step-pane" id="materiScroll">
+          <span class="eyebrow-pill" id="materiEyebrow"></span>
+          <h2 id="materiTitle"></h2>
+          <div id="materiBody"></div>
+          <div class="formula-box" id="materiFormula"></div>
+          <p class="formula-note" id="materiFormulaNote"></p>
+        </div>
+        <div class="pinned-footer-btn">
+          <button class="btn btn-primary btn-block ripple-host" id="btnKeSimulasi">Mulai Simulasi Interaktif</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SIMULASI (WIZARD) ===== -->
+    <section class="screen" id="screen-simulasi">
+      <div class="wizard-shell">
+        <div class="wizard-progress" id="wizardProgress"></div>
+        <div class="scroll-pane step-pane" id="wizardBodyWrap" style="overflow-x:hidden;">
+          <div class="wizard-slider" id="wizardBody"></div>
+        </div>
+        <div class="wizard-footer">
+          <button class="btn btn-icon btn-ghost ripple-host" id="wizExit" aria-label="Kembali ke Dashboard"></button>
+          <button class="btn btn-icon btn-ghost ripple-host" id="wizBack" aria-label="Kembali"></button>
+          <button class="btn btn-primary ripple-host" id="wizPrimary" style="flex:1;">Lanjut</button>
+        </div>
+
+        <!-- Pill nyawa mengambang (khusus kuis ujian akhir) — mengambang di atas footer, ga ikut ke-scroll -->
+        <div id="quizLivesFloat" class="quiz-lives-float"></div>
+
+        <!-- Quiz Feedback Overlay -->
+        <div id="quizFbBackdrop" class="quiz-fb-backdrop"></div>
+        <div id="quizFb" class="quiz-feedback">
+          <div class="quiz-fb-title" id="qfTitle"></div>
+          <div class="quiz-fb-desc" id="qfDesc"></div>
+          <div id="qfActions" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;"></div>
+        </div>
+
+        <!-- Sad Overlay -->
+        <div id="sadOverlay" class="sad-overlay">
+           <svg width="140" height="140" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" id="sadHeart">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+              <path d="M12 21l-2-4 4-3-3-4 2-5" id="crackLine" stroke="var(--bg)" stroke-width="3" opacity="0"/>
+           </svg>
+           <h2 style="margin-top:24px; color:var(--on-surface); font-weight:900; text-shadow:0 2px 4px rgba(0,0,0,0.5);">Kamu Menyerah...</h2>
+           <p style="color:var(--on-surface-var); margin-top:8px; text-align:center; font-weight:500;">Tidak apa-apa untuk beristirahat,<br>tapi jangan lupa kembali belajar ya!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEJARAH (Wizard Baca Arsip) ===== -->
+    <section class="screen" id="screen-history-wizard">
+      <div class="wizard-shell">
+        <div class="wizard-progress" id="hwProgress"></div>
+        <div class="scroll-pane step-pane" id="hwBodyWrap" style="overflow-x:hidden;">
+          <div class="wizard-slider" id="hwBody"></div>
+        </div>
+        <div class="wizard-footer">
+          <button class="btn btn-icon btn-ghost ripple-host" id="hwExit" aria-label="Kembali ke Arsip Sejarah"></button>
+          <button class="btn btn-icon btn-ghost ripple-host" id="hwBack" aria-label="Kembali"></button>
+          <button class="btn btn-primary ripple-host" id="hwPrimary" style="flex:1;">Lanjut</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SURVIVAL MODE ===== -->
+    <section class="screen" id="screen-survival">
+      <div class="surv-shell">
+        <div class="surv-header">
+          <div class="surv-lives" id="survLives"></div>
+          <div class="surv-timerwrap">
+            <div class="surv-timer" id="survTimerVal">60.0</div>
+            <div class="surv-progress-track"><div class="surv-progress-fill" id="survProgressFill"></div></div>
+          </div>
+          <div class="surv-score" id="survScoreVal">0</div>
+        </div>
+        <div class="scroll-pane surv-scroll" id="survScroll">
+          <div class="surv-question-box">
+            <p class="step-text" id="survQuestionText" style="font-size:16px; font-weight:600;"></p>
+          </div>
+          <div class="quiz-options" id="survOpts"></div>
+        </div>
+      </div>
+
+      <!-- Overlay countdown intro -->
+      <div class="surv-countdown-overlay" id="survCountdownOverlay">
+        <div class="surv-countdown-num" id="survCountdownNum">3</div>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — Matchmaking ===== -->
+    <section class="screen" id="screen-duelmatch">
+      <div class="duel-match-shell">
+        <div class="duel-match-avatars">
+          <div class="duel-match-avatar-box" id="duelmatchMyAvatar"></div>
+          <div class="duel-match-vs-mark">VS</div>
+          <div class="duel-match-avatar-box duel-match-avatar-searching" id="duelmatchOppAvatar">?</div>
+        </div>
+        <div class="duel-match-spinner"></div>
+        <p class="duel-match-status" id="duelmatchStatusText">Mencari lawan setara...</p>
+        <button class="btn btn-ghost btn-block ripple-host" id="duelmatchCancelBtn" style="max-width:280px;">Batalkan</button>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — VS + Countdown ===== -->
+    <section class="screen" id="screen-duelvs">
+      <div class="duel-vs-shell">
+        <div class="duel-vs-player">
+          <div class="duel-vs-avatar" id="duelvsMyAvatar"></div>
+          <h3 id="duelvsMyName">Kamu</h3>
+          <span class="duel-vs-rank" id="duelvsMyRank"></span>
+        </div>
+        <div class="duel-vs-mark">VS</div>
+        <div class="duel-vs-player">
+          <div class="duel-vs-avatar" id="duelvsOppAvatar"></div>
+          <h3 id="duelvsOppName">Lawan</h3>
+          <span class="duel-vs-rank" id="duelvsOppRank"></span>
+        </div>
+      </div>
+      <div class="surv-countdown-overlay" id="duelvsCountdownOverlay">
+        <div class="surv-countdown-num" id="duelvsCountdownNum">3</div>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — Gameplay (persis Survival, + HUD lawan realtime) ===== -->
+    <section class="screen" id="screen-duelgame">
+      <div class="surv-shell">
+        <div class="duel-hud-row">
+          <div class="duel-hud-side me">
+            <span class="duel-hud-label">Kamu</span>
+            <div class="duel-hud-lives" id="duelMyLives"></div>
+            <div class="duel-hud-score" id="duelMyScoreVal">0</div>
+          </div>
+          <div class="surv-timerwrap">
+            <div class="surv-timer" id="duelTimerVal">60.0</div>
+            <div class="surv-progress-track"><div class="surv-progress-fill" id="duelProgressFill"></div></div>
+          </div>
+          <div class="duel-hud-side opp">
+            <span class="duel-hud-label" id="duelOppNameLabel">Lawan</span>
+            <div class="duel-hud-lives" id="duelOppLives"></div>
+            <div class="duel-hud-score" id="duelOppScoreVal">0</div>
+          </div>
+        </div>
+        <div class="duel-body-wrap">
+          <div class="scroll-pane surv-scroll" id="duelScroll">
+            <div class="surv-question-box">
+              <p class="step-text" id="duelQuestionText" style="font-size:16px; font-weight:600;"></p>
+            </div>
+            <div class="quiz-options" id="duelOpts"></div>
+          </div>
+
+          <!-- Nyawa sendiri habis duluan tapi lawan masih main. SENGAJA cuma
+               nutup area soal/jawaban ini (bukan seluruh .surv-shell) supaya
+               HUD di atas (skor & nyawa lawan, live update) tetap kelihatan
+               — biar user gak bosen nunggu tanpa tau posisi lawan. -->
+          <div class="duel-waiting-overlay" id="duelWaitingOverlay">
+            <div class="duel-waiting-box">
+              <div class="duel-waiting-icon">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </div>
+              <h3>Nyawa Kamu Habis!</h3>
+              <p>Menunggu <b id="duelWaitingOppName">lawan</b> menyelesaikan permainannya...</p>
+              <div class="duel-waiting-spinner"></div>
+              <button class="btn btn-ghost btn-block ripple-host" id="duelWaitingSurrenderBtn">Menyerah</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — Hasil Akhir (Material 3 Expressive, lihat duel.js
+         fungsi renderDuelResultScreen() buat animasi GSAP-nya) ===== -->
+    <section class="screen" id="screen-duelresult">
+      <div class="duel-result-shell" id="duelResultShell">
+        <div class="duel-result-icon-wrap" id="duelResultIconWrap">
+          <span id="duelResultIcon"></span>
+        </div>
+        <div class="duel-result-title-group">
+          <h2 class="duel-result-title-top" id="duelResultTitleTop">Kamu</h2>
+          <h1 class="duel-result-title-main" id="duelResultTitleMain"></h1>
+        </div>
+        <div class="duel-result-scorelist" id="duelResultScoreList"></div>
+        <div class="duel-result-actions" id="duelResultActions">
+          <button class="btn btn-primary btn-block ripple-host" id="duelResultRetryBtn">
+            <span class="btn-icon-slot" id="duelResultRetryIcon"></span>Cari Lawan Lagi
+          </button>
+          <button class="btn btn-ghost btn-block ripple-host" id="duelResultHomeBtn">
+            <span class="btn-icon-slot" id="duelResultHomeIcon"></span>Beranda
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MODE SURVIVAL — Hasil Akhir. Dulu cuma popup kecil di tengah
+         layar (surv-gameover-modal), sekarang jadi layar penuh dengan gaya
+         & animasi PERSIS sama seperti Hasil Duel di atas (pakai class CSS
+         yang sama persis: duel-result-shell/icon-wrap/title/scorelist/
+         actions), cuma datanya disesuaikan buat mode 1 pemain (skor akhir
+         + rekor tertinggi, bukan skor vs lawan). Lihat survival.js fungsi
+         renderSurvivalResultScreen(). -->
+    <section class="screen" id="screen-survivalresult">
+      <div class="duel-result-shell" id="survResultShell">
+        <div class="duel-result-icon-wrap" id="survResultIconWrap">
+          <span id="survResultIcon"></span>
+        </div>
+        <div class="duel-result-title-group">
+          <h2 class="duel-result-title-top" id="survResultTitleTop">Skor Kamu</h2>
+          <h1 class="duel-result-title-main" id="survResultTitleMain"></h1>
+        </div>
+        <div class="duel-result-scorelist" id="survResultScoreList"></div>
+        <p class="surv-result-correction" id="survResultCorrection"></p>
+        <div class="duel-result-actions" id="survResultActions">
+          <button class="btn btn-primary btn-block ripple-host" id="survResultRetryBtn">
+            <span class="btn-icon-slot" id="survResultRetryIcon"></span>Ulangi
+          </button>
+          <button class="btn btn-ghost btn-block ripple-host" id="survResultHomeBtn">
+            <span class="btn-icon-slot" id="survResultHomeIcon"></span>Beranda
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== BOTTOM NAVIGATION ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bn-item active ripple-host" data-screen="home" id="navHome">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Home</span>
+    </button>
+    <button class="bn-item ripple-host" data-screen="level" id="navLevel">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Level</span>
+    </button>
+    <button class="bn-item ripple-host" data-screen="history" id="navHistory">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Sejarah</span>
+    </button>
+    <button class="bn-item ripple-host" data-screen="profile" id="navProfile">
+      <span class="bn-icon"></span>
+      <span class="bn-label">Profil</span>
+    </button>
+  </nav>
+</div>
+
+<!-- =====================================================================
+     MODAL: TAMBAH TEMAN — search username global + aksi follow/terima.
+     Dibuka dari tombol (+) di layar Sosial. Material 3 Expressive dialog,
+     tanpa blur (backdrop solid semi-transparan biasa).
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalAddFriendBackdrop"></div>
+<div class="m3-modal" id="modalAddFriend">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Tambah Teman</span>
+    <button class="m3-modal-close ripple-host" id="addFriendCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="social-search-bar m3-modal-search">
+    <span class="m3-search-icon"></span>
+    <input type="text" id="addFriendSearchInput" placeholder="Cari username teman...">
+  </div>
+  <div class="m3-modal-body" id="addFriendResults"></div>
+</div>
+
+<!-- =====================================================================
+     MODAL: UNDANGAN PERTEMANAN (kotak pesan) — terima/tolak permintaan.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalInboxBackdrop"></div>
+<div class="m3-modal" id="modalInbox">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Undangan Pertemanan</span>
+    <button class="m3-modal-close ripple-host" id="inboxCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body" id="inboxList"></div>
+</div>
+
+<!-- =====================================================================
+     MODAL: LIHAT PROFIL TEMAN — read-only, dibuka dari daftar teman /
+     hasil pencarian / undangan.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalProfileViewBackdrop"></div>
+<div class="m3-modal" id="modalProfileView">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Profil Teman</span>
+    <button class="m3-modal-close ripple-host" id="profileViewCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body" id="profileViewBody"></div>
+</div>
+
+<!-- =====================================================================
+     MODAL: EDIT PROFIL — ubah nama, gender, umur. Dibuka dari Pengaturan.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalEditProfileBackdrop"></div>
+<div class="m3-modal" id="modalEditProfile">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Edit Profil</span>
+    <button class="m3-modal-close ripple-host" id="editProfileCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body">
+    <div class="auth-field">
+      <label>Nama</label>
+      <input type="text" id="editProfileName" placeholder="Nama kamu">
+    </div>
+    <div class="auth-field">
+      <label>Gender</label>
+      <select id="editProfileGender">
+        <option value="">Pilih</option>
+        <option value="L">Laki-laki</option>
+        <option value="P">Perempuan</option>
+      </select>
+    </div>
+    <div class="auth-field">
+      <label>Umur</label>
+      <input type="number" id="editProfileAge" placeholder="Umur kamu" min="5" max="100">
+    </div>
+    <p class="auth-error" id="editProfileError"></p>
+    <button class="btn btn-primary btn-block ripple-host" id="btnSaveEditProfile">Simpan</button>
+  </div>
+</div>
+
+<!-- =====================================================================
+     MODAL: GANTI FOTO PROFIL — pilih salah satu dari avatar yang tersedia
+     (lihat js/avatars.js). Dibuka dari tombol pensil di tab Profil.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalAvatarPickerBackdrop"></div>
+<div class="m3-modal" id="modalAvatarPicker">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Ganti Foto Profil</span>
+    <button class="m3-modal-close ripple-host" id="avatarPickerCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body">
+    <div class="avatar-picker avatar-picker-modal" id="avatarPickerModalGrid"></div>
+    <p class="auth-error" id="avatarPickerError"></p>
+    <button class="btn btn-primary btn-block ripple-host" id="btnSaveAvatarPicker" style="margin-top:10px;">Simpan</button>
+  </div>
+</div>
+
+<!-- =====================================================================
+     BANNER: AJAKAN DUEL MASUK — muncul dari atas layar kalau ada teman yang
+     ngajak duel SELAGI app kebuka (bukan notifikasi sistem/push). Lihat duel.js.
+     ===================================================================== -->
+<div class="duel-invite-banner" id="duelInviteBanner">
+  <span class="duel-invite-avatar" id="duelInviteAvatar"></span>
+  <div class="duel-invite-text">
+    <b id="duelInviteName">User</b>
+    <small>Mengajak kamu Duel!</small>
+  </div>
+  <div class="duel-invite-actions">
+    <button class="btn-chip btn-chip-primary ripple-host" id="duelInviteAcceptBtn">Terima</button>
+    <button class="btn-chip btn-chip-outline ripple-host" id="duelInviteDeclineBtn">Tolak</button>
+  </div>
+</div>
+
+<!-- Libs (lokal) -->
+<script src="libs/gsap/gsap.min.js"></script>
+<script src="libs/katex/katex.min.js"></script>
+<script src="libs/sweetalert2/sweetalert2.min.js"></script>
+<script src="libs/firebase/firebase-app-compat.js"></script>
+<script src="libs/firebase/firebase-auth-compat.js"></script>
+<script src="libs/firebase/firebase-firestore-compat.js"></script>
+
+<!-- App modules — urutan load PENTING, jangan diacak -->
+<script src="js/firebase-init.js?v=2"></script>
+<script src="js/auth.js?v=2"></script>
+<script src="js/helpers.js?v=2"></script>
+<script src="js/graph.js?v=2"></script>
+<script src="js/animation.js?v=2"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/state.js?v=2"></script>
+<script src="js/router.js?v=2"></script>
+<script src="js/screens.js?v=2"></script>
+<script src="js/social.js?v=2"></script>
+<script src="js/survival.js?v=2"></script>
+<script src="js/duel.js?v=2"></script>
+<script src="js/level1.js?v=2"></script>
+<script src="js/level2.js?v=2"></script>
+<script src="js/level3.js?v=2"></script>
+<script src="js/avatars.js?v=2"></script>
+<script src="js/auth-ui.js?v=2"></script>
+<script src="js/app.js?v=2"></script>
+</body>
+</html>
