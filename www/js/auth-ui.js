@@ -59,7 +59,11 @@ function renderAvatarPicker() {
   const picker = document.getElementById('avatarPicker');
   if (!picker) return;
   picker.innerHTML = '';
-  [1, 2, 3].forEach((id) => {
+  // Ambil daftar avatar dari avatars.js (bukan hardcode [1,2,3]) supaya
+  // kalau nanti jumlah pilihan avatar berubah, form Daftar ini otomatis
+  // ikut nambah/berkurang tanpa perlu diubah manual di sini.
+  const ids = (typeof getAvatarIds === 'function') ? getAvatarIds() : [1, 2, 3];
+  ids.forEach((id) => {
     const opt = document.createElement('div');
     opt.className = 'avatar-option ripple-host' + (id === selectedAvatarId ? ' selected' : '');
     opt.innerHTML = avatarSvg(id);

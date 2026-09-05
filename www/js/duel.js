@@ -639,6 +639,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // =====================================================================
 // HALAMAN HASIL (Tugas 4 poin 6)
 // =====================================================================
+// Pecah teks jadi span per-huruf supaya bisa di-stagger animasinya satu-
+// satu (efek "teks meletup" ala Material 3 Expressive). Spasi dibungkus
+// non-breaking space biar gak collapse pas display:inline-block.
+function _duelResultSplitLetters(text){
+  return String(text).split('').map((ch) => `<span class="drt-letter">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+}
+
 async function renderDuelResultScreen(opts){
   const duelId = (opts && opts.duelId) || duelState.duelId;
   const me = fbAuth.currentUser;
@@ -659,6 +666,7 @@ async function renderDuelResultScreen(opts){
       db.collection('duels').doc(duelId).collection('players').doc(duelState.opponentUid || (opts && opts.opponentUid)).get(),
       db.collection('duels').doc(duelId).get(),
     ]);
+    const myName = myDoc.exists ? (myDoc.data().usernameDisplay || 'Kamu') : 'Kamu';
     const myScore = myDoc.exists ? (myDoc.data().score || 0) : duelState.score;
     const oppScore = oppDoc.exists ? (oppDoc.data().score || 0) : 0;
     const oppName = oppDoc.exists ? (oppDoc.data().usernameDisplay || 'Lawan') : 'Lawan';
@@ -672,13 +680,46 @@ async function renderDuelResultScreen(opts){
     const isDraw = !winnerUid;
     const iWon = winnerUid === me.uid;
 
-    document.getElementById('duelResultTitle').textContent = isDraw ? 'Hasil Seri!' : (iWon ? 'Kamu Menang!' : 'Kamu Kalah');
-    document.getElementById('duelResultMyScore').textContent = myScore;
-    document.getElementById('duelResultOppScore').textContent = oppScore;
-    document.getElementById('duelResultOppName').textContent = oppName;
+    // resultKind menentukan palet warna (CSS var --result-c/--result-on-c,
+    // lihat style.css) SEKALIGUS ikon yang dipakai — 1 sumber kebenaran
+    // biar warna & ikon gak pernah "kelewat" salah satunya.
+    const resultKind = isDraw ? 'draw' : (iWon ? 'win' : 'lose');
+    const resultIcon = isDraw ? 'scale' : (iWon ? 'trophy' : 'cross');
+
+    if(shell){
+      shell.classList.remove('win', 'lose', 'draw');
+      shell.classList.add(resultKind);
+    }
+    const iconWrap = document.getElementById('duelResultIconWrap');
+    if(iconWrap){
+      iconWrap.classList.remove('win', 'lose', 'draw');
+      iconWrap.classList.add(resultKind);
+    }
+    document.getElementById('duelResultIcon').innerHTML = svgIcon(resultIcon);
+
+    document.getElementById('duelResultTitleTop').textContent = 'Kamu';
+    const titleMainEl = document.getElementById('duelResultTitleMain');
+    titleMainEl.classList.remove('win', 'lose', 'draw');
+    titleMainEl.classList.add(resultKind);
+    titleMainEl.innerHTML = _duelResultSplitLetters(isDraw ? 'Seri!' : (iWon ? 'Menang!' : 'Kalah'));
+
+    document.getElementById('duelResultScoreList').innerHTML = `
+      <div class="duel-result-score-row me">${escapeHtml(myName)}: <b>${myScore}</b></div>
+      <div class="duel-result-score-row">${escapeHtml(oppName)}: <b>${oppScore}</b></div>
+    `;
 
     if(shell) shell.style.opacity = '1';
-    gsap.fromTo('.duel-result-shell > *', {opacity:0, y:16}, {opacity:1, y:0, duration:0.45, stagger:0.08, ease:'back.out(1.4)'});
+
+    // ===== Animasi masuk ala Material 3 Expressive =====
+    // Ikon meletup dengan pantulan elastis, judul turun bertahap, tiap
+    // huruf "MENANG!/KALAH/SERI!" muncul satu-satu dengan sedikit rotasi
+    // (bukan cuma fade rata), baris skor & tombol nyusul dari bawah.
+    const tl = gsap.timeline();
+    tl.fromTo('#duelResultIconWrap', { opacity:0, scale:0.3, rotate:-20 }, { opacity:1, scale:1, rotate:0, duration:0.7, ease:'elastic.out(1, 0.55)' })
+      .fromTo('#duelResultTitleTop', { opacity:0, y:14 }, { opacity:1, y:0, duration:0.35, ease:'power2.out' }, '-=0.35')
+      .fromTo('#duelResultTitleMain .drt-letter', { opacity:0, y:24, scale:0.5, rotate:8 }, { opacity:1, y:0, scale:1, rotate:0, duration:0.5, ease:'back.out(2.4)', stagger:0.045 }, '-=0.15')
+      .fromTo('#duelResultScoreList .duel-result-score-row', { opacity:0, x:-18 }, { opacity:1, x:0, duration:0.35, ease:'power2.out', stagger:0.08 }, '-=0.15')
+      .fromTo('.duel-result-actions .btn', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.4, ease:'back.out(1.6)', stagger:0.08 }, '-=0.1');
   } catch(e){
     console.error('[Phygo] Gagal memuat hasil duel:', e);
     if(shell) shell.style.opacity = '1';
@@ -688,6 +729,10 @@ async function renderDuelResultScreen(opts){
 document.addEventListener('DOMContentLoaded', ()=>{
   const retryBtn = document.getElementById('duelResultRetryBtn');
   const homeBtn = document.getElementById('duelResultHomeBtn');
+  const retryIcon = document.getElementById('duelResultRetryIcon');
+  const homeIcon = document.getElementById('duelResultHomeIcon');
+  if(retryIcon) retryIcon.innerHTML = svgIcon('replay');
+  if(homeIcon) homeIcon.innerHTML = svgIcon('home');
   if(retryBtn) retryBtn.addEventListener('click', ()=> navigate('duelmatch', {}, true));
   if(homeBtn) homeBtn.addEventListener('click', ()=> navigate('home', {}, true));
 });
@@ -697,6 +742,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // =====================================================================
 let duelInviteUnsub = null;
 let duelInviteShownFrom = null; // uid pengirim undangan yang lagi ditampilkan di banner
+
+// =====================================================================
+// TUGAS 2 (update profil teman): dulu tombol "Ajak Duel" di modal Lihat
+// Profil Teman selalu tampil sama walau ternyata TEMAN ITU SENDIRI yang
+// sudah lebih dulu ngajak kita duel (undangannya lagi pending, biasanya
+// lagi nongol juga di banner). Klik "Ajak Duel" saat itu bikin 2 undangan
+// nyilang di kedua arah — membingungkan & rawan "bentrok".
+//
+// Solusinya: simpan SEMUA uid pengirim undangan pending yang MASUK ke
+// kita (bukan cuma yang "terbaru" kayak di banner) dalam 1 Set global,
+// supaya social.js bisa cek cepat "apakah orang ini udah ngajak aku
+// duel?" tanpa perlu query Firestore lagi tiap buka profilnya.
+window.duelPendingInviteFromUids = new Set();
+
+function hasPendingDuelInviteFrom(uid){
+  return !!(window.duelPendingInviteFromUids && window.duelPendingInviteFromUids.has(uid));
+}
 
 function initDuelInviteListener(){
   const me = fbAuth.currentUser;
@@ -709,6 +771,15 @@ function initDuelInviteListener(){
     .where('status', '==', 'pending')
     .onSnapshot((snap)=>{
       phygoLog('DUEL_INVITE_LISTEN', `Received: ${snap.size} invites`);
+
+      // Update Set uid pengirim SEBELUM cek "busy" atau "empty" di bawah —
+      // ini harus selalu akurat gak peduli layar apa yang lagi aktif,
+      // karena dipakai social.js buat modal Lihat Profil Teman kapan saja.
+      const fromUids = new Set();
+      snap.forEach(doc => fromUids.add(doc.id));
+      window.duelPendingInviteFromUids = fromUids;
+      if(typeof onDuelPendingInvitesChanged === 'function') onDuelPendingInvitesChanged();
+
       // Jangan ganggu kalau lagi di tengah VS/gameplay Duel.
       const busyScreens = ['screen-duelvs', 'screen-duelgame'];
       const isBusy = busyScreens.some(id => document.getElementById(id) && document.getElementById(id).classList.contains('active'));
@@ -727,6 +798,8 @@ function initDuelInviteListener(){
 function teardownDuelInviteListener(){
   if(duelInviteUnsub) duelInviteUnsub();
   duelInviteUnsub = null;
+  window.duelPendingInviteFromUids = new Set();
+  if(typeof onDuelPendingInvitesChanged === 'function') onDuelPendingInvitesChanged();
   hideDuelInviteBanner();
 }
 

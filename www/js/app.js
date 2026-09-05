@@ -52,6 +52,7 @@ initAddFriendModalOnce();
 initInboxModalOnce();
 initProfileViewModalOnce();
 initEditProfileModalOnce();
+initAvatarPickerModalOnce();
 
 // ===== Halaman "Tentang Aplikasi" =====
 document.getElementById('btnAppInfoBack').innerHTML = svgIcon('arrowBack');

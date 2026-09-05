@@ -530,9 +530,6 @@ async function renderProfileScreen(){
     const rankSolo = getRankBadge(poinSolo);
     const rankDuel = getRankBadge(poinDuel);
 
-    // Avatar placeholder (bisa dikembang jadi actual avatar system nanti)
-    const avatarInitial = (userProfile.usernameDisplay || '?').charAt(0).toUpperCase();
-
     holder.innerHTML = `
       <div class="profile-topbar">
         <span class="profile-topbar-title">Profil Saya</span>
@@ -562,7 +559,10 @@ async function renderProfileScreen(){
             ${svgIcon('chevronRight')}
           </button>
         </div>
-        <div class="profile-avatar">${avatarInitial}</div>
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profileAvatarImg">${avatarSvg(userProfile.avatarId)}</div>
+          <button class="profile-avatar-edit-btn ripple-host" id="profileAvatarEditBtn" aria-label="Ganti Foto Profil">${svgIcon('pencil')}</button>
+        </div>
       </div>
 
       <div class="profile-stats-grid">
@@ -605,14 +605,6 @@ async function renderProfileScreen(){
       </div>
 
       <div class="profile-section">
-        <h3 class="profile-section-title">Quote Terpasang</h3>
-        <div class="profile-quote-box">
-          <p class="profile-quote-text">${userProfile.quoteEquipped ? userProfile.quoteEquipped : 'Belum ada quote terpasang'}</p>
-          <span class="profile-quote-hint" style="display: ${userProfile.quoteEquipped ? 'none' : 'block'};">Buka shop untuk memilih quote favoritmu</span>
-        </div>
-      </div>
-
-      <div class="profile-section">
         <h3 class="profile-section-title">Komunitas</h3>
         <div class="profile-social-grid">
           <button class="profile-social-box ripple-host" id="profileFollowersBox">
@@ -646,6 +638,11 @@ async function renderProfileScreen(){
       navigate('social', {}, false);
     });
     if (typeof updateSocialBadge === 'function') updateSocialBadge();
+
+    const avatarEditBtn = document.getElementById('profileAvatarEditBtn');
+    if (avatarEditBtn && typeof openAvatarPickerModal === 'function') {
+      avatarEditBtn.addEventListener('click', () => openAvatarPickerModal(userProfile.avatarId));
+    }
 
     // Toggle badge rank Solo <-> Duel (2 track terpisah, lihat Tugas 3)
     let activeRankTrack = 'solo';

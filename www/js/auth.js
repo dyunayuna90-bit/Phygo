@@ -142,8 +142,9 @@ async function logoutUser() {
   await fbAuth.signOut();
 }
 
-// ===== EDIT PROFIL — update nama/gender/umur user yang lagi login =====
-// (dipakai oleh modal "Edit Profil" di Pengaturan, lihat social.js)
+// ===== EDIT PROFIL — update nama/gender/umur/avatar user yang lagi login =====
+// (dipakai oleh modal "Edit Profil" & modal "Ganti Foto Profil" di tab
+// Profil, lihat social.js)
 async function updateOwnProfile(fields) {
   const user = fbAuth.currentUser;
   if (!user) throw new Error("Anda belum login.");
@@ -151,6 +152,9 @@ async function updateOwnProfile(fields) {
   if (typeof fields.name === "string") payload.name = fields.name.trim();
   if (typeof fields.gender === "string") payload.gender = fields.gender;
   if (fields.age !== undefined) payload.age = fields.age ? parseInt(fields.age, 10) : null;
+  if (fields.avatarId !== undefined) {
+    payload.avatarId = (typeof normalizeAvatarId === "function") ? normalizeAvatarId(fields.avatarId) : (fields.avatarId || 1);
+  }
   await db.collection("users").doc(user.uid).update(payload);
   return payload;
 }

@@ -34,6 +34,12 @@ const socialState = {
   presenceUnsubs: new Map(), // otherUid -> unsub function, buat status online/offline
   searchBusy: false,
   searchToken: 0,
+  // uid + info dasar dari profil teman yang LAGI TERBUKA di modal Lihat
+  // Profil (null kalau modal-nya tertutup) — dipakai buat me-refresh
+  // tombol "Ajak Duel" -> "Masuk Duel" secara live kalau undangan duel
+  // masuk SELAGI modal ini terbuka (lihat onDuelPendingInvitesChanged).
+  viewingProfileUid: null,
+  viewingProfileInfo: null,
 };
 
 // Dibuka/ditutupnya modal sosial dicatat di sini supaya tombol back HP bisa
@@ -590,6 +596,8 @@ async function openProfileViewModal(uid, fallbackInfo) {
   body.innerHTML = `<div class="social-search-loading">Memuat profil...</div>`;
   _setModalVisible('modalProfileView', 'modalProfileViewBackdrop', true);
   window.socialModalOpen = 'viewProfile';
+  socialState.viewingProfileUid = uid;
+  socialState.viewingProfileInfo = fallbackInfo || null;
   history.pushState({ socialModal: 'viewProfile' }, '', location.hash || '#social');
 
   try {
@@ -601,6 +609,9 @@ async function openProfileViewModal(uid, fallbackInfo) {
     const u = Object.assign({ uid }, doc.data());
     const status = getRelationStatus(uid);
     const isPrivate = u.privasi === 'privat' && status !== 'friend' && status !== 'me';
+    // Refresh cache dengan data asli (bukan cuma fallbackInfo tebakan) —
+    // dipakai onDuelPendingInvitesChanged() buat re-render tombol aksi.
+    socialState.viewingProfileInfo = { uid, usernameDisplay: u.usernameDisplay, avatarId: u.avatarId };
 
     if (isPrivate) {
       body.innerHTML = `
@@ -650,12 +661,6 @@ async function openProfileViewModal(uid, fallbackInfo) {
             <span class="profile-stat-value">${(u.seasonPoin || 0).toLocaleString('id-ID')}</span>
           </div>
         </div>
-        <div class="profile-section" style="padding:0 0 20px;">
-          <h3 class="profile-section-title">Quote Terpasang</h3>
-          <div class="profile-quote-box">
-            <p class="profile-quote-text">${u.quoteEquipped ? escapeHtml(u.quoteEquipped) : 'Belum ada quote terpasang'}</p>
-          </div>
-        </div>
         <div class="profile-view-actions" id="profileViewActions"></div>
       `;
     }
@@ -694,12 +699,30 @@ function renderProfileViewActions(uid, info, status) {
   if (!slot) return;
   if (status === 'me') { slot.innerHTML = ''; return; }
   if (status === 'friend') {
+    // Tugas 2: kalau teman ini SUDAH lebih dulu ngajak kita duel (undangan
+    // masih pending), tombolnya berubah jadi "Masuk Duel" — supaya kita
+    // tinggal terima undangannya dari sini juga, bukan malah ngirim
+    // undangan baru ke arah sebaliknya (ga bentrok/nyilang 2 arah).
+    const hasIncomingInvite = typeof hasPendingDuelInviteFrom === 'function' && hasPendingDuelInviteFrom(uid);
     slot.innerHTML = `
-      <button class="btn btn-primary btn-block ripple-host" id="pvDuelBtn">${svgIcon('swords')} Ajak Duel</button>
+      <button class="btn btn-primary btn-block ripple-host" id="pvDuelBtn">${svgIcon('swords')} ${hasIncomingInvite ? 'Masuk Duel' : 'Ajak Duel'}</button>
       <button class="btn btn-ghost btn-block ripple-host" id="pvActionBtn" style="margin-top:8px;">Berhenti Berteman</button>
     `;
-    document.getElementById('pvDuelBtn').addEventListener('click', () => {
-      if (typeof sendDuelInvite === 'function') sendDuelInvite(uid, info);
+    document.getElementById('pvDuelBtn').addEventListener('click', async (e) => {
+      if (hasIncomingInvite) {
+        e.currentTarget.disabled = true;
+        // Tutup modal ini DULU (acceptDuelInvite bakal navigate ke layar
+        // VS Duel di akhir) — kalau enggak, modal ini nyangkut nutupin
+        // layar VS Duel di baliknya.
+        closeProfileViewModal(false);
+        try {
+          await acceptDuelInvite(uid);
+        } catch (err) {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: err.message, background: '#1C2426', color: '#E3E3E6', confirmButtonColor: 'var(--error)' });
+        }
+      } else if (typeof sendDuelInvite === 'function') {
+        sendDuelInvite(uid, info);
+      }
     });
     document.getElementById('pvActionBtn').addEventListener('click', () => {
       Swal.fire({
@@ -737,7 +760,23 @@ function renderProfileViewActions(uid, info, status) {
 
 function closeProfileViewModal(fromHistoryPop) {
   _setModalVisible('modalProfileView', 'modalProfileViewBackdrop', false);
+  socialState.viewingProfileUid = null;
+  socialState.viewingProfileInfo = null;
   if (!fromHistoryPop) history.back();
+}
+
+// Dipanggil dari duel.js (lihat onDuelPendingInvitesChanged) tiap kali Set
+// undangan duel masuk berubah — kalau modal Lihat Profil Teman lagi
+// terbuka buat orang yang baru saja ngajak/membatalkan ajakan duel ke
+// kita, tombol aksinya di-render ulang supaya "Ajak Duel" <-> "Masuk
+// Duel" selalu akurat TANPA user harus tutup-buka modalnya lagi.
+function onDuelPendingInvitesChanged() {
+  if (window.socialModalOpen !== 'viewProfile') return;
+  const uid = socialState.viewingProfileUid;
+  if (!uid) return;
+  const status = getRelationStatus(uid);
+  if (status !== 'friend') return;
+  renderProfileViewActions(uid, socialState.viewingProfileInfo || { uid }, status);
 }
 
 function initProfileViewModalOnce() {
@@ -805,6 +844,66 @@ function initEditProfileModalOnce() {
   });
 }
 
+// =====================================================================
+// MODAL: GANTI FOTO PROFIL (Tugas 7) — pilih salah satu dari avatar yang
+// tersedia (lihat avatars.js), simpan langsung ke Firestore users/{uid}.
+// =====================================================================
+let _avatarPickerSelectedId = 1;
+
+function openAvatarPickerModal(currentAvatarId) {
+  _avatarPickerSelectedId = (typeof normalizeAvatarId === 'function') ? normalizeAvatarId(currentAvatarId) : (currentAvatarId || 1);
+  const errEl = document.getElementById('avatarPickerError');
+  if (errEl) errEl.textContent = '';
+  renderAvatarPickerModalGrid();
+  _setModalVisible('modalAvatarPicker', 'modalAvatarPickerBackdrop', true);
+  window.socialModalOpen = 'avatarPicker';
+  history.pushState({ socialModal: 'avatarPicker' }, '', location.hash || '#settings');
+}
+
+function closeAvatarPickerModal(fromHistoryPop) {
+  _setModalVisible('modalAvatarPicker', 'modalAvatarPickerBackdrop', false);
+  if (!fromHistoryPop) history.back();
+}
+
+function renderAvatarPickerModalGrid() {
+  const grid = document.getElementById('avatarPickerModalGrid');
+  if (!grid) return;
+  const ids = (typeof getAvatarIds === 'function') ? getAvatarIds() : [1, 2, 3, 4];
+  grid.innerHTML = ids.map((id) => `
+    <div class="avatar-option ripple-host${id === _avatarPickerSelectedId ? ' selected' : ''}" data-id="${id}">${avatarSvg(id)}</div>
+  `).join('');
+  grid.querySelectorAll('.avatar-option').forEach((opt) => {
+    opt.addEventListener('click', () => {
+      _avatarPickerSelectedId = parseInt(opt.dataset.id, 10) || 1;
+      grid.querySelectorAll('.avatar-option').forEach((el) => el.classList.toggle('selected', el === opt));
+    });
+  });
+}
+
+function initAvatarPickerModalOnce() {
+  const btn = document.getElementById('avatarPickerCloseBtn');
+  if (!btn || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', () => closeAvatarPickerModal(false));
+  document.getElementById('modalAvatarPickerBackdrop').addEventListener('click', () => closeAvatarPickerModal(false));
+  document.getElementById('btnSaveAvatarPicker').addEventListener('click', async () => {
+    const errEl = document.getElementById('avatarPickerError');
+    const saveBtn = document.getElementById('btnSaveAvatarPicker');
+    saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan...';
+    try {
+      await updateOwnProfile({ avatarId: _avatarPickerSelectedId });
+      closeAvatarPickerModal(false);
+      Swal.fire({ icon: 'success', title: 'Foto Profil Diperbarui', background: '#1C2426', color: '#E3E3E6', confirmButtonColor: 'var(--primary)', timer: 1500 });
+      if (document.getElementById('screen-profile').classList.contains('active')) renderProfileScreen();
+    } catch (e) {
+      console.error('[Phygo] Gagal menyimpan avatar:', e);
+      if (errEl) errEl.textContent = e.message || 'Gagal menyimpan, coba lagi.';
+    } finally {
+      saveBtn.disabled = false; saveBtn.textContent = 'Simpan';
+    }
+  });
+}
+
 // ===== Tombol back HP untuk modal sosial yang lagi terbuka (lihat router.js) =====
 function handleSocialModalHistoryPop() {
   const which = window.socialModalOpen;
@@ -813,15 +912,18 @@ function handleSocialModalHistoryPop() {
   else if (which === 'inbox') closeInboxModal(true);
   else if (which === 'viewProfile') closeProfileViewModal(true);
   else if (which === 'editProfile') closeEditProfileModal(true);
+  else if (which === 'avatarPicker') closeAvatarPickerModal(true);
 }
 
 // Dipanggil saat logout — tutup semua modal sosial yang mungkin masih terbuka.
 function closeAllSocialModals() {
-  ['modalAddFriend', 'modalInbox', 'modalProfileView', 'modalEditProfile'].forEach((id) => {
+  ['modalAddFriend', 'modalInbox', 'modalProfileView', 'modalEditProfile', 'modalAvatarPicker'].forEach((id) => {
     const m = document.getElementById(id);
     const b = document.getElementById(id + 'Backdrop');
     if (m) m.classList.remove('show');
     if (b) b.classList.remove('show');
   });
   window.socialModalOpen = null;
+  socialState.viewingProfileUid = null;
+  socialState.viewingProfileInfo = null;
 }
