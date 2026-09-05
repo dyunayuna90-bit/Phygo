@@ -173,12 +173,21 @@ async function duelAttemptMatchTick(){
   }
 }
 
-// Transaction: baca dokumen antrian kandidat, kalau masih 'waiting' bikin
-// duel + 2 dokumen player sekaligus, lalu tandai antrian kandidat 'matched'.
+// Transaction LANGKAH 1: baca dokumen antrian kandidat, kalau masih
+// 'waiting' bikin dokumen duel (parent) + tandai antrian kandidat 'matched'.
 // Kalau ternyata udah diambil HP lain (race condition), transaction ini
 // otomatis gagal (dilempar dari dalam) dan kita coba kandidat berikutnya.
+//
+// PENTING: dokumen players/ SENGAJA TIDAK dibuat di transaction yang sama!
+// Firestore security rules TIDAK BISA get() dokumen yang baru ditulis DI
+// DALAM transaction yang sama (rules melihat state SEBELUM transaction
+// commit) — jadi rule create players/{uid} yang butuh cek
+// get(duels/{duelId}).data.playerUids bakal selalu gagal kalau dibarengin.
+// Makanya players/ dibuat di LANGKAH 2, setelah dokumen duel dipastikan
+// sudah benar-benar ke-commit.
 async function duelTryMatchTransaction(candidateUid){
   const duelRef = db.collection('duels').doc();
+  let candData = null;
   try{
     await db.runTransaction(async (tx)=>{
       const candRef = db.collection('matchmakingQueue').doc(candidateUid);
@@ -186,7 +195,7 @@ async function duelTryMatchTransaction(candidateUid){
       if(!candSnap.exists || candSnap.data().status !== 'waiting'){
         throw new Error('kandidat sudah diambil');
       }
-      const candData = candSnap.data();
+      candData = candSnap.data();
       tx.set(duelRef, {
         playerUids: [duelMM.myUid, candidateUid],
         status: 'starting',
@@ -194,15 +203,25 @@ async function duelTryMatchTransaction(candidateUid){
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         finishedAt: null,
       });
-      tx.set(duelRef.collection('players').doc(duelMM.myUid), duelInitialPlayerDoc(Object.assign({uid: duelMM.myUid}, duelMM.myProfile)));
-      tx.set(duelRef.collection('players').doc(candidateUid), duelInitialPlayerDoc(candData));
       tx.update(candRef, { status: 'matched', matchId: duelRef.id });
       tx.delete(db.collection('matchmakingQueue').doc(duelMM.myUid));
     });
-    return duelRef.id;
   } catch(e){
     return null;
   }
+
+  // LANGKAH 2: dokumen duel udah pasti ke-commit di titik ini — baru
+  // sekarang bikin 2 dokumen player-nya.
+  try{
+    await Promise.all([
+      duelRef.collection('players').doc(duelMM.myUid).set(duelInitialPlayerDoc(Object.assign({uid: duelMM.myUid}, duelMM.myProfile))),
+      duelRef.collection('players').doc(candidateUid).set(duelInitialPlayerDoc(candData)),
+    ]);
+  } catch(e){
+    console.error('[Phygo] Gagal membuat dokumen player duel:', e);
+    return null;
+  }
+  return duelRef.id;
 }
 
 function duelFinalizeMatch(duelId){
@@ -620,14 +639,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const fromUid = duelInviteShownFrom;
     hideDuelInviteBanner();
     const me = fbAuth.currentUser;
-    if(me) db.collection('users').doc(me.uid).collection('duelInvites').doc(fromUid).delete().catch(()=>{});
+    if(me){
+      db.collection('users').doc(me.uid).collection('duelInvites').doc(fromUid).delete().catch(()=>{});
+      db.collection('duelInviteLinks').doc(`${fromUid}_${me.uid}`).set({ status: 'declined' }, { merge: true }).catch(()=>{});
+    }
   });
 });
 
 // Dipanggil dari social.js (tombol "Ajak Duel" di modal Lihat Profil Teman)
+//
+// CATATAN DESAIN: pengirim perlu tahu kapan penerima menerima ajakannya.
+// Awalnya saya pakai query `duels` (array-contains + where status) buat
+// mendeteksi ini, TAPI kombinasi array-contains + where field lain itu
+// BUTUH composite index yang belum tentu ke-generate otomatis di project
+// kamu — jadi query-nya gagal diam-diam dan pengirim stuck selamanya di
+// "Menunggu Balasan...". Sekarang diganti pakai 1 dokumen sinyal langsung
+// (duelInviteLinks/{fromUid}_{targetUid}) yang di-dengarkan by ID (bukan
+// query), jadi TIDAK butuh index sama sekali.
 async function sendDuelInvite(targetUid, targetInfo){
   const me = fbAuth.currentUser;
   if(!me) return;
+  const linkRef = db.collection('duelInviteLinks').doc(`${me.uid}_${targetUid}`);
   let myProfile;
   try{
     myProfile = await getCurrentUserProfile();
@@ -636,6 +668,10 @@ async function sendDuelInvite(targetUid, targetInfo){
       fromUsername: (myProfile && myProfile.usernameDisplay) || 'User',
       fromAvatarId: (myProfile && myProfile.avatarId) || 1,
       status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    await linkRef.set({
+      fromUid: me.uid, targetUid, status: 'pending', duelId: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
   } catch(e){
@@ -647,21 +683,21 @@ async function sendDuelInvite(targetUid, targetInfo){
   if(typeof closeProfileViewModal === 'function') closeProfileViewModal(false);
 
   let settled = false;
-  const unsub = db.collection('duels')
-    .where('playerUids', 'array-contains', me.uid)
-    .where('status', '==', 'starting')
-    .onSnapshot((snap)=>{
-      snap.forEach((doc)=>{
-        if(settled) return;
-        const d = doc.data();
-        if((d.playerUids || []).includes(targetUid)){
-          settled = true;
-          unsub();
-          Swal.close();
-          navigate('duelvs', { duelId: doc.id });
-        }
-      });
-    });
+  const unsub = linkRef.onSnapshot((snap)=>{
+    if(!snap.exists || settled) return;
+    const d = snap.data();
+    if(d.status === 'accepted' && d.duelId){
+      settled = true;
+      unsub();
+      Swal.close();
+      navigate('duelvs', { duelId: d.duelId });
+    } else if(d.status === 'declined'){
+      settled = true;
+      unsub();
+      Swal.close();
+      Swal.fire({ icon:'info', title:'Ajakan Ditolak', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)', timer:1800, showConfirmButton:false });
+    }
+  }, (err)=> console.error('[Phygo] listener status ajakan duel gagal:', err));
 
   await Swal.fire({
     icon: 'info',
@@ -677,12 +713,17 @@ async function sendDuelInvite(targetUid, targetInfo){
   if(!settled){
     unsub();
     db.collection('users').doc(targetUid).collection('duelInvites').doc(me.uid).delete().catch(()=>{});
+    linkRef.delete().catch(()=>{});
   }
 }
 
-// Dipanggil dari banner ajakan duel (Terima) — bikin dokumen duel + 2
-// dokumen player sekaligus (batch, ga perlu transaction krn ga ada
-// pembacaan bersyarat kayak di matchmaking acak), lalu langsung ke VS.
+// Dipanggil dari banner ajakan duel (Terima) — bikin dokumen duel dulu
+// (LANGKAH 1), BARU bikin 2 dokumen player setelah dokumen duel-nya
+// dipastikan ke-commit (LANGKAH 2) — alasan yang sama seperti di
+// duelTryMatchTransaction di atas (get() dalam rules gak bisa lihat
+// tulisan transaction/operasi yang sama). Ga perlu transaction sama
+// sekali di sini karena gak ada pembacaan bersyarat (beda dari matchmaking
+// acak yang harus adu cepat rebutan kandidat).
 async function acceptDuelInvite(fromUid){
   const me = fbAuth.currentUser;
   if(!me) throw new Error('Anda belum login.');
@@ -694,17 +735,23 @@ async function acceptDuelInvite(fromUid){
   const fromProfile = Object.assign({ uid: fromUid }, fromSnap.data());
 
   const duelRef = db.collection('duels').doc();
-  await db.runTransaction(async (tx)=>{
-    tx.set(duelRef, {
-      playerUids: [fromUid, me.uid],
-      status: 'starting',
-      winnerUid: null,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      finishedAt: null,
-    });
-    tx.set(duelRef.collection('players').doc(me.uid), duelInitialPlayerDoc(Object.assign({uid: me.uid}, myProfile)));
-    tx.set(duelRef.collection('players').doc(fromUid), duelInitialPlayerDoc(fromProfile));
+  await duelRef.set({
+    playerUids: [fromUid, me.uid],
+    status: 'starting',
+    winnerUid: null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    finishedAt: null,
   });
+  await Promise.all([
+    duelRef.collection('players').doc(me.uid).set(duelInitialPlayerDoc(Object.assign({uid: me.uid}, myProfile))),
+    duelRef.collection('players').doc(fromUid).set(duelInitialPlayerDoc(fromProfile)),
+  ]);
+
+  // Kasih tahu pengirim (yang lagi nunggu di layar "Menunggu Balasan...")
+  // lewat dokumen sinyal — pakai set({merge:true}) buat jaga-jaga kalau
+  // dokumennya belum sempat dibuat pengirim (harusnya udah ada duluan).
+  db.collection('duelInviteLinks').doc(`${fromUid}_${me.uid}`)
+    .set({ status: 'accepted', duelId: duelRef.id }, { merge: true }).catch(()=>{});
 
   hideDuelInviteBanner();
   db.collection('users').doc(me.uid).collection('duelInvites').doc(fromUid).delete().catch(()=>{});
