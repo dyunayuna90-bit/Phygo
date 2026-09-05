@@ -269,22 +269,6 @@ function initAuthUI() {
     }
   });
 
-  document.getElementById('btnGoogleLogin').addEventListener('click', () => {
-    // Login Google lewat WebView bawaan Capacitor/Android BELUM didukung —
-    // Google secara aktif memblokir OAuth dari embedded webview ("This
-    // browser or app may not be secure"), jadi signInWithPopup/redirect
-    // versi Firebase-JS-biasa ga akan pernah berhasil di APK ini walau
-    // kodenya "benar". Perlu native Google Sign-In plugin (google-services.json
-    // + SHA-1 + setup Firebase Console) — belum ada di project ini.
-    // Sementara disembunyikan fungsinya biar ga bikin user bingung "nge-hang".
-    Swal.fire({
-      icon: 'info',
-      title: 'Login Google belum tersedia',
-      text: 'Untuk sekarang, daftar/masuk pakai username & kata sandi dulu ya. Login Google butuh setup tambahan yang belum kepasang di APK ini.',
-      background: '#1C2426', color: '#E3E3E6', confirmButtonColor: 'var(--primary)'
-    });
-  });
-
   document.getElementById('btnRegisterSubmit').addEventListener('click', async () => {
     phygoLog('DAFTAR', 'tombol Daftar diklik');
     if (authBusy) { phygoLog('DAFTAR', 'diabaikan, masih authBusy=true'); return; }
