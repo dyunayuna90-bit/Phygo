@@ -28,34 +28,16 @@
 <!-- Loading screen awal — dibuang otomatis oleh app.js begitu dashboard siap -->
 <div id="appLoader"><div class="al-ring"></div><div class="al-title">Phygo</div></div>
 
-<!-- =====================================================================
-     PANEL DEBUG SEMENTARA — nyatet SETIAP langkah proses login/daftar
-     (bukan cuma pas error), plus nangkep error JS/promise yang nggak
-     ketangkep. Selalu keliatan (ada tombol kecil "Sembunyikan/Tampilkan")
-     biar bisa dipantau langsung tanpa laptop/USB-debug. Aman
-     dihapus/dikomentari nanti kalau sudah gak dibutuhkan lagi.
-     ===================================================================== -->
-<div id="debugPanel" style="position:fixed; left:0; right:0; bottom:0; z-index:99999; max-height:38vh; display:flex; flex-direction:column; background:#101a1c; border-top:2px solid #4DD0E1;">
-  <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:#17262a;">
-    <span style="font:11px monospace; color:#4DD0E1;">DEBUG LOG</span>
-    <span>
-      <button id="debugClearBtn" style="font:11px monospace; background:#26383c; color:#fff; border:none; border-radius:6px; padding:4px 8px; margin-right:6px;">Bersihkan</button>
-      <button id="debugToggleBtn" style="font:11px monospace; background:#26383c; color:#fff; border:none; border-radius:6px; padding:4px 8px;">Sembunyikan</button>
-    </span>
-  </div>
-  <div id="debugOverlay" style="overflow:auto; color:#c8f0f5; font:11px/1.5 monospace; padding:8px 10px; white-space:pre-wrap; word-break:break-word;"></div>
-</div>
 <script>
 (function(){
-  var logEl = document.getElementById('debugOverlay');
-  var bodyEl = null; // diisi belakangan setelah document.body ada
-  function timeStr(){ var d = new Date(); return d.toTimeString().slice(0,8); }
+  // window.phygoLog dipakai di banyak file (auth-ui.js, duel.js, dll) buat
+  // nyatet jejak proses login/daftar/duel dsb. Panel visualnya (DEBUG LOG)
+  // udah dihapus karena udah gak kepake, tapi fungsi ini SENGAJA dipertahankan
+  // sebagai stub yang cuma nulis ke console — biar semua pemanggil di file
+  // lain (yang manggil phygoLog(...) langsung tanpa cek "if(window.phygoLog)")
+  // tetap aman jalan, gak error.
   window.phygoLog = function(label, detail){
-    if(!logEl) return;
-    var line = document.createElement('div');
-    line.textContent = timeStr() + ' [' + label + '] ' + (detail === undefined ? '' : detail);
-    logEl.appendChild(line);
-    logEl.scrollTop = logEl.scrollHeight;
+    console.log('[' + label + ']', detail === undefined ? '' : detail);
   };
   window.addEventListener('error', function(e){
     window.phygoLog('JS ERROR', (e.message || 'unknown') + ' @ ' + (e.filename || '?') + ':' + (e.lineno || '?'));
@@ -66,19 +48,6 @@
     var code = (reason && reason.code) ? (' [' + reason.code + ']') : '';
     window.phygoLog('PROMISE REJECTED (unhandled)', text + code);
   });
-  document.addEventListener('DOMContentLoaded', function(){
-    var toggleBtn = document.getElementById('debugToggleBtn');
-    var clearBtn = document.getElementById('debugClearBtn');
-    var panel = document.getElementById('debugPanel');
-    var hidden = false;
-    toggleBtn.addEventListener('click', function(){
-      hidden = !hidden;
-      logEl.style.display = hidden ? 'none' : 'block';
-      toggleBtn.textContent = hidden ? 'Tampilkan' : 'Sembunyikan';
-    });
-    clearBtn.addEventListener('click', function(){ logEl.innerHTML = ''; });
-  });
-  window.phygoLog('BOOT', 'debug panel siap');
 })();
 </script>
 
@@ -87,17 +56,16 @@
     <div class="auth-hero">
       <div class="auth-logo">Phygo</div>
       <p class="auth-tagline">Belajar fisika, bareng temen.</p>
-      <!-- PENANDA VERSI SEMENTARA — kalau abis update file ini teks di bawah
-           masih sama/nggak muncul, artinya APK yang diinstall BUKAN build
-           terbaru (fix belum kepasang). Aman dihapus nanti. -->
-      <p style="font:11px monospace; color:#ff8a80; opacity:0.8; margin-top:4px;">build-check: auth-fix-v3</p>
     </div>
 
     <!-- ===== FORM LOGIN ===== -->
     <div class="auth-form" id="authFormLogin">
       <div class="auth-field">
         <label>Username</label>
-        <input type="text" id="loginUsername" autocomplete="username" placeholder="usernamekamu">
+        <div class="auth-field-input-wrap">
+          <span class="auth-field-prefix">@</span>
+          <input type="text" id="loginUsername" autocomplete="username" placeholder="usernamekamu">
+        </div>
       </div>
       <div class="auth-field">
         <label>Kata Sandi</label>
@@ -105,7 +73,6 @@
       </div>
       <p class="auth-error" id="loginError"></p>
       <button class="btn btn-primary btn-block ripple-host" id="btnLoginSubmit">Masuk</button>
-      <button class="btn btn-ghost btn-block ripple-host" id="btnGoogleLogin">Masuk dengan Google</button>
       <p class="auth-switch">Belum punya akun? <a href="#" id="linkGoToRegister">Daftar</a></p>
     </div>
 
@@ -113,7 +80,10 @@
     <div class="auth-form" id="authFormRegister" style="display:none;">
       <div class="auth-field">
         <label>Username</label>
-        <input type="text" id="regUsername" autocomplete="username" placeholder="3-16 karakter, tanpa spasi">
+        <div class="auth-field-input-wrap">
+          <span class="auth-field-prefix">@</span>
+          <input type="text" id="regUsername" autocomplete="username" placeholder="3-16 karakter, tanpa spasi">
+        </div>
         <small class="auth-hint" id="regUsernameHint"></small>
       </div>
       <div class="auth-field">
@@ -550,7 +520,6 @@
     <!-- ===== MODE DUEL — Hasil Akhir ===== -->
     <section class="screen" id="screen-duelresult">
       <div class="duel-result-shell">
-        <div class="duel-result-icon" id="duelResultIcon"></div>
         <h2 id="duelResultTitle">Memuat Hasil...</h2>
         <div class="duel-result-scores">
           <div class="duel-result-score-box">
