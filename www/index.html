@@ -168,6 +168,9 @@
           <div id="homeStreakCard"></div>
         </div>
 
+        <!-- Entry point Mode Duel — lihat duel.js -->
+        <div id="homeDuelCard"></div>
+
         <!-- Wordmark penutup halaman Home -->
         <div class="home-footer-mark">Phygo</div>
       </div>
@@ -201,6 +204,15 @@
       <div class="scroll-pane" id="profileScroll">
         <!-- Diisi oleh renderProfileScreen() -->
       </div>
+    </section>
+
+    <!-- ===== INFO TINGKATAN RANK — daftar tier Solo/Duel, dibuka dari Profil ===== -->
+    <section class="screen" id="screen-rankinfo">
+      <div class="appinfo-topbar" style="padding:0 20px 14px;">
+        <button class="appinfo-back ripple-host" id="rankInfoBackBtn" aria-label="Kembali"></button>
+        <span class="appinfo-topbar-title">Tingkatan Rank</span>
+      </div>
+      <div class="scroll-pane" id="rankInfoScroll"></div>
     </section>
 
     <!-- ===== PENGATURAN (Layar Modal, bukan Tab) ===== -->
@@ -454,6 +466,90 @@
         </div>
       </div>
     </section>
+
+    <!-- ===== MODE DUEL — Matchmaking ===== -->
+    <section class="screen" id="screen-duelmatch">
+      <div class="duel-match-shell">
+        <div class="duel-match-avatars">
+          <div class="duel-match-avatar-box" id="duelmatchMyAvatar"></div>
+          <div class="duel-match-vs-mark">VS</div>
+          <div class="duel-match-avatar-box duel-match-avatar-searching" id="duelmatchOppAvatar">?</div>
+        </div>
+        <div class="duel-match-spinner"></div>
+        <p class="duel-match-status" id="duelmatchStatusText">Mencari lawan setara...</p>
+        <button class="btn btn-ghost btn-block ripple-host" id="duelmatchCancelBtn" style="max-width:280px;">Batalkan</button>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — VS + Countdown ===== -->
+    <section class="screen" id="screen-duelvs">
+      <div class="duel-vs-shell">
+        <div class="duel-vs-player">
+          <div class="duel-vs-avatar" id="duelvsMyAvatar"></div>
+          <h3 id="duelvsMyName">Kamu</h3>
+          <span class="duel-vs-rank" id="duelvsMyRank"></span>
+        </div>
+        <div class="duel-vs-mark">VS</div>
+        <div class="duel-vs-player">
+          <div class="duel-vs-avatar" id="duelvsOppAvatar"></div>
+          <h3 id="duelvsOppName">Lawan</h3>
+          <span class="duel-vs-rank" id="duelvsOppRank"></span>
+        </div>
+      </div>
+      <div class="surv-countdown-overlay" id="duelvsCountdownOverlay">
+        <div class="surv-countdown-num" id="duelvsCountdownNum">3</div>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — Gameplay (persis Survival, + HUD lawan realtime) ===== -->
+    <section class="screen" id="screen-duelgame">
+      <div class="surv-shell">
+        <div class="duel-hud-row">
+          <div class="duel-hud-side me">
+            <span class="duel-hud-label">Kamu</span>
+            <div class="duel-hud-lives" id="duelMyLives"></div>
+            <div class="duel-hud-score" id="duelMyScoreVal">0</div>
+          </div>
+          <div class="surv-timerwrap">
+            <div class="surv-timer" id="duelTimerVal">60.0</div>
+            <div class="surv-progress-track"><div class="surv-progress-fill" id="duelProgressFill"></div></div>
+          </div>
+          <div class="duel-hud-side opp">
+            <span class="duel-hud-label" id="duelOppNameLabel">Lawan</span>
+            <div class="duel-hud-lives" id="duelOppLives"></div>
+            <div class="duel-hud-score" id="duelOppScoreVal">0</div>
+          </div>
+        </div>
+        <div class="scroll-pane surv-scroll" id="duelScroll">
+          <div class="surv-question-box">
+            <p class="step-text" id="duelQuestionText" style="font-size:16px; font-weight:600;"></p>
+          </div>
+          <div class="quiz-options" id="duelOpts"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MODE DUEL — Hasil Akhir ===== -->
+    <section class="screen" id="screen-duelresult">
+      <div class="duel-result-shell">
+        <div class="duel-result-icon" id="duelResultIcon"></div>
+        <h2 id="duelResultTitle">Menang!</h2>
+        <div class="duel-result-scores">
+          <div class="duel-result-score-box">
+            <span>Kamu</span>
+            <b id="duelResultMyScore">0</b>
+          </div>
+          <div class="duel-result-score-box">
+            <span id="duelResultOppName">Lawan</span>
+            <b id="duelResultOppScore">0</b>
+          </div>
+        </div>
+        <div class="duel-result-actions">
+          <button class="btn btn-primary btn-block ripple-host" id="duelResultRetryBtn">Cari Lawan Lagi</button>
+          <button class="btn btn-ghost btn-block ripple-host" id="duelResultHomeBtn">Beranda</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- ===== BOTTOM NAVIGATION ===== -->
@@ -551,6 +647,22 @@
   </div>
 </div>
 
+<!-- =====================================================================
+     BANNER: AJAKAN DUEL MASUK — muncul dari atas layar kalau ada teman yang
+     ngajak duel SELAGI app kebuka (bukan notifikasi sistem/push). Lihat duel.js.
+     ===================================================================== -->
+<div class="duel-invite-banner" id="duelInviteBanner">
+  <span class="duel-invite-avatar" id="duelInviteAvatar"></span>
+  <div class="duel-invite-text">
+    <b id="duelInviteName">User</b>
+    <small>Mengajak kamu Duel!</small>
+  </div>
+  <div class="duel-invite-actions">
+    <button class="btn-chip btn-chip-primary ripple-host" id="duelInviteAcceptBtn">Terima</button>
+    <button class="btn-chip btn-chip-outline ripple-host" id="duelInviteDeclineBtn">Tolak</button>
+  </div>
+</div>
+
 <!-- Libs (lokal) -->
 <script src="libs/gsap/gsap.min.js"></script>
 <script src="libs/katex/katex.min.js"></script>
@@ -571,6 +683,7 @@
 <script src="js/screens.js"></script>
 <script src="js/social.js"></script>
 <script src="js/survival.js"></script>
+<script src="js/duel.js"></script>
 <script src="js/level1.js"></script>
 <script src="js/level2.js"></script>
 <script src="js/level3.js"></script>
