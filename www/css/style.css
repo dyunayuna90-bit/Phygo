@@ -845,8 +845,16 @@ input{ font-family:inherit; }
   font-size: 22px;
   font-weight: 900;
   color: var(--on-surface);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   line-height: 1.2;
+  word-break: break-word;
+}
+
+.profile-realname {
+  font-size: 14px;
+  color: var(--on-surface-var);
+  margin: 0 0 12px 0;
+  font-weight: 500;
   word-break: break-word;
 }
 
@@ -1753,5 +1761,4 @@ input{ font-family:inherit; }
 
 /* --- Halaman Hasil Duel --- */
 .duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
-.duel-result-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.duel-result-shell
+.duel-
