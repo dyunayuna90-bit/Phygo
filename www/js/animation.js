@@ -77,6 +77,33 @@ function spawnDustAdv(stage, x) {
         onComplete: () => p.remove()
     });
 }
+// ===== POPUP SKOR (Survival & Duel) — nampilin "+100"/"+80" (atau "+0"
+// kalau salah/waktu habis) yang muncul, naik, lalu memudar di atas angka
+// skor. `elId` = id elemen skor (harus punya CSS position:relative, lihat
+// .score-popup-anchor di style.css) supaya popup-nya nempel pas di
+// posisinya, bukan ketarik ke pojok kiri atas layar.
+function spawnScorePopup(elId, delta){
+  const anchor = document.getElementById(elId);
+  if(!anchor) return;
+  const isPositive = delta > 0;
+  const pop = document.createElement('span');
+  pop.className = 'score-popup' + (isPositive ? ' positive' : ' zero');
+  pop.textContent = (isPositive ? '+' : '') + delta;
+  anchor.appendChild(pop);
+  gsap.fromTo(pop,
+    { opacity: 0, y: 6, scale: 0.7 },
+    {
+      opacity: 1, y: -8, scale: 1.15, duration: 0.28, ease: 'back.out(2.5)',
+      onComplete: () => {
+        gsap.to(pop, {
+          opacity: 0, y: -34, duration: 0.55, delay: 0.35, ease: 'power1.in',
+          onComplete: () => pop.remove()
+        });
+      }
+    }
+  );
+}
+
 function explodeSplash(stage, x, y, color) {
     for(let i=0; i<15; i++) {
         const p = document.createElement('div');
