@@ -517,23 +517,25 @@
       </div>
     </section>
 
-    <!-- ===== MODE DUEL — Hasil Akhir ===== -->
+    <!-- ===== MODE DUEL — Hasil Akhir (Material 3 Expressive, lihat duel.js
+         fungsi renderDuelResultScreen() buat animasi GSAP-nya) ===== -->
     <section class="screen" id="screen-duelresult">
       <div class="duel-result-shell">
-        <h2 id="duelResultTitle">Memuat Hasil...</h2>
-        <div class="duel-result-scores">
-          <div class="duel-result-score-box">
-            <span>Kamu</span>
-            <b id="duelResultMyScore">0</b>
-          </div>
-          <div class="duel-result-score-box">
-            <span id="duelResultOppName">Lawan</span>
-            <b id="duelResultOppScore">0</b>
-          </div>
+        <div class="duel-result-icon-wrap" id="duelResultIconWrap">
+          <span id="duelResultIcon"></span>
         </div>
+        <div class="duel-result-title-group">
+          <h2 class="duel-result-title-top" id="duelResultTitleTop">Kamu</h2>
+          <h1 class="duel-result-title-main" id="duelResultTitleMain"></h1>
+        </div>
+        <div class="duel-result-scorelist" id="duelResultScoreList"></div>
         <div class="duel-result-actions">
-          <button class="btn btn-primary btn-block ripple-host" id="duelResultRetryBtn">Cari Lawan Lagi</button>
-          <button class="btn btn-ghost btn-block ripple-host" id="duelResultHomeBtn">Beranda</button>
+          <button class="btn btn-primary btn-block ripple-host" id="duelResultRetryBtn">
+            <span class="btn-icon-slot" id="duelResultRetryIcon"></span>Cari Lawan Lagi
+          </button>
+          <button class="btn btn-ghost btn-block ripple-host" id="duelResultHomeBtn">
+            <span class="btn-icon-slot" id="duelResultHomeIcon"></span>Beranda
+          </button>
         </div>
       </div>
     </section>
@@ -631,6 +633,23 @@
     </div>
     <p class="auth-error" id="editProfileError"></p>
     <button class="btn btn-primary btn-block ripple-host" id="btnSaveEditProfile">Simpan</button>
+  </div>
+</div>
+
+<!-- =====================================================================
+     MODAL: GANTI FOTO PROFIL — pilih salah satu dari avatar yang tersedia
+     (lihat js/avatars.js). Dibuka dari tombol pensil di tab Profil.
+     ===================================================================== -->
+<div class="m3-modal-backdrop" id="modalAvatarPickerBackdrop"></div>
+<div class="m3-modal" id="modalAvatarPicker">
+  <div class="m3-modal-topbar">
+    <span class="m3-modal-title">Ganti Foto Profil</span>
+    <button class="m3-modal-close ripple-host" id="avatarPickerCloseBtn" aria-label="Tutup"></button>
+  </div>
+  <div class="m3-modal-body">
+    <div class="avatar-picker avatar-picker-modal" id="avatarPickerModalGrid"></div>
+    <p class="auth-error" id="avatarPickerError"></p>
+    <button class="btn btn-primary btn-block ripple-host" id="btnSaveAvatarPicker" style="margin-top:10px;">Simpan</button>
   </div>
 </div>
 
