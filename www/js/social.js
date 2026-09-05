@@ -532,7 +532,7 @@ async function openProfileViewModal(uid, fallbackInfo) {
           <h2>${escapeHtml(u.usernameDisplay || 'User')}</h2>
           <div class="profile-view-ranks">
             <div class="profile-view-rank-item">
-              <span class="profile-view-rank-label">Solo</span>
+              <span class="profile-view-rank-label">Survival</span>
               <div class="profile-rank-badge" style="background:color-mix(in srgb, ${rankSolo.color} 22%, var(--surface-c)); color:${rankSolo.color};">${rankSolo.rank}</div>
             </div>
             <div class="profile-view-rank-item">
