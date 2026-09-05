@@ -155,13 +155,15 @@ async function updateOwnProfile(fields) {
   return payload;
 }
 
-// ===== PIPELINE POIN — dipanggil tiap kali user dapat/kehilangan poin di
-// Mode Survival (track='Solo') maupun Mode Duel (track='Duel'). Nulis
-// LANGSUNG ke Firestore (bukan localStorage) supaya poinSolo/poinDuel +
-// totalPoin selalu akurat & rank (lihat screens.js) beneran jalan.
-// Sengaja "fire-and-forget" (tidak di-await pemanggilnya) supaya gameplay
-// tetap responsif walau koneksi lagi lambat; kalau gagal, cukup dicatat
-// di console — poin yang hilang untuk 1 soal itu bukan hal fatal.
+// ===== PIPELINE POIN DUEL — dipanggil tiap kali user dapat poin di Mode
+// Duel (jawaban salah/waktu habis sekarang bernilai 0, lihat
+// survHitungPoin() di survival.js, jadi delta yang masuk ke sini tidak
+// akan pernah negatif lagi). Nulis LANGSUNG ke Firestore (bukan
+// localStorage) supaya poinDuel + totalPoin selalu akurat & rank (lihat
+// screens.js) beneran jalan. Sengaja "fire-and-forget" (tidak di-await
+// pemanggilnya) supaya gameplay tetap responsif walau koneksi lagi
+// lambat; kalau gagal, cukup dicatat di console — poin yang hilang untuk
+// 1 soal itu bukan hal fatal.
 function awardPoin(track, delta) {
   const user = fbAuth.currentUser;
   if (!user || !delta) return Promise.resolve();
@@ -172,6 +174,38 @@ function awardPoin(track, delta) {
   };
   return db.collection('users').doc(user.uid).update(payload)
     .catch((e) => console.error('[Phygo] Gagal menulis poin ke Firestore:', e));
+}
+
+// ===== PIPELINE SKOR SURVIVAL — beda konsep dari poinDuel di atas!
+// poinSolo sekarang berarti "skor tertinggi yang PERNAH dicapai dalam 1
+// sesi Survival" (tinggi-tinggian, kayak highscore), BUKAN akumulasi per
+// soal. Makanya ini cuma dipanggil SEKALI di akhir game (survGameOver di
+// survival.js), dan cuma benar-benar menulis ke Firestore kalau skor sesi
+// ini LEBIH TINGGI dari rekor yang sudah tersimpan.
+//
+// Pakai transaction supaya baca-lalu-tulis-nya aman dari race condition
+// (misal dua tab/device yang sama-sama baru selesai main hampir bersamaan).
+// totalPoin ikut disesuaikan selisihnya (bukan ikut skor sesi ini mentah2)
+// supaya totalPoin = poinSolo(tertinggi) + poinDuel(akumulasi) tetap konsisten.
+async function submitSurvivalScore(finalScore) {
+  const user = fbAuth.currentUser;
+  if (!user || !finalScore) return;
+  const userRef = db.collection('users').doc(user.uid);
+  try {
+    await db.runTransaction(async (tx) => {
+      const doc = await tx.get(userRef);
+      if (!doc.exists) return;
+      const oldSolo = doc.data().poinSolo || 0;
+      if (finalScore <= oldSolo) return; // bukan rekor baru, jangan ditulis
+      const diff = finalScore - oldSolo;
+      tx.update(userRef, {
+        poinSolo: finalScore,
+        totalPoin: firebase.firestore.FieldValue.increment(diff),
+      });
+    });
+  } catch (e) {
+    console.error('[Phygo] Gagal menulis skor Survival ke Firestore:', e);
+  }
 }
 
 // ===== Helper: pantau status login, dipanggil sekali di app.js saat start =====
