@@ -505,6 +505,10 @@ async function renderProfileScreen(){
 
   if(window.phygoLog) window.phygoLog('PROFILE RENDER', 'mulai load user profile');
   
+  // Hide container dulu sebelum render, biar gak ada "flash" konten sebelum animasi
+  holder.style.opacity = '0';
+  holder.style.pointerEvents = 'none';
+  
   try {
     const userProfile = await getCurrentUserProfile();
     if(!userProfile) {
@@ -549,6 +553,7 @@ async function renderProfileScreen(){
         <div class="profile-avatar">${avatarInitial}</div>
         <div class="profile-user-info">
           <h1 class="profile-username">${userProfile.usernameDisplay || 'User'}</h1>
+          ${userProfile.name ? `<p class="profile-realname">${userProfile.name}</p>` : ''}
           <div class="rank-toggle" id="profileRankToggle">
             <button class="rank-toggle-btn active ripple-host" data-track="solo">Solo</button>
             <button class="rank-toggle-btn ripple-host" data-track="duel">Duel</button>
@@ -667,10 +672,17 @@ async function renderProfileScreen(){
     });
 
     if(window.phygoLog) window.phygoLog('PROFILE RENDER', 'selesai, username=' + userProfile.usernameDisplay);
+    
+    // Restore opacity setelah render selesai — animasi akan handle fade-in
+    holder.style.opacity = '1';
+    holder.style.pointerEvents = 'auto';
 
   } catch(err) {
     if(window.phygoLog) window.phygoLog('PROFILE RENDER ERROR', err.message);
     holder.innerHTML = `<div style="padding:24px; text-align:center; color:var(--error);">Gagal memuat profil</div>`;
+    // Restore opacity juga saat error
+    holder.style.opacity = '1';
+    holder.style.pointerEvents = 'auto';
   }
 }
 
