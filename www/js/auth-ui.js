@@ -163,6 +163,10 @@ function goToDashboardAfterAuth() {
     // Nyalakan listener realtime sistem pertemanan (following/followers) —
     // lihat social.js. Aman dipanggil berkali-kali (di-reset di dalamnya).
     if (typeof initSocialListeners === 'function') initSocialListeners();
+    // Nyalakan heartbeat status online (lihat social.js) — rutin lapor
+    // lastSeen ke Firestore selama app kebuka, dipakai teman buat lihat
+    // kita online/offline di daftar teman mereka.
+    if (typeof initPresenceHeartbeat === 'function') initPresenceHeartbeat();
     // Nyalakan listener realtime undangan Duel (lihat duel.js) — supaya
     // banner "Diajak Duel" bisa muncul kapan saja selama app kebuka.
     if (typeof initDuelInviteListener === 'function') initDuelInviteListener();
@@ -190,6 +194,7 @@ function resetToAuthScreen() {
   const lu = document.getElementById('loginUsername'); if (lu) lu.value = '';
   const lp = document.getElementById('loginPassword'); if (lp) lp.value = '';
   if (typeof teardownSocialListeners === 'function') teardownSocialListeners();
+  if (typeof teardownPresenceHeartbeat === 'function') teardownPresenceHeartbeat();
   if (typeof closeAllSocialModals === 'function') closeAllSocialModals();
   if (typeof teardownDuelInviteListener === 'function') teardownDuelInviteListener();
 }

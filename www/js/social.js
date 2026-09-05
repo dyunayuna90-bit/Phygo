@@ -31,6 +31,7 @@ const socialState = {
   followers: new Map(), // otherUid -> data
   unsubFollowing: null,
   unsubFollowers: null,
+  presenceUnsubs: new Map(), // otherUid -> unsub function, buat status online/offline
   searchBusy: false,
   searchToken: 0,
 };
@@ -88,6 +89,88 @@ function teardownSocialListeners() {
   socialState.myUid = null;
   socialState.following = new Map();
   socialState.followers = new Map();
+  unsubscribeAllFriendPresence();
+}
+
+// =====================================================================
+// PRESENCE (Online/Offline) — project ini murni Firestore (gak ada
+// Realtime Database), jadi TIDAK ada mekanisme onDisconnect otomatis
+// kayak RTDB. Solusinya: tiap HP yang appnya lagi kebuka rutin "lapor"
+// ke field lastSeen di dokumen users/{uid} miliknya SENDIRI (heartbeat).
+// Status online/offline teman lalu dihitung di device PEMBACA: kalau
+// lastSeen teman masih di bawah PRESENCE_ONLINE_MS dari sekarang, anggap
+// online, kalau enggak, offline. Rule Firestore users/{uid} udah
+// mengizinkan "allow update: if auth.uid == uid" jadi gak perlu rules
+// tambahan buat ini.
+// =====================================================================
+const PRESENCE_HEARTBEAT_MS = 45 * 1000; // rutin lapor tiap 45 detik selagi app kebuka
+const PRESENCE_ONLINE_MS = 90 * 1000;    // dianggap online kalau lastSeen < 90 detik lalu
+let presenceHeartbeatId = null;
+
+function presenceBeat() {
+  const user = fbAuth.currentUser;
+  if (!user) return;
+  // Jangan lapor kalau app lagi di-background — biar begitu user pindah
+  // app lain / kunci layar, lastSeen berhenti ke-update dan teman lain
+  // otomatis lihat kita "offline" setelah PRESENCE_ONLINE_MS berlalu.
+  if (document.visibilityState === 'hidden') return;
+  db.collection('users').doc(user.uid).update({
+    lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+  }).catch((e) => console.error('[Phygo] Gagal update lastSeen (presence):', e));
+}
+
+function presenceVisibilityHandler() {
+  if (document.visibilityState === 'visible') presenceBeat();
+}
+
+function initPresenceHeartbeat() {
+  const user = fbAuth.currentUser;
+  if (!user) return;
+  teardownPresenceHeartbeat();
+  presenceBeat(); // lapor langsung begitu login/app dibuka, jangan nunggu interval pertama
+  presenceHeartbeatId = setInterval(presenceBeat, PRESENCE_HEARTBEAT_MS);
+  document.addEventListener('visibilitychange', presenceVisibilityHandler);
+}
+
+function teardownPresenceHeartbeat() {
+  if (presenceHeartbeatId) clearInterval(presenceHeartbeatId);
+  presenceHeartbeatId = null;
+  document.removeEventListener('visibilitychange', presenceVisibilityHandler);
+}
+
+function isLastSeenOnline(lastSeen) {
+  if (!lastSeen || typeof lastSeen.toMillis !== 'function') return false;
+  return (Date.now() - lastSeen.toMillis()) < PRESENCE_ONLINE_MS;
+}
+
+// Dengarkan status online/offline SATU teman secara realtime, lalu update
+// dot-nya langsung di DOM (dicari ulang tiap kali snapshot masuk, supaya
+// tetap kena sasaran walau daftar teman sempat di-render ulang).
+function subscribeFriendPresence(uid) {
+  if (socialState.presenceUnsubs.has(uid)) return;
+  const unsub = db.collection('users').doc(uid).onSnapshot((snap) => {
+    const dot = document.querySelector(`.social-friend-row[data-uid="${uid}"] .social-friend-status-dot`);
+    if (!dot) return;
+    const online = snap.exists && isLastSeenOnline(snap.data().lastSeen);
+    dot.classList.toggle('online', online);
+  }, (err) => console.error('[Phygo] listener presence teman gagal:', err));
+  socialState.presenceUnsubs.set(uid, unsub);
+}
+
+// Sinkronkan listener presence dengan daftar teman yang lagi TAMPIL —
+// nyalain yang baru butuh, matiin yang udah gak relevan (misal lagi
+// difilter search atau udah bukan teman lagi), biar gak numpuk bocor.
+function syncFriendPresenceSubscriptions(uids) {
+  const wanted = new Set(uids);
+  socialState.presenceUnsubs.forEach((unsub, uid) => {
+    if (!wanted.has(uid)) { unsub(); socialState.presenceUnsubs.delete(uid); }
+  });
+  wanted.forEach((uid) => subscribeFriendPresence(uid));
+}
+
+function unsubscribeAllFriendPresence() {
+  socialState.presenceUnsubs.forEach((unsub) => unsub());
+  socialState.presenceUnsubs.clear();
 }
 
 // Dipanggil tiap kali data following/followers berubah (realtime) — jaga
@@ -257,12 +340,16 @@ function renderFriendsListUI(filterText) {
         <p>${q ? 'Coba kata kunci lain.' : 'Tekan tombol tambah teman di pojok kanan atas untuk mulai cari & berteman.'}</p>
       </div>
     `;
+    syncFriendPresenceSubscriptions([]);
     return;
   }
 
   holder.innerHTML = list.map((f) => `
     <button class="social-friend-row ripple-host" data-uid="${escapeHtml(f.uid)}" data-username="${escapeHtml(f.usernameDisplay || '')}" data-avatar="${f.avatarId || 1}">
-      <span class="social-friend-avatar">${avatarSvg(f.avatarId)}</span>
+      <span class="social-friend-avatar-wrap">
+        <span class="social-friend-avatar">${avatarSvg(f.avatarId)}</span>
+        <span class="social-friend-status-dot"></span>
+      </span>
       <span class="social-friend-name">${escapeHtml(f.usernameDisplay || 'User')}</span>
       <span class="social-friend-chevron">${svgIcon('chevronRight')}</span>
     </button>
@@ -274,6 +361,10 @@ function renderFriendsListUI(filterText) {
       avatarId: parseInt(btn.dataset.avatar, 10) || 1,
     }));
   });
+
+  // Nyalain listener online/offline buat teman-teman yang lagi tampil
+  // di layar ini (lihat blok PRESENCE di atas).
+  syncFriendPresenceSubscriptions(list.map((f) => f.uid));
 }
 
 // =====================================================================
