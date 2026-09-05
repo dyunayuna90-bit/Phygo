@@ -63,6 +63,7 @@ function showScreen(name, opts){
   else if(name==='duelvs'){ renderDuelVsScreen(opts); }
   else if(name==='duelgame'){ startDuelGame(opts); }
   else if(name==='duelresult'){ renderDuelResultScreen(opts); }
+  else if(name==='survivalresult'){ renderSurvivalResultScreen(opts); }
   else if(name==='simulasi'){
     wizard.level = opts.level; wizard.step = opts.step || 0; wizard.previousStep = wizard.step;
     if(wizard.step === 0){ app.calc[opts.level]=undefined; app.locked[opts.level]=undefined; app.calcChain[opts.level]={}; }

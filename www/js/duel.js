@@ -657,7 +657,7 @@ async function renderDuelResultScreen(opts){
   // enggak, layar ini sempat kelihatan pakai konten default/sisa duel
   // sebelumnya (misal masih "Menang!") selama beberapa milidetik sebelum
   // ke-timpa dengan hasil yang sebenarnya.
-  const shell = document.querySelector('.duel-result-shell');
+  const shell = document.getElementById('duelResultShell');
   if(shell) shell.style.opacity = '0';
 
   try{
@@ -719,7 +719,7 @@ async function renderDuelResultScreen(opts){
       .fromTo('#duelResultTitleTop', { opacity:0, y:14 }, { opacity:1, y:0, duration:0.35, ease:'power2.out' }, '-=0.35')
       .fromTo('#duelResultTitleMain .drt-letter', { opacity:0, y:24, scale:0.5, rotate:8 }, { opacity:1, y:0, scale:1, rotate:0, duration:0.5, ease:'back.out(2.4)', stagger:0.045 }, '-=0.15')
       .fromTo('#duelResultScoreList .duel-result-score-row', { opacity:0, x:-18 }, { opacity:1, x:0, duration:0.35, ease:'power2.out', stagger:0.08 }, '-=0.15')
-      .fromTo('.duel-result-actions .btn', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.4, ease:'back.out(1.6)', stagger:0.08 }, '-=0.1');
+      .fromTo('#duelResultActions .btn', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.4, ease:'back.out(1.6)', stagger:0.08 }, '-=0.1');
   } catch(e){
     console.error('[Phygo] Gagal memuat hasil duel:', e);
     if(shell) shell.style.opacity = '1';

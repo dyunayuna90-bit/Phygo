@@ -880,6 +880,55 @@ function renderAvatarPickerModalGrid() {
   });
 }
 
+// =====================================================================
+// FIX BUG "PFP TEMAN GA KE-UPDATE": avatarId ditulis SEKALI sebagai
+// salinan ("didenormalisasi") ke dalam dokumen following/followers milik
+// KEDUA PIHAK saat followUser() dipanggil (lihat atas) — itu supaya daftar
+// teman bisa dirender tanpa perlu fetch tiap dokumen users/{uid} satu-satu.
+// TAPI project ini gak pakai Cloud Functions (murni client + Firestore,
+// lihat catatan di rules), jadi begitu SESEORANG ganti PFP-nya belakangan,
+// salinan avatarId yang sudah kepencar di dokumen following/followers
+// SEMUA teman/pengikutnya JADI BASI (gak ada yang otomatis nyebarin
+// perubahan itu) — makanya pfp temen di device kita "ga ke-trigger" walau
+// dianya udah ganti.
+//
+// FIX: begitu USER SENDIRI ganti avatar (lihat pemanggilnya di
+// btnSaveAvatarPicker di bawah), kita PROAKTIF nulis ulang salinan
+// avatarId milik kita ini ke SEMUA tempat yang menyimpannya:
+//   - Tiap X yang MENGIKUTI kita (socialState.followers) -> salinan kita
+//     ada di  users/{X}/following/{uidKita}
+//   - Tiap X yang KITA IKUTI (socialState.following)      -> salinan kita
+//     ada di  users/{X}/followers/{uidKita}
+// Ini DIIZINKAN oleh Firestore rules: rule following/{otherUid} &
+// followers/{otherUid} sama-sama boleh di-write kalau
+// request.auth.uid == otherUid — dan otherUid di path itu SELALU uid kita
+// sendiri (karena dokumen yang kita tulis ini isinya salinan TENTANG DIRI
+// KITA yang nangkring di koleksi milik orang lain).
+async function propagateAvatarChangeToRelations(newAvatarId) {
+  const me = fbAuth.currentUser;
+  if (!me) return;
+  const batch = db.batch();
+  let ops = 0;
+  socialState.followers.forEach((data, otherUid) => {
+    batch.update(db.collection('users').doc(otherUid).collection('following').doc(me.uid), { avatarId: newAvatarId });
+    ops++;
+  });
+  socialState.following.forEach((data, otherUid) => {
+    batch.update(db.collection('users').doc(otherUid).collection('followers').doc(me.uid), { avatarId: newAvatarId });
+    ops++;
+  });
+  if (ops === 0) return; // belum ada teman/pengikut sama sekali, gak ada yang perlu disebar
+  try {
+    await batch.commit();
+  } catch (e) {
+    // Fire-and-forget: kalau gagal (misal lagi offline), PFP kita di sisi
+    // Firestore sendiri (users/{uid}.avatarId) tetap sudah ke-update duluan
+    // oleh updateOwnProfile() — jadi bukan hal fatal, cuma salinan di teman
+    // yang telat sinkron. Gak perlu ganggu UX dengan alert error di sini.
+    console.error('[Phygo] Gagal menyebarkan perubahan avatar ke daftar teman:', e);
+  }
+}
+
 function initAvatarPickerModalOnce() {
   const btn = document.getElementById('avatarPickerCloseBtn');
   if (!btn || btn.dataset.wired) return;
@@ -892,6 +941,7 @@ function initAvatarPickerModalOnce() {
     saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan...';
     try {
       await updateOwnProfile({ avatarId: _avatarPickerSelectedId });
+      propagateAvatarChangeToRelations(_avatarPickerSelectedId); // fire-and-forget, jangan blokir UI
       closeAvatarPickerModal(false);
       Swal.fire({ icon: 'success', title: 'Foto Profil Diperbarui', background: '#1C2426', color: '#E3E3E6', confirmButtonColor: 'var(--primary)', timer: 1500 });
       if (document.getElementById('screen-profile').classList.contains('active')) renderProfileScreen();

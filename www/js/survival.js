@@ -381,41 +381,107 @@ function survGameOver(){
   clearInterval(survState.timerId);
   survState.deadline = null;
   const hs = survGetHighScore();
-  if(survState.score > hs) survSaveHighScore(survState.score);
+  const isRecord = survState.score > hs;
+  if(isRecord) survSaveHighScore(survState.score);
 
   // Kirim skor sesi ini ke Firestore — HANYA dipakai kalau lebih tinggi
   // dari rekor sebelumnya (poinSolo = "tinggi-tinggian", bukan akumulasi).
   submitSurvivalScore(survState.score);
 
-  document.getElementById('survGoScore').textContent = survState.score;
-  const corrEl = document.getElementById('survGoCorrection');
-  if(survState.current){
-    corrEl.textContent = `Jawaban benar untuk soal terakhir adalah: ${survState.current.correctLabel}`;
-  } else {
-    corrEl.textContent = '';
-  }
+  const correctionText = survState.current
+    ? `Jawaban benar untuk soal terakhir adalah: ${survState.current.correctLabel}`
+    : '';
 
-  document.getElementById('survGameoverBackdrop').classList.add('show');
-  document.getElementById('survGameoverModal').classList.add('show');
+  // Pindah ke layar hasil (bukan popup lagi, lihat renderSurvivalResultScreen
+  // di bawah) — pakai replace:true supaya tombol back HP gak bisa balik ke
+  // tengah-tengah permainan yang udah selesai (sama seperti pola Hasil Duel).
+  navigate('survivalresult', { score: survState.score, isRecord, correctionText }, true);
 }
 
-function survHideGameOver(){
-  document.getElementById('survGameoverBackdrop').classList.remove('show');
-  document.getElementById('survGameoverModal').classList.remove('show');
+// =====================================================================
+// LAYAR HASIL SURVIVAL — dulu cuma popup kecil di tengah layar
+// (surv-gameover-modal), sekarang jadi layar penuh dengan animasi &
+// layout PERSIS sama seperti Halaman Hasil Duel (lihat renderDuelResultScreen
+// di duel.js) — pakai class CSS yang SAMA PERSIS (duel-result-shell/
+// icon-wrap/title/scorelist/actions) supaya gaya & animasinya benar-benar
+// senada, cuma datanya disesuaikan buat mode 1 pemain: skor akhir + rekor
+// tertinggi (bukan skor vs lawan), dan pakai palet "win" kalau berhasil
+// pecahin rekor baru, atau "lose" kalau enggak (mirip konsep menang/kalah
+// di Duel, biar tetap terasa "hidup" bukan cuma 1 tampilan itu-itu saja).
+// =====================================================================
+function _survResultSplitLetters(text){
+  return String(text).split('').map((ch) => `<span class="drt-letter">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+}
+
+function renderSurvivalResultScreen(opts){
+  clearInterval(survState.timerId);
+  survState.deadline = null;
+
+  const finalScore = (opts && typeof opts.score === 'number') ? opts.score : survState.score;
+  const highScore = survGetHighScore();
+  const isRecord = !!(opts && opts.isRecord);
+  const correctionText = (opts && opts.correctionText) || '';
+
+  const shell = document.getElementById('survResultShell');
+  if(shell) shell.style.opacity = '0';
+
+  const resultKind = isRecord ? 'win' : 'lose';
+  const resultIcon = isRecord ? 'trophy' : 'cross';
+
+  if(shell){
+    shell.classList.remove('win', 'lose', 'draw');
+    shell.classList.add(resultKind);
+  }
+  const iconWrap = document.getElementById('survResultIconWrap');
+  if(iconWrap){
+    iconWrap.classList.remove('win', 'lose', 'draw');
+    iconWrap.classList.add(resultKind);
+  }
+  document.getElementById('survResultIcon').innerHTML = svgIcon(resultIcon);
+
+  document.getElementById('survResultTitleTop').textContent = 'Skor Kamu';
+  const titleMainEl = document.getElementById('survResultTitleMain');
+  titleMainEl.classList.remove('win', 'lose', 'draw');
+  titleMainEl.classList.add(resultKind);
+  titleMainEl.innerHTML = _survResultSplitLetters(isRecord ? 'Rekor Baru!' : 'Game Over');
+
+  document.getElementById('survResultScoreList').innerHTML = `
+    <div class="duel-result-score-row me">Skor Akhir: <b>${finalScore}</b></div>
+    <div class="duel-result-score-row">Rekor Tertinggi: <b>${highScore}</b></div>
+  `;
+
+  const corrEl = document.getElementById('survResultCorrection');
+  if(corrEl) corrEl.textContent = correctionText;
+
+  if(shell) shell.style.opacity = '1';
+
+  // ===== Animasi masuk — SAMA PERSIS dengan renderDuelResultScreen() =====
+  const tl = gsap.timeline();
+  tl.fromTo('#survResultIconWrap', { opacity:0, scale:0.3, rotate:-20 }, { opacity:1, scale:1, rotate:0, duration:0.7, ease:'elastic.out(1, 0.55)' })
+    .fromTo('#survResultTitleTop', { opacity:0, y:14 }, { opacity:1, y:0, duration:0.35, ease:'power2.out' }, '-=0.35')
+    .fromTo('#survResultTitleMain .drt-letter', { opacity:0, y:24, scale:0.5, rotate:8 }, { opacity:1, y:0, scale:1, rotate:0, duration:0.5, ease:'back.out(2.4)', stagger:0.045 }, '-=0.15')
+    .fromTo('#survResultScoreList .duel-result-score-row', { opacity:0, x:-18 }, { opacity:1, x:0, duration:0.35, ease:'power2.out', stagger:0.08 }, '-=0.15')
+    .fromTo('#survResultCorrection', { opacity:0, y:10 }, { opacity:1, y:0, duration:0.3, ease:'power2.out' }, '-=0.15')
+    .fromTo('#survResultActions .btn', { opacity:0, y:20 }, { opacity:1, y:0, duration:0.4, ease:'back.out(1.6)', stagger:0.08 }, '-=0.1');
 }
 
 function survRetry(){
-  survHideGameOver();
-  startSurvivalGame();
+  navigate('survival', {}, true);
 }
 
 function survGoHome(){
-  survHideGameOver();
   clearInterval(survState.timerId);
   goToDashboard();
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{});
-if(document.getElementById('survBtnRetry')) document.getElementById('survBtnRetry').onclick = survRetry;
-if(document.getElementById('survBtnHome')) document.getElementById('survBtnHome').onclick = survGoHome;
+document.addEventListener('DOMContentLoaded', ()=>{
+  const retryBtn = document.getElementById('survResultRetryBtn');
+  const homeBtn = document.getElementById('survResultHomeBtn');
+  const retryIcon = document.getElementById('survResultRetryIcon');
+  const homeIcon = document.getElementById('survResultHomeIcon');
+  if(retryIcon) retryIcon.innerHTML = svgIcon('replay');
+  if(homeIcon) homeIcon.innerHTML = svgIcon('home');
+  if(retryBtn) retryBtn.addEventListener('click', survRetry);
+  if(homeBtn) homeBtn.addEventListener('click', survGoHome);
+});
 
