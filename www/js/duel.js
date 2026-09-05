@@ -512,14 +512,17 @@ function duelLoseLife(){
   if(duelState.lives <= 0){
     // Nyawa sendiri abis duluan = KALAH, terlepas dari skor (SENGAJA, lihat
     // catatan Tugas 4 poin 5 — strategi "buru-buru menang sebelum kesalip"
-    // memang dibiarkan, bukan bug).
+    // memang dibiarkan, bukan bug). TAPI: cek juga apakah musuh AFK (skor 0)
+    // untuk menentukan apakah mines akan dikurangi.
     myRef.update({ lives: 0, status: 'finished', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
     if(!duelState.finished){
       duelState.finished = true;
-      db.collection('duels').doc(duelState.duelId).update({
+      // Markkan musuh sebagai AFK jika skor-nya 0, ini akan dicek di result screen
+      const duelUpdate = {
         status: 'finished', winnerUid: duelState.opponentUid,
         finishedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      }).catch((e)=> console.error('[Phygo] Gagal menutup duel:', e));
+      };
+      db.collection('duels').doc(duelState.duelId).update(duelUpdate).catch((e)=> console.error('[Phygo] Gagal menutup duel:', e));
       duelTeardownListeners();
       clearInterval(duelState.timerId);
       navigate('duelresult', { duelId: duelState.duelId, winnerUid: duelState.opponentUid }, true);
@@ -551,6 +554,20 @@ async function renderDuelResultScreen(opts){
     const oppName = oppDoc.exists ? (oppDoc.data().usernameDisplay || 'Lawan') : 'Lawan';
     const winnerUid = (opts && opts.winnerUid) || (duelDoc.exists ? duelDoc.data().winnerUid : null);
     const iWon = winnerUid === me.uid;
+    
+    // DETEKSI AFK: jika musuh skor 0, berarti AFK. Jika user menang vs AFK,
+    // jangan kurangi poin mines, cuma tambah yang positif.
+    const oppIsAFK = oppScore === 0;
+    if(iWon && oppIsAFK && myScore < 0){
+      // Reset poin ke 0 (bukan minus) jika menang vs AFK dengan skor negatif
+      const scoreFix = Math.abs(myScore);
+      console.log('[Phygo] AFK detected (opp score 0), fixing score from', myScore, 'to 0');
+      // Update poin di Firestore untuk menghapus pengurangannya
+      db.collection('users').doc(me.uid).update({
+        poinDuel: firebase.firestore.FieldValue.increment(scoreFix),
+        totalPoin: firebase.firestore.FieldValue.increment(scoreFix),
+      }).catch((e)=> console.error('[Phygo] Gagal fix poin AFK:', e));
+    }
 
     document.getElementById('duelResultTitle').textContent = iWon ? 'Kamu Menang!' : 'Kamu Kalah';
     document.getElementById('duelResultMyScore').textContent = myScore;
@@ -559,6 +576,11 @@ async function renderDuelResultScreen(opts){
     const iconEl = document.getElementById('duelResultIcon');
     iconEl.style.background = iWon ? 'var(--success-container)' : 'var(--error-container)';
     iconEl.innerHTML = `<span style="color:${iWon ? 'var(--success)' : 'var(--error)'};">${svgIcon(iWon ? 'trophy' : 'cross')}</span>`;
+    
+    // Tampilkan badge AFK jika musuh AFK
+    if(oppIsAFK){
+      document.getElementById('duelResultOppScore').innerHTML += ' <span style="font-size:0.7em; opacity:0.7;">(AFK)</span>';
+    }
 
     gsap.fromTo('.duel-result-shell > *', {opacity:0, y:16}, {opacity:1, y:0, duration:0.45, stagger:0.08, ease:'back.out(1.4)'});
   } catch(e){
@@ -583,21 +605,25 @@ function initDuelInviteListener(){
   const me = fbAuth.currentUser;
   if(!me) return;
   teardownDuelInviteListener();
+  console.log('[Phygo] initDuelInviteListener: starting listener untuk uid', me.uid);
   duelInviteUnsub = db.collection('users').doc(me.uid).collection('duelInvites')
     .where('status', '==', 'pending')
     .onSnapshot((snap)=>{
+      console.log('[Phygo] duelInvites listener fired, doc count:', snap.size);
       // Jangan ganggu kalau lagi di tengah VS/gameplay Duel.
       const busyScreens = ['screen-duelvs', 'screen-duelgame'];
       const isBusy = busyScreens.some(id => document.getElementById(id) && document.getElementById(id).classList.contains('active'));
+      console.log('[Phygo] isBusy:', isBusy);
       if(isBusy) return;
-      if(snap.empty){ hideDuelInviteBanner(); return; }
+      if(snap.empty){ console.log('[Phygo] no pending invites'); hideDuelInviteBanner(); return; }
       // Tampilkan undangan TERBARU (yang lain menunggu giliran, cukup dibiarkan di data).
       let latest = null;
       snap.forEach(doc => {
         const d = doc.data();
+        console.log('[Phygo] invite found:', doc.id, d.fromUsername);
         if(!latest || (d.createdAt && latest.createdAt && d.createdAt.toMillis() > latest.createdAt.toMillis())) latest = Object.assign({ inviteId: doc.id }, d);
       });
-      if(latest) showDuelInviteBanner(latest);
+      if(latest) { console.log('[Phygo] showing banner for:', latest.fromUsername); showDuelInviteBanner(latest); }
     }, (err)=> console.error('[Phygo] listener undangan duel gagal:', err));
 }
 
