@@ -70,7 +70,7 @@ async function registerWithUsername(username, password, profile) {
     totalPoin: 0,
     seasonPoin: 0,
     poinSolo: 0,
-    poinCoop: 0,
+    poinDuel: 0,
     emas: 0,
     privasi: "publik", // 'publik' | 'privat'
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -129,7 +129,7 @@ async function completeGoogleProfile(uid, username, profile) {
     totalPoin: 0,
     seasonPoin: 0,
     poinSolo: 0,
-    poinCoop: 0,
+    poinDuel: 0,
     emas: 0,
     privasi: "publik",
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -153,6 +153,25 @@ async function updateOwnProfile(fields) {
   if (fields.age !== undefined) payload.age = fields.age ? parseInt(fields.age, 10) : null;
   await db.collection("users").doc(user.uid).update(payload);
   return payload;
+}
+
+// ===== PIPELINE POIN — dipanggil tiap kali user dapat/kehilangan poin di
+// Mode Survival (track='Solo') maupun Mode Duel (track='Duel'). Nulis
+// LANGSUNG ke Firestore (bukan localStorage) supaya poinSolo/poinDuel +
+// totalPoin selalu akurat & rank (lihat screens.js) beneran jalan.
+// Sengaja "fire-and-forget" (tidak di-await pemanggilnya) supaya gameplay
+// tetap responsif walau koneksi lagi lambat; kalau gagal, cukup dicatat
+// di console — poin yang hilang untuk 1 soal itu bukan hal fatal.
+function awardPoin(track, delta) {
+  const user = fbAuth.currentUser;
+  if (!user || !delta) return Promise.resolve();
+  const field = track === 'duel' ? 'poinDuel' : 'poinSolo';
+  const payload = {
+    [field]: firebase.firestore.FieldValue.increment(delta),
+    totalPoin: firebase.firestore.FieldValue.increment(delta),
+  };
+  return db.collection('users').doc(user.uid).update(payload)
+    .catch((e) => console.error('[Phygo] Gagal menulis poin ke Firestore:', e));
 }
 
 // ===== Helper: pantau status login, dipanggil sekali di app.js saat start =====
