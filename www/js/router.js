@@ -54,7 +54,7 @@ function showScreen(name, opts){
   else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
   else if(name==='social') { renderSocialScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('socialScroll'))); }
   else if(name==='appinfo') { renderAppInfo(); requestAnimationFrame(()=>animateIn(document.getElementById('appInfoScroll'))); }
-  else if(name==='rankinfo') { renderRankInfoScreen((opts&&opts.label)||'Solo', (opts&&opts.poin)||0); requestAnimationFrame(()=>animateIn(document.getElementById('rankInfoScroll'))); }
+  else if(name==='rankinfo') { renderRankInfoScreen((opts&&opts.label)||'Survival', (opts&&opts.poin)||0); requestAnimationFrame(()=>animateIn(document.getElementById('rankInfoScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
   else if(name==='survival'){
     startSurvivalGame();
