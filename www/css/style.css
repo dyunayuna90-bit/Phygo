@@ -1762,4 +1762,45 @@ input{ font-family:inherit; }
 /* --- Halaman Hasil Duel --- */
 .duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
 
-/* ==
+/* =====================================================================
+   TUGAS 5: Banner ajakan duel (muncul selagi app kebuka, di atas semua
+   layar/modal). Sebelumnya CUMA ada markup HTML + toggle display/opacity
+   dari duel.js, TAPI ga ada CSS-nya sama sekali -> banner ke-render tanpa
+   position, jadi cuma numpuk di paling bawah <body> (di luar viewport),
+   bukan ngambang di atas layar. Makanya "keliatan sukses" di debug log
+   (display=block, opacity=1) tapi user ga pernah liat wujudnya.
+   ===================================================================== */
+.duel-invite-banner {
+  display: none; /* di-toggle jadi 'flex' oleh duel.js pas ada undangan masuk */
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  z-index: 2000; /* di atas modal (500) & auth overlay biasa, biar ga ketutup apapun */
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--surface-c-high), var(--surface-c));
+  border: 1px solid var(--outline-var);
+  border-radius: var(--r-l);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity .25s ease-out, transform .25s ease-out;
+  pointer-events: none;
+}
+.duel-invite-banner.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.duel-invite-avatar {
+  width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  display: block; background: var(--surface-c);
+}
+.duel-invite-avatar svg { width: 100%; height: 100%; display: block; }
+.duel-invite-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.duel-invite-text b { font-size: 14.5px; font-weight: 800; color: var(--on-surface); }
+.duel-invite-text small { font-size: 12px; color: var(--on-surface-var); font-weight: 600; }
+.duel-invite-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
