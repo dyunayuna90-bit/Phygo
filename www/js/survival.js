@@ -182,7 +182,12 @@ function survGenerateQuestion(lastTopic){
 }
 
 // ===== State & Alur Permainan =====
-const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false, questionStartedAt: null };
+// recordAtStart = rekor tertinggi SEBELUM sesi ini dimulai (dibekukan di
+// startSurvivalGame, dipakai sebagai acuan tetap buat badge "Rekor:" di
+// HUD — lihat survUpdateRecordBadge()). recordBroken = penanda supaya
+// animasi/efek "pecah rekor" (lihat survCheckRecordBreak()) cuma sekali
+// nyala per sesi, gak berulang tiap poin nambah setelah rekor kelewatan.
+const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false, questionStartedAt: null, recordAtStart: 0, recordBroken: false };
 
 function renderSurvivalCard(holder){
   if(!holder) return;
@@ -208,10 +213,13 @@ function startSurvivalGame(){
   survState.score = 0;
   survState.lastTopic = null;
   survState.answering = false;
+  survState.recordAtStart = survGetHighScore();
+  survState.recordBroken = false;
   clearInterval(survState.timerId);
 
   renderSurvivalLives();
   renderSurvivalScore();
+  renderSurvivalRecordBadge();
   document.getElementById('survOpts').innerHTML = '';
   document.getElementById('survQuestionText').textContent = '';
 
@@ -244,6 +252,54 @@ function renderSurvivalLives(){
 function renderSurvivalScore(){
   const el = document.getElementById('survScoreVal');
   if(el) el.textContent = survState.score;
+}
+
+// Reset tampilan badge "Rekor:" ke rekor yang dibekukan di awal sesi (lihat
+// startSurvivalGame) + lepas class 'broken' dari sesi sebelumnya kalau ada
+// (elemennya statis di HTML, bukan dibuat ulang tiap game, jadi class lama
+// bisa nempel terus kalau gak sengaja dibersihkan di sini).
+function renderSurvivalRecordBadge(){
+  const badge = document.getElementById('survRecordBadge');
+  const val = document.getElementById('survRecordVal');
+  if(badge) badge.classList.remove('broken');
+  if(val) val.textContent = survState.recordAtStart;
+}
+
+// Dipanggil tiap kali skor berubah (lihat survHandleAnswer & survHandleTimeout)
+// — begitu skor hidup pertama kali melampaui rekor yang dibekukan di awal
+// sesi, badge "Rekor:" berubah warna jadi palet sukses (permanen sepanjang
+// sisa sesi ini) + muncul toast kecil "Rekor Baru!" sekali sebagai penanda.
+function survCheckRecordBreak(){
+  if(survState.recordBroken) return;
+  if(survState.score <= survState.recordAtStart) return;
+  survState.recordBroken = true;
+  const badge = document.getElementById('survRecordBadge');
+  if(badge){
+    badge.classList.add('broken');
+    gsap.fromTo(badge, { scale: 1 }, { scale: 1.22, duration: 0.22, ease: 'back.out(3)', yoyo: true, repeat: 1 });
+  }
+  spawnRecordToast('survScoreCol');
+}
+
+// Toast kecil "Rekor Baru!" yang melayang lalu memudar — polanya sama
+// seperti spawnScorePopup() di animation.js, cuma teks bukan angka.
+// `elId` HARUS punya CSS position:relative (lihat .surv-score-col).
+function spawnRecordToast(elId){
+  const anchor = document.getElementById(elId);
+  if(!anchor) return;
+  const el = document.createElement('span');
+  el.className = 'surv-record-toast';
+  el.textContent = 'Rekor Baru!';
+  anchor.appendChild(el);
+  gsap.fromTo(el,
+    { opacity: 0, y: 6, scale: 0.7 },
+    {
+      opacity: 1, y: -10, scale: 1, duration: 0.32, ease: 'back.out(2.4)',
+      onComplete: () => {
+        gsap.to(el, { opacity: 0, y: -28, duration: 0.6, delay: 0.6, ease: 'power1.in', onComplete: () => el.remove() });
+      }
+    }
+  );
 }
 
 function survNextQuestion(){
@@ -332,6 +388,7 @@ function survHandleTimeout(){
   survState.score += delta;
   renderSurvivalScore();
   if(delta !== 0) spawnScorePopup('survScoreVal', delta);
+  survCheckRecordBreak();
 
   survLoseLife();
 }
@@ -352,6 +409,7 @@ function survHandleAnswer(idx){
   survState.score += delta;
   renderSurvivalScore();
   if(delta !== 0) spawnScorePopup('survScoreVal', delta);
+  survCheckRecordBreak();
   // CATATAN: poin Survival TIDAK lagi ditulis ke Firestore per-soal.
   // poinSolo di profil sekarang berarti "skor tertinggi dalam 1 sesi"
   // (tinggi-tinggian), bukan akumulasi — makanya baru dikirim SEKALI di
@@ -483,5 +541,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(homeIcon) homeIcon.innerHTML = svgIcon('home');
   if(retryBtn) retryBtn.addEventListener('click', survRetry);
   if(homeBtn) homeBtn.addEventListener('click', survGoHome);
+
+  const recordIcon = document.getElementById('survRecordIcon');
+  if(recordIcon) recordIcon.innerHTML = svgIcon('trophy');
 });
 

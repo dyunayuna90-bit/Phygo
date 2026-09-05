@@ -290,6 +290,75 @@ async function searchUsersByUsername(rawQuery) {
 }
 
 // =====================================================================
+// FIX BUG "PFP TEMAN GA KE-UPDATE" (bagian 2 — SELF-HEAL DATA LAMA):
+// propagateAvatarChangeToRelations() di atas cuma mencegah data basi ke
+// DEPAN (jalan waktu SI TEMAN ganti avatar SETELAH fix itu terpasang).
+// Avatar teman yang SUDAH TELANJUR beda SEBELUM fix ini ada (kejadian di
+// masa lalu) TIDAK otomatis kebenerin oleh fix di atas — gak ada hubungannya
+// sama status login atau versi app teman kita, cuma soal salinan lama yang
+// gak pernah ditulis ulang.
+//
+// Solusinya: KITA sendiri (pemilik daftar following/followers) BERHAK
+// nulis dokumen following/{uid} & followers/{uid} MILIK KITA SENDIRI
+// (lihat rules: auth.uid == uid pemilik koleksi juga diizinkan write),
+// jadi kita bisa intip data ASLI tiap teman langsung dari users/{uid} dan
+// otomatis benerin salinan kita sendiri kalau ternyata beda — tanpa perlu
+// nunggu teman itu buka app / ganti avatar lagi.
+// Dipanggil tiap kali layar Sosial dibuka (lihat renderSocialScreen).
+let _healingFriendData = false;
+async function healStaleFriendData() {
+  if (_healingFriendData) return; // cegah tumpang-tindih kalau terpanggil beruntun
+  const me = fbAuth.currentUser;
+  if (!me) return;
+  const uids = new Set();
+  socialState.following.forEach((_, uid) => uids.add(uid));
+  socialState.followers.forEach((_, uid) => uids.add(uid));
+  if (uids.size === 0) return;
+  _healingFriendData = true;
+  try {
+    const results = await Promise.all(
+      Array.from(uids).map((uid) =>
+        db.collection('users').doc(uid).get()
+          .then((doc) => ({ uid, doc }))
+          .catch(() => ({ uid, doc: null }))
+      )
+    );
+    const batch = db.batch();
+    let ops = 0;
+    results.forEach(({ uid, doc }) => {
+      if (!doc || !doc.exists) return; // gagal baca / akun sudah dihapus, lewati saja
+      const real = doc.data();
+      const realAvatar = real.avatarId || 1;
+      const realName = real.usernameDisplay || 'User';
+
+      const cachedFollowing = socialState.following.get(uid);
+      if (cachedFollowing && (cachedFollowing.avatarId !== realAvatar || cachedFollowing.usernameDisplay !== realName)) {
+        batch.update(db.collection('users').doc(me.uid).collection('following').doc(uid), {
+          avatarId: realAvatar, usernameDisplay: realName,
+        });
+        ops++;
+      }
+      const cachedFollowers = socialState.followers.get(uid);
+      if (cachedFollowers && (cachedFollowers.avatarId !== realAvatar || cachedFollowers.usernameDisplay !== realName)) {
+        batch.update(db.collection('users').doc(me.uid).collection('followers').doc(uid), {
+          avatarId: realAvatar, usernameDisplay: realName,
+        });
+        ops++;
+      }
+    });
+    // Kalau ada yang dibenerin, batch.commit() bakal otomatis memicu listener
+    // realtime following/followers milik kita sendiri (lihat initSocialListeners)
+    // -> onSocialDataChanged() -> renderFriendsListUI() render ulang dengan
+    // avatar/nama yang sudah benar, TANPA perlu refresh manual apa pun.
+    if (ops > 0) await batch.commit();
+  } catch (e) {
+    console.error('[Phygo] Gagal menyinkronkan ulang data teman:', e);
+  } finally {
+    _healingFriendData = false;
+  }
+}
+
+// =====================================================================
 // LAYAR SOSIAL — daftar teman + search lokal + tombol Undangan & Tambah Teman
 // =====================================================================
 function renderSocialScreen() {
@@ -327,6 +396,7 @@ function renderSocialScreen() {
 
   renderFriendsListUI('');
   updateSocialBadge();
+  healStaleFriendData(); // fire-and-forget: benerin avatar/nama teman yang sempat basi
 }
 
 function renderFriendsListUI(filterText) {
