@@ -41,14 +41,28 @@ function showScreen(name, opts){
       gsap.fromTo(hwEls.body, {opacity:0, y:20}, {opacity:1, y:0, duration:0.5, ease:'back.out(1.2)'});
     });
   }
-  else if(name==='profile') { renderProfileScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('profileScroll'))); }
+  else if(name==='profile') {
+    // FIX BUG "TRANSISI TAB PROFIL GAK MULUS": renderProfileScreen() itu ASYNC
+    // (nunggu fetch Firestore). Dulu animateIn() dipicu LANGSUNG tanpa nunggu,
+    // jadi race condition (kadang mulus krn cache, kadang patah krn belum
+    // selesai). Sekarang animateIn() BARU dipanggil setelah promise-nya
+    // benar-benar selesai (await), baru mulus terus setiap saat.
+    renderProfileScreen().then(()=>{
+      requestAnimationFrame(()=>animateIn(document.getElementById('profileScroll')));
+    });
+  }
   else if(name==='settings') { renderSettingsScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('settingsScroll'))); }
   else if(name==='social') { renderSocialScreen(); requestAnimationFrame(()=>animateIn(document.getElementById('socialScroll'))); }
   else if(name==='appinfo') { renderAppInfo(); requestAnimationFrame(()=>animateIn(document.getElementById('appInfoScroll'))); }
+  else if(name==='rankinfo') { renderRankInfoScreen((opts&&opts.label)||'Solo', (opts&&opts.poin)||0); requestAnimationFrame(()=>animateIn(document.getElementById('rankInfoScroll'))); }
   else if(name==='materi') { renderMateri(opts.level); requestAnimationFrame(()=>animateIn(document.getElementById('materiScroll'))); }
   else if(name==='survival'){
     startSurvivalGame();
   }
+  else if(name==='duelmatch'){ startDuelMatchmaking(opts); }
+  else if(name==='duelvs'){ renderDuelVsScreen(opts); }
+  else if(name==='duelgame'){ startDuelGame(opts); }
+  else if(name==='duelresult'){ renderDuelResultScreen(opts); }
   else if(name==='simulasi'){
     wizard.level = opts.level; wizard.step = opts.step || 0; wizard.previousStep = wizard.step;
     if(wizard.step === 0){ app.calc[opts.level]=undefined; app.locked[opts.level]=undefined; app.calcChain[opts.level]={}; }
@@ -100,6 +114,11 @@ window.addEventListener('popstate', (e)=>{
   if(window.socialModalOpen && typeof handleSocialModalHistoryPop === 'function'){
     handleSocialModalHistoryPop();
     return;
+  }
+  // Tombol back HP saat lagi nyari lawan Duel: batalin pencarian (keluar dari
+  // antrian matchmaking) dulu, baru boleh pindah screen seperti biasa.
+  if(document.getElementById('screen-duelmatch').classList.contains('active') && typeof cancelDuelMatchmaking === 'function'){
+    cancelDuelMatchmaking();
   }
   showScreen(e.state?e.state.screen:'home', e.state);
 });
