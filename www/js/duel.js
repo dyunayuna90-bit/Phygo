@@ -43,6 +43,12 @@ const duelState = {
   lives: DUEL_LIVES_START, score: 0, lastTopic: null, current: null,
   timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false,
   questionStartedAt: null, finished: false,
+  // Nilai TERBARU milik lawan yang diketahui dari onSnapshot (dipakai buat
+  // menentukan pemenang & buat tahu kapan lawan JUGA sudah kehabisan nyawa
+  // — lihat Tugas 6: "duel wajib diselesaikan sampai kedua nyawa habis").
+  oppLives: DUEL_LIVES_START, oppScore: 0,
+  // true begitu nyawa SENDIRI habis duluan (masuk mode nunggu/nonton lawan).
+  iAmDead: false,
   unsubOpponent: null, unsubDuelDoc: null,
 };
 
@@ -351,9 +357,14 @@ function startDuelGame(opts){
   duelState.lastTopic = null;
   duelState.answering = false;
   duelState.finished = false;
+  duelState.oppLives = DUEL_LIVES_START;
+  duelState.oppScore = 0;
+  duelState.iAmDead = false;
   clearInterval(duelState.timerId);
 
   document.getElementById('duelOppNameLabel').textContent = (duelState.opponentInfo && duelState.opponentInfo.usernameDisplay) || 'Lawan';
+  document.getElementById('duelWaitingOppName').textContent = (duelState.opponentInfo && duelState.opponentInfo.usernameDisplay) || 'lawan';
+  hideDuelWaitingOverlay();
   renderDuelLives('duelMyLives', DUEL_LIVES_START);
   renderDuelLives('duelOppLives', DUEL_LIVES_START);
   document.getElementById('duelMyScoreVal').textContent = '0';
@@ -363,13 +374,25 @@ function startDuelGame(opts){
 
   duelTeardownListeners();
 
-  // Dengarkan dokumen player LAWAN — buat update HUD skor/nyawa lawan realtime.
+  // Dengarkan dokumen player LAWAN — buat update HUD skor/nyawa lawan
+  // realtime, DAN buat tahu kapan lawan JUGA kehabisan nyawa (dipakai buat
+  // finalisasi duel kalau kita sendiri sudah lebih dulu mati & lagi
+  // nunggu/nonton, lihat Tugas 6).
   duelState.unsubOpponent = db.collection('duels').doc(duelId).collection('players').doc(duelState.opponentUid)
     .onSnapshot((snap)=>{
       if(!snap.exists) return;
       const d = snap.data();
-      document.getElementById('duelOppScoreVal').textContent = d.score || 0;
-      renderDuelLives('duelOppLives', d.lives != null ? d.lives : DUEL_LIVES_START);
+      duelState.oppScore = d.score || 0;
+      duelState.oppLives = d.lives != null ? d.lives : DUEL_LIVES_START;
+      document.getElementById('duelOppScoreVal').textContent = duelState.oppScore;
+      renderDuelLives('duelOppLives', duelState.oppLives);
+
+      // Kita sudah lebih dulu mati & lagi nunggu — begitu lawan JUGA
+      // kehabisan nyawa, duel resmi selesai, finalisasi (tentukan
+      // pemenang lewat skor akhir).
+      if(duelState.iAmDead && duelState.oppLives <= 0 && !duelState.finished){
+        duelFinalizeDuel();
+      }
     }, (err)=> console.error('[Phygo] listener player lawan gagal:', err));
 
   // Dengarkan dokumen duel utama — buat tahu kapan game berakhir (baik
@@ -394,10 +417,13 @@ function duelTeardownListeners(){
   duelState.unsubOpponent = null; duelState.unsubDuelDoc = null;
 }
 
+// Nyawa Duel: DULU 3 heart-icon berjejer (dempet/tumpang tindih di layar
+// sempit) — SEKARANG cuma 1 heart-icon + label "×N" (Tugas 4).
 function renderDuelLives(elId, livesLeft){
   const el = document.getElementById(elId);
   if(!el) return;
-  el.innerHTML = Array(DUEL_LIVES_START).fill(0).map((_,i)=>`<div class="heart-icon ${i >= livesLeft ? 'lost' : ''}">${svgIcon('heart')}</div>`).join('');
+  const isLost = livesLeft <= 0;
+  el.innerHTML = `<div class="heart-icon ${isLost ? 'lost' : ''}">${svgIcon('heart')}</div><span class="duel-hud-lives-count ${isLost ? 'lost' : ''}">×${Math.max(livesLeft, 0)}</span>`;
 }
 
 function duelNextQuestion(){
@@ -491,11 +517,15 @@ function duelHandleAnswer(idx){
 
 // Nulis poin ke 2 tempat sekaligus: (1) permanen ke profil (poinDuel +
 // totalPoin, lewat awardPoin di auth.js), (2) skor duel yang lagi jalan
-// (buat disinkronkan real-time ke layar lawan).
+// (buat disinkronkan real-time ke layar lawan & halaman hasil).
+// Sejak jawaban salah/waktu habis bernilai 0 (bukan minus lagi, lihat
+// survHitungPoin di survival.js), skor duel TIDAK PERNAH turun — jadi
+// "0 sudah paling mentok paling kecil" otomatis benar dengan sendirinya.
 function duelApplyPoin(isCorrect, waktuJawabDetik){
   const delta = survHitungPoin(isCorrect, waktuJawabDetik);
   duelState.score += delta;
   document.getElementById('duelMyScoreVal').textContent = duelState.score;
+  if(delta !== 0) spawnScorePopup('duelMyScoreVal', delta);
   awardPoin('duel', delta);
   if(duelState.duelId){
     db.collection('duels').doc(duelState.duelId).collection('players').doc(duelState.myUid)
@@ -504,34 +534,101 @@ function duelApplyPoin(isCorrect, waktuJawabDetik){
   }
 }
 
+// =====================================================================
+// Tugas 6: duel sekarang WAJIB berlanjut sampai KEDUA pemain kehabisan
+// nyawa (bukan langsung selesai begitu SALAH SATU pemain mati). Kalau
+// nyawa sendiri habis duluan sementara lawan masih hidup, kita MASUK MODE
+// NUNGGU/NONTON (overlay di atas layar gameplay, HUD lawan tetap update
+// realtime) sampai lawan juga kehabisan nyawa (dicek di listener lawan,
+// lihat startDuelGame) atau kita pencet "Menyerah". Pemenang ditentukan
+// dari SKOR AKHIR begitu keduanya sudah mati (lihat duelFinalizeDuel).
+// =====================================================================
 function duelLoseLife(){
   duelState.lives--;
   renderDuelLives('duelMyLives', duelState.lives);
   const myRef = db.collection('duels').doc(duelState.duelId).collection('players').doc(duelState.myUid);
 
   if(duelState.lives <= 0){
-    // Nyawa sendiri abis duluan = KALAH, terlepas dari skor (SENGAJA, lihat
-    // catatan Tugas 4 poin 5 — strategi "buru-buru menang sebelum kesalip"
-    // memang dibiarkan, bukan bug). TAPI: cek juga apakah musuh AFK (skor 0)
-    // untuk menentukan apakah mines akan dikurangi.
-    myRef.update({ lives: 0, status: 'finished', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
-    if(!duelState.finished){
-      duelState.finished = true;
-      // Markkan musuh sebagai AFK jika skor-nya 0, ini akan dicek di result screen
-      const duelUpdate = {
-        status: 'finished', winnerUid: duelState.opponentUid,
-        finishedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      };
-      db.collection('duels').doc(duelState.duelId).update(duelUpdate).catch((e)=> console.error('[Phygo] Gagal menutup duel:', e));
-      duelTeardownListeners();
-      clearInterval(duelState.timerId);
-      navigate('duelresult', { duelId: duelState.duelId, winnerUid: duelState.opponentUid }, true);
+    duelState.iAmDead = true;
+    clearInterval(duelState.timerId);
+    myRef.update({ lives: 0, status: 'dead', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+
+    if(duelState.oppLives <= 0){
+      // Lawan sudah lebih dulu mati (kita mati belakangan) — duel resmi
+      // selesai sekarang, tentukan pemenang lewat skor akhir.
+      duelFinalizeDuel();
+    } else {
+      // Lawan masih hidup — jangan langsung ke halaman hasil, tampilkan
+      // overlay nunggu di atas layar gameplay (HUD lawan tetap kelihatan).
+      showDuelWaitingOverlay();
     }
   } else {
     myRef.update({ lives: duelState.lives, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
     duelNextQuestion();
   }
 }
+
+function showDuelWaitingOverlay(){
+  const overlay = document.getElementById('duelWaitingOverlay');
+  if(overlay) overlay.classList.add('show');
+}
+function hideDuelWaitingOverlay(){
+  const overlay = document.getElementById('duelWaitingOverlay');
+  if(overlay) overlay.classList.remove('show');
+}
+
+// Menentukan pemenang dari skor akhir (dipanggil begitu KEDUA pemain
+// dipastikan sudah kehabisan nyawa). Dibungkus transaction supaya aman
+// kalau kedua HP kebetulan sama-sama mencoba finalisasi hampir bersamaan
+// (siapa pun yang commit duluan menang, sisanya cukup skip — client yang
+// gak sempat nulis tetap kebawa pindah layar lewat listener dokumen duel
+// yang sudah aktif dari awal, lihat startDuelGame & duelTeardownListeners).
+async function duelFinalizeDuel(){
+  if(duelState.finished || !duelState.duelId) return;
+  const duelRef = db.collection('duels').doc(duelState.duelId);
+  try{
+    await db.runTransaction(async (tx)=>{
+      const snap = await tx.get(duelRef);
+      if(!snap.exists || snap.data().status === 'finished') return;
+      const myScore = duelState.score;
+      const oppScore = duelState.oppScore || 0;
+      let winnerUid = null;
+      if(myScore > oppScore) winnerUid = duelState.myUid;
+      else if(oppScore > myScore) winnerUid = duelState.opponentUid;
+      tx.update(duelRef, { status: 'finished', winnerUid, finishedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    });
+  } catch(e){
+    console.error('[Phygo] Gagal finalisasi duel:', e);
+  }
+}
+
+// Tombol "Menyerah" di overlay nunggu — langsung selesaikan duel dengan
+// lawan sebagai pemenang, gak perlu nunggu lawan kehabisan nyawa juga.
+async function duelSurrenderFromWaiting(){
+  if(duelState.finished || !duelState.duelId) return;
+  const duelRef = db.collection('duels').doc(duelState.duelId);
+  try{
+    await db.runTransaction(async (tx)=>{
+      const snap = await tx.get(duelRef);
+      if(!snap.exists || snap.data().status === 'finished') return;
+      tx.update(duelRef, { status: 'finished', winnerUid: duelState.opponentUid, finishedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    });
+    db.collection('duels').doc(duelState.duelId).collection('players').doc(duelState.myUid)
+      .update({ status: 'surrendered', updatedAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(()=>{});
+  } catch(e){
+    console.error('[Phygo] Gagal menyerah dari duel:', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const surrenderBtn = document.getElementById('duelWaitingSurrenderBtn');
+  if(surrenderBtn){
+    surrenderBtn.addEventListener('click', ()=>{
+      surrenderBtn.disabled = true;
+      duelSurrenderFromWaiting().finally(()=>{ surrenderBtn.disabled = false; });
+    });
+  }
+});
 
 // =====================================================================
 // HALAMAN HASIL (Tugas 4 poin 6)
@@ -552,35 +649,23 @@ async function renderDuelResultScreen(opts){
     const myScore = myDoc.exists ? (myDoc.data().score || 0) : duelState.score;
     const oppScore = oppDoc.exists ? (oppDoc.data().score || 0) : 0;
     const oppName = oppDoc.exists ? (oppDoc.data().usernameDisplay || 'Lawan') : 'Lawan';
-    const winnerUid = (opts && opts.winnerUid) || (duelDoc.exists ? duelDoc.data().winnerUid : null);
-    const iWon = winnerUid === me.uid;
-    
-    // DETEKSI AFK: jika musuh skor 0, berarti AFK. Jika user menang vs AFK,
-    // jangan kurangi poin mines, cuma tambah yang positif.
-    const oppIsAFK = oppScore === 0;
-    if(iWon && oppIsAFK && myScore < 0){
-      // Reset poin ke 0 (bukan minus) jika menang vs AFK dengan skor negatif
-      const scoreFix = Math.abs(myScore);
-      console.log('[Phygo] AFK detected (opp score 0), fixing score from', myScore, 'to 0');
-      // Update poin di Firestore untuk menghapus pengurangannya
-      db.collection('users').doc(me.uid).update({
-        poinDuel: firebase.firestore.FieldValue.increment(scoreFix),
-        totalPoin: firebase.firestore.FieldValue.increment(scoreFix),
-      }).catch((e)=> console.error('[Phygo] Gagal fix poin AFK:', e));
+    // winnerUid null = seri (skor akhir sama persis setelah kedua nyawa habis).
+    let winnerUid = null;
+    if(opts && Object.prototype.hasOwnProperty.call(opts, 'winnerUid')){
+      winnerUid = opts.winnerUid;
+    } else if(duelDoc.exists){
+      winnerUid = duelDoc.data().winnerUid;
     }
+    const isDraw = !winnerUid;
+    const iWon = winnerUid === me.uid;
 
-    document.getElementById('duelResultTitle').textContent = iWon ? 'Kamu Menang!' : 'Kamu Kalah';
+    document.getElementById('duelResultTitle').textContent = isDraw ? 'Hasil Seri!' : (iWon ? 'Kamu Menang!' : 'Kamu Kalah');
     document.getElementById('duelResultMyScore').textContent = myScore;
     document.getElementById('duelResultOppScore').textContent = oppScore;
     document.getElementById('duelResultOppName').textContent = oppName;
     const iconEl = document.getElementById('duelResultIcon');
-    iconEl.style.background = iWon ? 'var(--success-container)' : 'var(--error-container)';
-    iconEl.innerHTML = `<span style="color:${iWon ? 'var(--success)' : 'var(--error)'};">${svgIcon(iWon ? 'trophy' : 'cross')}</span>`;
-    
-    // Tampilkan badge AFK jika musuh AFK
-    if(oppIsAFK){
-      document.getElementById('duelResultOppScore').innerHTML += ' <span style="font-size:0.7em; opacity:0.7;">(AFK)</span>';
-    }
+    iconEl.style.background = isDraw ? 'var(--surface-c-high)' : (iWon ? 'var(--success-container)' : 'var(--error-container)');
+    iconEl.innerHTML = `<span style="color:${isDraw ? 'var(--on-surface-var)' : (iWon ? 'var(--success)' : 'var(--error)')};">${svgIcon(isDraw ? 'swords' : (iWon ? 'trophy' : 'cross'))}</span>`;
 
     gsap.fromTo('.duel-result-shell > *', {opacity:0, y:16}, {opacity:1, y:0, duration:0.45, stagger:0.08, ease:'back.out(1.4)'});
   } catch(e){
@@ -709,8 +794,29 @@ async function sendDuelInvite(targetUid, targetInfo){
   const me = fbAuth.currentUser;
   if(!me) return;
   const phygoLog = window.phygoLog || ((tag, msg)=> console.log(`[${tag}] ${msg}`));
-  
+
   phygoLog('DUEL_INVITE', `START: target=${targetInfo?.usernameDisplay||'unknown'}`);
+
+  // Tugas 6: kalau target lagi ada di antrian matchmaking acak (status
+  // 'waiting'), tolak undangan di sisi pengirim — jangan sampai target
+  // kena 2 alur duel sekaligus (matchmaking acak + ajakan personal).
+  try{
+    const targetQueueSnap = await db.collection('matchmakingQueue').doc(targetUid).get();
+    if(targetQueueSnap.exists && targetQueueSnap.data().status === 'waiting'){
+      phygoLog('DUEL_INVITE', 'BLOCKED: target sedang matchmaking');
+      Swal.fire({
+        icon: 'info', title: 'Sedang Mencari Lawan',
+        text: `${targetInfo && targetInfo.usernameDisplay ? targetInfo.usernameDisplay : 'User ini'} lagi mencari lawan lewat matchmaking, gak bisa diajak duel sekarang. Coba lagi nanti.`,
+        background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)',
+      });
+      return;
+    }
+  } catch(e){
+    phygoLog('DUEL_INVITE', `Gagal cek status matchmaking target: ${e.message}`);
+    // Kalau pengecekan gagal (misal offline), tetap lanjut kirim undangan
+    // seperti biasa — jangan blokir user cuma karena 1 read gagal.
+  }
+
   const linkRef = db.collection('duelInviteLinks').doc(`${me.uid}_${targetUid}`);
   let myProfile;
   try{
