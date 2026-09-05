@@ -751,6 +751,14 @@ input{ font-family:inherit; }
   outline:none; transition:border-color .2s ease;
 }
 .auth-field input:focus, .auth-field select:focus{ border-color:var(--primary); }
+/* Prefix "@" visual di depan field username (login & daftar) — cuma
+   dekorasi, BUKAN bagian dari value input, jadi logic JS gak perlu
+   diubah sama sekali. */
+.auth-field-input-wrap{ position:relative; display:flex; align-items:center; }
+.auth-field-input-wrap .auth-field-prefix{
+  position:absolute; left:16px; font-size:15px; font-weight:700; color:var(--on-surface-var); pointer-events:none;
+}
+.auth-field-input-wrap input{ width:100%; padding-left:30px; }
 .auth-hint{ font-size:11.5px; color:var(--on-surface-var); min-height:14px; }
 .auth-hint.ok{ color:var(--success); }
 .auth-hint.bad{ color:var(--error); }
@@ -1795,6 +1803,7 @@ input{ font-family:inherit; }
 
 /* --- Halaman Hasil Duel --- */
 .duel-result-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+.duel-result-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 
 /* Wrapper posisi buat area soal/jawaban duel — overlay "nunggu lawan" di
    bawah ini di-scope ke wrapper ini SAJA (bukan .surv-shell secara utuh),
