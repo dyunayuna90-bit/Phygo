@@ -57,6 +57,10 @@ initEditProfileModalOnce();
 document.getElementById('btnAppInfoBack').innerHTML = svgIcon('arrowBack');
 document.getElementById('btnAppInfoBack').addEventListener('click', ()=> navigate('settings', {}, false));
 
+// ===== Halaman "Tingkatan Rank" =====
+document.getElementById('rankInfoBackBtn').innerHTML = svgIcon('arrowBack');
+document.getElementById('rankInfoBackBtn').addEventListener('click', ()=> navigate('profile', {}, false));
+
 const importFileInput = document.getElementById('importFileInput');
 document.getElementById('btnImportData').addEventListener('click', ()=> importFileInput.click());
 importFileInput.addEventListener('change', (e)=>{
