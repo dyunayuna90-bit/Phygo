@@ -53,11 +53,17 @@
 
 <section class="screen active" id="screen-auth">
   <div class="scroll-pane auth-scroll">
+    <div class="auth-bg-shape s1" aria-hidden="true"></div>
+    <div class="auth-bg-shape s2" aria-hidden="true"></div>
+    <div class="auth-bg-shape s3" aria-hidden="true"></div>
+
     <div class="auth-hero">
-      <div class="auth-logo">Phygo</div>
+      <span class="eyebrow-pill auth-eyebrow">Ayo Belajar Fisika</span>
+      <div class="auth-logo"><span class="auth-logo-mark">P</span>Phygo</div>
       <p class="auth-tagline">Belajar fisika, bareng temen.</p>
     </div>
 
+    <div class="auth-card">
     <!-- ===== FORM LOGIN ===== -->
     <div class="auth-form" id="authFormLogin">
       <div class="auth-field">
@@ -115,6 +121,7 @@
       <p class="auth-error" id="registerError"></p>
       <button class="btn btn-primary btn-block ripple-host" id="btnRegisterSubmit">Daftar</button>
       <p class="auth-switch">Udah punya akun? <a href="#" id="linkGoToLogin">Masuk</a></p>
+    </div>
     </div>
   </div>
 </section>
