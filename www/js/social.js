@@ -45,7 +45,35 @@ const socialState = {
 // Dibuka/ditutupnya modal sosial dicatat di sini supaya tombol back HP bisa
 // menutup modal yang sedang aktif (lihat handleSocialModalHistoryPop di
 // bawah, dipanggil dari router.js).
-window.socialModalOpen = null; // null | 'addFriend' | 'inbox' | 'editProfile' | 'viewProfile'
+window.socialModalOpen = null; // null | 'addFriend' | 'inbox' | 'editProfile' | 'viewProfile' | 'avatarPicker'
+
+// FIX BUG "BOTTOM SHEET PENCARIAN ORANG GA PERNAH KETUTUP": socialModalOpen
+// di atas cuma nyimpen SATU nilai (modal yang lagi paling atas), padahal
+// modal sosial bisa NUMPUK — misal buka "Cari Orang" (addFriend), lalu dari
+// hasil pencarian klik salah satu profil -> buka "Lihat Profil" (viewProfile)
+// DI ATASNYA, sementara addFriend-nya sendiri TETAP terbuka di belakang.
+// Begitu viewProfile dibuka, socialModalOpen ditimpa jadi 'viewProfile' —
+// status "addFriend juga masih terbuka" jadi HILANG SAMA SEKALI.
+//
+// Efeknya: tombol back HP pertama nutup viewProfile (benar), tapi begitu itu
+// kejadian, socialModalOpen langsung di-null-in total (lihat
+// handleSocialModalHistoryPop) — padahal addFriend MASIH kebuka di layar.
+// Tombol back HP berikutnya jadi gak tau ada modal yang masih perlu ditutup,
+// jadi bottom sheet addFriend nyangkut selamanya.
+//
+// FIX: socialModalOpen jadi "modal paling atas", dan stack ini nyimpen
+// modal-modal DI BAWAHNYA yang masih terbuka. Tiap buka modal baru SELAGI
+// ada modal lain yang masih terbuka, modal lama didorong ke stack ini dulu.
+// Tiap modal ditutup, kita "pop" balik status modal di bawahnya (kalau ada)
+// alih-alih langsung nge-null-in semuanya.
+window.socialModalStack = [];
+
+// Dipanggil oleh tiap fungsi openXModal() di bawah, GANTI langsung nulis
+// `window.socialModalOpen = '...'`.
+function _openSocialModal(name) {
+  if (window.socialModalOpen) window.socialModalStack.push(window.socialModalOpen);
+  window.socialModalOpen = name;
+}
 
 // Tiap modal sosial punya 2 elemen terpisah di HTML: backdrop (id ...Backdrop)
 // dan dialog-nya sendiri. Helper ini nyalain/matiin keduanya bareng supaya
@@ -454,7 +482,7 @@ function openAddFriendModal() {
     </div>
   `;
   _setModalVisible('modalAddFriend', 'modalAddFriendBackdrop', true);
-  window.socialModalOpen = 'addFriend';
+  _openSocialModal('addFriend');
   history.pushState({ socialModal: 'addFriend' }, '', location.hash || '#social');
   setTimeout(() => document.getElementById('addFriendSearchInput').focus(), 200);
 }
@@ -588,7 +616,7 @@ function refreshAddFriendResultsStatus() {
 function openInboxModal() {
   renderInboxList();
   _setModalVisible('modalInbox', 'modalInboxBackdrop', true);
-  window.socialModalOpen = 'inbox';
+  _openSocialModal('inbox');
   history.pushState({ socialModal: 'inbox' }, '', location.hash || '#social');
 }
 
@@ -665,7 +693,7 @@ async function openProfileViewModal(uid, fallbackInfo) {
   const body = document.getElementById('profileViewBody');
   body.innerHTML = `<div class="social-search-loading">Memuat profil...</div>`;
   _setModalVisible('modalProfileView', 'modalProfileViewBackdrop', true);
-  window.socialModalOpen = 'viewProfile';
+  _openSocialModal('viewProfile');
   socialState.viewingProfileUid = uid;
   socialState.viewingProfileInfo = fallbackInfo || null;
   history.pushState({ socialModal: 'viewProfile' }, '', location.hash || '#social');
@@ -864,7 +892,7 @@ async function openEditProfileModal() {
   const err = document.getElementById('editProfileError');
   if (err) err.textContent = '';
   _setModalVisible('modalEditProfile', 'modalEditProfileBackdrop', true);
-  window.socialModalOpen = 'editProfile';
+  _openSocialModal('editProfile');
   history.pushState({ socialModal: 'editProfile' }, '', location.hash || '#settings');
   try {
     const profile = await getCurrentUserProfile();
@@ -926,7 +954,7 @@ function openAvatarPickerModal(currentAvatarId) {
   if (errEl) errEl.textContent = '';
   renderAvatarPickerModalGrid();
   _setModalVisible('modalAvatarPicker', 'modalAvatarPickerBackdrop', true);
-  window.socialModalOpen = 'avatarPicker';
+  _openSocialModal('avatarPicker');
   history.pushState({ socialModal: 'avatarPicker' }, '', location.hash || '#settings');
 }
 
@@ -1025,9 +1053,14 @@ function initAvatarPickerModalOnce() {
 }
 
 // ===== Tombol back HP untuk modal sosial yang lagi terbuka (lihat router.js) =====
+// FIX (lihat catatan panjang di window.socialModalStack di atas file ini):
+// setelah menutup modal yang lagi di paling atas, JANGAN langsung nge-null-in
+// socialModalOpen — "pop" dulu dari stack, siapa tau ada modal LAIN yang
+// masih terbuka di bawahnya (misal viewProfile ditutup, tapi addFriend masih
+// harus tetap "aktif" statusnya supaya back berikutnya bisa nutup itu juga).
 function handleSocialModalHistoryPop() {
   const which = window.socialModalOpen;
-  window.socialModalOpen = null;
+  window.socialModalOpen = window.socialModalStack.length ? window.socialModalStack.pop() : null;
   if (which === 'addFriend') closeAddFriendModal(true);
   else if (which === 'inbox') closeInboxModal(true);
   else if (which === 'viewProfile') closeProfileViewModal(true);
@@ -1044,6 +1077,7 @@ function closeAllSocialModals() {
     if (b) b.classList.remove('show');
   });
   window.socialModalOpen = null;
+  window.socialModalStack = [];
   socialState.viewingProfileUid = null;
   socialState.viewingProfileInfo = null;
 }
