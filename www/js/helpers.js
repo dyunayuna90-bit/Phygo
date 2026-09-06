@@ -9,7 +9,7 @@ function roundTo(v, step){ return Math.round(v/step)*step; }
 
 // ===== Tema Tampilan =====
 const THEME_KEY = 'phygo_theme';
-const THEME_LIST = ['cyan', 'pink', 'coklat'];
+const THEME_LIST = ['cyan', 'pink', 'coklat', 'lime'];
 function getTheme(){ try{ const t = localStorage.getItem(THEME_KEY); return THEME_LIST.includes(t) ? t : 'cyan'; }catch(e){ return 'cyan'; } }
 function setTheme(t){
   if(!THEME_LIST.includes(t)) t = 'cyan';
