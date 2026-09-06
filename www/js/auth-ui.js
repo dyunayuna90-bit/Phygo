@@ -55,6 +55,40 @@ function _settleAuthGate() {
 }
 setTimeout(_settleAuthGate, 5000); // jaring pengaman, lihat catatan di atas
 
+// =====================================================================
+// FIX BUG "STUCK DI LOGIN PAS OFFLINE": kalau device lagi OFFLINE dan
+// Firebase belum juga kasih jawaban pasti (watchAuthState belum manggil
+// callback-nya sama sekali) dalam waktu singkat, tapi kita PUNYA catatan
+// bahwa user ini pernah login sebelumnya (lihat rememberLastSession() di
+// auth.js) — langsung saja buka dashboard, jangan nunggu terus. Timer ini
+// SENGAJA jauh lebih pendek dari jaring pengaman 5 detik di atas (yang
+// tugasnya cuma nyembunyiin loader), karena kalau memang offline+ada sesi
+// tersimpan, gak ada gunanya nunggu lama² — Firebase yang beneran nyangkut
+// gak akan tiba-tiba jawab cuma karena ditunggu lebih lama.
+//
+// AMAN kalau ternyata tebakan ini salah/kepagian: begitu watchAuthState()
+// akhirnya beneran dapat jawaban (walau telat beberapa detik), jawaban itu
+// tetap diproses seperti biasa di bawah (goToDashboardAfterAuth() lagi itu
+// gak masalah dipanggil dobel; kalau ternyata jawabannya null/logout
+// beneran, resetToAuthScreen() akan mengoreksi balik ke layar login).
+//
+// CATATAN: navigator.onLine cuma heuristik kasar (bisa saja true walau
+// koneksi sebenarnya mati total, misal WiFi tanpa internet) — tapi untuk
+// kasus paling umum (mode pesawat / sinyal benar-benar hilang) ini akurat
+// dan cukup buat kebutuhan fix ini.
+// =====================================================================
+const OFFLINE_GATE_GRACE_MS = 1200;
+let _authAnswerReceived = false;
+setTimeout(() => {
+  if (_authAnswerReceived) return; // Firebase udah jawab duluan, gak perlu tebak-tebakan lagi
+  const hasPriorSession = typeof getRememberedSessionUid === 'function' && !!getRememberedSessionUid();
+  if (navigator.onLine === false && hasPriorSession) {
+    phygoLog('GATE', 'OFFLINE + ada sesi tersimpan, langsung buka dashboard tanpa nunggu Firebase');
+    goToDashboardAfterAuth();
+    _settleAuthGate();
+  }
+}, OFFLINE_GATE_GRACE_MS);
+
 function renderAvatarPicker() {
   const picker = document.getElementById('avatarPicker');
   if (!picker) return;
@@ -250,6 +284,7 @@ function initAuthUI() {
     try {
       await withTimeout(loginWithUsername(username, password), 15000, 'Login butuh waktu terlalu lama.');
       phygoLog('LOGIN', 'signIn RESOLVE (sukses) — langsung pindah ke dashboard');
+      if (typeof rememberLastSession === 'function' && fbAuth.currentUser) rememberLastSession(fbAuth.currentUser.uid);
       authBusy = false;
       setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
       // FIX: sebelumnya navigasi 100% ditaruh di watchAuthState() (nunggu
@@ -308,6 +343,7 @@ function initAuthUI() {
         await withTimeout(registerWithUsername(username, password, profile), 15000, 'Daftar butuh waktu terlalu lama.');
       }
       phygoLog('DAFTAR', 'RESOLVE (sukses) — langsung pindah ke dashboard');
+      if (typeof rememberLastSession === 'function' && fbAuth.currentUser) rememberLastSession(fbAuth.currentUser.uid);
       authBusy = false;
       setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
       // Sama seperti login: navigasi langsung dipanggil di sini, nggak
@@ -363,7 +399,9 @@ function initAuthGate() {
 
   watchAuthState((user) => {
     phygoLog('AUTH STATE', user ? ('user login, uid=' + user.uid) : 'user = null (belum/nggak login)');
+    _authAnswerReceived = true; // Firebase udah kasih jawaban pasti, matikan tebakan offline di atas
     if (user) {
+      if (typeof rememberLastSession === 'function') rememberLastSession(user.uid);
       authBusy = false;
       setAuthBusy('btnLoginSubmit', false, 'Memproses...', 'Masuk');
       setAuthBusy('btnRegisterSubmit', false, 'Memproses...', 'Daftar');
