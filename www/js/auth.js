@@ -140,6 +140,39 @@ async function completeGoogleProfile(uid, username, profile) {
 // ===== LOGOUT =====
 async function logoutUser() {
   await fbAuth.signOut();
+  forgetLastSession(); // hapus jejak sesi lokal (lihat catatan di bawah)
+}
+
+// =====================================================================
+// JEJAK SESI LOKAL (localStorage) — BUKAN pengganti Firebase Auth, cuma
+// "penanda cepat" buat FIX BUG "STUCK DI LOGIN PAS OFFLINE":
+//
+// Firebase Auth SEHARUSNYA otomatis mengembalikan sesi yang tersimpan
+// (fbAuth.onAuthStateChanged) walau lagi offline, karena datanya dibaca
+// dari penyimpanan LOKAL (indexedDB), bukan dari server. TAPI di WebView
+// Android tertentu (lihat juga catatan panjang soal "event onAuthState-
+// Changed kadang nggak nyala" di auth-ui.js), proses baca itu kadang
+// nyangkut/nggak pernah selesai kalau device-nya BENERAN offline —
+// akibatnya initAuthGate() nunggu selamanya dan user "kejebak" di layar
+// login, padahal sebelumnya sudah pernah login.
+//
+// FIX: tiap kali kita TAHU PASTI user sedang login (lihat initAuthGate di
+// auth-ui.js), kita catat uid-nya di localStorage. Kalau nanti app dibuka
+// lagi dalam keadaan OFFLINE dan Firebase belum juga kasih jawaban dalam
+// waktu singkat, initAuthGate() boleh "percaya" penanda ini dan langsung
+// buka dashboard (lihat OFFLINE_GATE_GRACE_MS) alih-alih nunggu terus.
+// Begitu Firebase akhirnya kasih jawaban asli (bisa saja telat beberapa
+// detik), jawaban itu tetap dipakai buat konfirmasi/koreksi.
+// =====================================================================
+const LAST_SESSION_KEY = 'phygo_last_session_uid';
+function rememberLastSession(uid) {
+  try { localStorage.setItem(LAST_SESSION_KEY, uid); } catch (e) {}
+}
+function forgetLastSession() {
+  try { localStorage.removeItem(LAST_SESSION_KEY); } catch (e) {}
+}
+function getRememberedSessionUid() {
+  try { return localStorage.getItem(LAST_SESSION_KEY) || null; } catch (e) { return null; }
 }
 
 // ===== EDIT PROFIL — update nama/gender/umur/avatar user yang lagi login =====
