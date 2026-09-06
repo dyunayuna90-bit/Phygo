@@ -197,15 +197,28 @@ function buildHistoryCards(){
     card.dataset.level = id;
     card.setAttribute('aria-label', 'Buka arsip: ' + L.title);
     card.innerHTML = `
-      <div class="history-card-top">
-        <span class="history-card-eyebrow">${L.eyebrow}</span>
-        <h3 class="history-card-title">${L.title}</h3>
+      <div class="history-card-backdrop"></div>
+      <div class="history-card-glow"></div>
+      <div class="history-card-icon-hero">
+        <div class="history-card-icon-wrapper">
+          ${svgIcon(L.icon)}
+        </div>
       </div>
-      <div class="history-card-icon-bg">${svgIcon(L.icon)}</div>
-      <p class="history-card-desc">${L.summary}</p>
-      <div class="history-card-footer">
-        <span class="history-card-count">${L.arsip.length} Arsip Tercatat</span>
-        <span class="history-card-cta">${svgIcon('chevronRight')}</span>
+      <div class="history-card-content">
+        <div class="history-card-top">
+          <span class="history-card-eyebrow">${L.eyebrow}</span>
+          <h3 class="history-card-title">${L.title}</h3>
+        </div>
+        <p class="history-card-desc">${L.summary}</p>
+        <div class="history-card-footer">
+          <div class="history-card-count-badge">
+            <span class="history-card-count">${L.arsip.length}</span>
+            <span class="history-card-count-label">Arsip</span>
+          </div>
+          <div class="history-card-cta-wrapper">
+            <span class="history-card-cta">${svgIcon('chevronRight')}</span>
+          </div>
+        </div>
       </div>
     `;
     holder.appendChild(card);
