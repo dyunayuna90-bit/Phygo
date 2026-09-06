@@ -6,12 +6,12 @@ function renderHome(){
   renderHomeAchievement();
   renderSurvivalCard(document.getElementById('homeSurvivalCard'));
   renderHomeStreakCard();
-  // Kartu entry point Mode Duel (lihat duel.js) — dirender belakangan di
+  // Kartu entry point Mode Duel (lihat duel.js) â€” dirender belakangan di
   // Home, di bawah bento Pencapaian/Survival/Streak.
   if (typeof renderDuelCard === 'function') renderDuelCard(document.getElementById('homeDuelCard'));
 }
 
-// ===== Header â€” sapaan dinamis sesuai jam + tanggal hari ini =====
+// ===== Header Ã¢â‚¬â€ sapaan dinamis sesuai jam + tanggal hari ini =====
 function greetingText(){
   const h = new Date().getHours();
   if(h < 11) return 'Selamat pagi';
@@ -38,7 +38,7 @@ function renderHomeHeader(){
   `;
 }
 
-// ===== Kartu CTA utama â€” 1 kartu adaptif yang menggantikan tombol lama +
+// ===== Kartu CTA utama Ã¢â‚¬â€ 1 kartu adaptif yang menggantikan tombol lama +
 // notifikasi lama, jadi selalu ada satu ajakan aksi paling relevan:
 // 1) Ada wizard belum selesai -> ajak lanjutkan persis di step itu.
 // 2) Ada level materi berikutnya -> ajak mulai level itu.
@@ -54,7 +54,7 @@ function renderHomeContinueCard(){
   if(lp && L && !app.completed.has(lp.level)){
     eyebrow = 'Lanjutkan Belajar';
     title = `Level ${lp.level}: ${L.title}`;
-    sub = 'Kamu berhenti di tengah jalan â€” yuk selesaikan sekarang.';
+    sub = 'Kamu berhenti di tengah jalan Ã¢â‚¬â€ yuk selesaikan sekarang.';
     action = resumeLastActivity;
   } else {
     const nextLevel = [1,2,3].find(id => !app.completed.has(id));
@@ -111,7 +111,7 @@ function renderHomeAchievement(){
   apply3DTilt(holder.querySelector('.gami-card'), 10, 0);
 }
 
-// ===== Kartu Streak â€” pendamping kartu Survival di baris bento kedua =====
+// ===== Kartu Streak Ã¢â‚¬â€ pendamping kartu Survival di baris bento kedua =====
 function renderHomeStreakCard(){
   const holder = document.getElementById('homeStreakCard');
   if(!holder) return;
@@ -128,7 +128,7 @@ function renderHomeStreakCard(){
   `;
 }
 
-// ===== Halaman "Level" â€” peta zig-zag (tidak diubah tampilannya) =====
+// ===== Halaman "Level" Ã¢â‚¬â€ peta zig-zag (tidak diubah tampilannya) =====
 function renderLevelMap(){
   const mapEl = document.getElementById('journeyMap');
   Array.from(mapEl.children).forEach(c => { if(c.id !== 'jPathSvg') c.remove(); });
@@ -169,10 +169,10 @@ function renderLevelMap(){
 }
 
 // ===================================================================
-// ===== Halaman "Sejarah" â€” Tumpukan kartu arsip + wizard konten ====
+// ===== Halaman "Sejarah" Ã¢â‚¬â€ Tumpukan kartu arsip + wizard konten ====
 // ===================================================================
 
-let historyCardEls = null; // {levelId: HTMLElement} â€” dibuat sekali, dipakai ulang
+let historyCardEls = null; // {levelId: HTMLElement} Ã¢â‚¬â€ dibuat sekali, dipakai ulang
 const HIST_PEEK = 46;         // px "pucuk" kartu di belakang yang kelihatan di atas kartu depannya
 const HIST_SCALE_STEP = 0.045;
 const HIST_CARD_H = 380;      // harus sinkron dengan min-height .history-card di CSS
@@ -197,28 +197,15 @@ function buildHistoryCards(){
     card.dataset.level = id;
     card.setAttribute('aria-label', 'Buka arsip: ' + L.title);
     card.innerHTML = `
-      <div class="history-card-backdrop"></div>
-      <div class="history-card-glow"></div>
-      <div class="history-card-icon-hero">
-        <div class="history-card-icon-wrapper">
-          ${svgIcon(L.icon)}
-        </div>
+      <div class="history-card-top">
+        <span class="history-card-eyebrow">${L.eyebrow}</span>
+        <h3 class="history-card-title">${L.title}</h3>
       </div>
-      <div class="history-card-content">
-        <div class="history-card-top">
-          <span class="history-card-eyebrow">${L.eyebrow}</span>
-          <h3 class="history-card-title">${L.title}</h3>
-        </div>
-        <p class="history-card-desc">${L.summary}</p>
-        <div class="history-card-footer">
-          <div class="history-card-count-badge">
-            <span class="history-card-count">${L.arsip.length}</span>
-            <span class="history-card-count-label">Arsip</span>
-          </div>
-          <div class="history-card-cta-wrapper">
-            <span class="history-card-cta">${svgIcon('chevronRight')}</span>
-          </div>
-        </div>
+      <div class="history-card-icon-bg">${svgIcon(L.icon)}</div>
+      <p class="history-card-desc">${L.summary}</p>
+      <div class="history-card-footer">
+        <span class="history-card-count">${L.arsip.length} Arsip Tercatat</span>
+        <span class="history-card-cta">${svgIcon('chevronRight')}</span>
       </div>
     `;
     holder.appendChild(card);
@@ -241,7 +228,7 @@ function buildHistoryCards(){
 // Menata ulang posisi visual seluruh kartu berdasarkan `app.history.order`.
 // order[0] = kartu paling depan (aktif). Kartu di belakangnya digeser TURUN
 // makin jauh (bukan naik) sehingga bagian atas tiap kartu di belakang selalu
-// nongol/"pucuk" di ATAS kartu yang ada di depannya â€” dan karena kartu paling
+// nongol/"pucuk" di ATAS kartu yang ada di depannya Ã¢â‚¬â€ dan karena kartu paling
 // belakang justru berada paling dekat ke atas wadah (bukan mencuat ke luar
 // wadah), dia tidak akan pernah numpuk ke judul tab.
 function layoutHistoryStack(animate){
@@ -271,7 +258,7 @@ function attachHistoryCardGestures(card, id){
     if(card.style.pointerEvents === 'none') return;
     dragging = true; moved = false; startY = e.clientY; startX = e.clientX;
     // Kartu terdepan istirahat di posisi y > 0 (bukan 0) karena sekarang
-    // ditumpuk mundur ke bawah â€” jadi harus dicatat dulu titik awalnya,
+    // ditumpuk mundur ke bawah Ã¢â‚¬â€ jadi harus dicatat dulu titik awalnya,
     // supaya geseran jari itungannya RELATIF ke situ. Kalau tidak, kartu
     // bakal "loncat" ke y:0 dulu begitu jari mulai bergerak.
     baseY = gsap.getProperty(card, 'y') || 0;
@@ -283,7 +270,7 @@ function attachHistoryCardGestures(card, id){
     const dy = e.clientY - startY, dx = e.clientX - startX;
     if(Math.abs(dy) > 6 || Math.abs(dx) > 6) moved = true;
     // Kartu terdepan HANYA boleh diseret ke bawah (buang/mundur-maju biasa).
-    // Gerakan ke atas sengaja tidak diberi efek apa pun di kartu ini â€” swipe
+    // Gerakan ke atas sengaja tidak diberi efek apa pun di kartu ini Ã¢â‚¬â€ swipe
     // ke atas adalah gestur "mundur" global (lihat endDrag), bukan aksi yang
     // menempel/menyeret kartu terdepan.
     if(dy > 0) gsap.set(card, { y: baseY + dy * 0.85, rotate: clamp(dx * 0.04, -10, 10) });
@@ -321,7 +308,7 @@ function commitHistorySwipe(card, id){
 // Gestur "mundur": swipe ke atas pada kartu terdepan. Ini LITERAL kebalikan
 // dari animasi commitHistorySwipe di atas, dimainkan mundur, untuk SATU kartu
 // yang balik itu saja (kartu lain tidak diapa-apakan selain digeser halus
-// biasa ke slot barunya â€” tidak ada animasi kedua yang saling tabrakan).
+// biasa ke slot barunya Ã¢â‚¬â€ tidak ada animasi kedua yang saling tabrakan).
 //
 // Alur commitHistorySwipe (maju) utk kartu yg dibuang:
 //   depan -> [tween: turun+memudar] -> [lompat instan: sembunyi jauh di
@@ -348,14 +335,14 @@ function historySwipeBack(){
     // FASE 1: kartu dikunci di lapisan PALING BAWAH (bukan sekadar dibiarkan
     // pakai z-index lama) selagi turun & memudar. Ini perlu, karena begitu
     // `order` di-rotate, kartu yang tadinya "kedua dari belakang" ikut naik
-    // jadi kartu paling belakang yang baru â€” dan kalau z-index kartu balik
+    // jadi kartu paling belakang yang baru Ã¢â‚¬â€ dan kalau z-index kartu balik
     // ini tidak dikunci, sesaat z-index keduanya bisa SERI, bikin urutan
     // render jadi acak (kartu balik ini sempat nembus 1 kartu di depannya).
     returningCard.style.zIndex = 0;
     gsap.to(returningCard, {
       y: HIST_CARD_H + 60, opacity: 0, rotate: 0, scale: 1, duration: .3, ease: 'power1.in',
       onComplete: () => {
-        // Di titik ini kartu sudah sepenuhnya transparan (opacity 0) â€” baru
+        // Di titik ini kartu sudah sepenuhnya transparan (opacity 0) Ã¢â‚¬â€ baru
         // SEKARANG aman untuk mengangkatnya ke lapisan paling atas, karena
         // tidak ada apa pun yang kelihatan untuk "nembus".
         returningCard.style.zIndex = 31;
@@ -382,7 +369,7 @@ function historySwipeBack(){
   });
 }
 
-// Transisi buka wizard â€” sederhana & stabil: kartu cukup "menekan" sedikit
+// Transisi buka wizard Ã¢â‚¬â€ sederhana & stabil: kartu cukup "menekan" sedikit
 // (bounce kecil) sebagai umpan balik sentuhan, TANPA memudar/menghilang,
 // lalu pindah screen. Konten wizard sendiri masuk dengan fade+slide halus
 // dari router.js, jadi transisinya tetap terasa menyatu tanpa perlu morphing
@@ -460,12 +447,12 @@ function renderHistoryWizardStep(isInitial){
   hwEls.primary.onclick = isLast ? closeHistoryWizard : (()=> hwGoStep(1));
 }
 
-// ===== BADGE RANK SYSTEM — 2 TRACK TERPISAH (Solo & Duel) =====
+// ===== BADGE RANK SYSTEM â€” 2 TRACK TERPISAH (Solo & Duel) =====
 // Dulu cuma 1 tier berdasarkan totalPoin gabungan (dan gapernah jalan karena
 // totalPoin gapernah keisi). Sekarang rank dihitung TERPISAH dari poinSolo
 // dan poinDuel masing-masing (lihat getRankBadge dipanggil 2x di bawah).
 // Threshold sengaja dibuat SAMA untuk kedua track biar simpel (boleh diubah
-// beda-beda nanti tinggal edit array ini) — yang penting NOOB tetap paling
+// beda-beda nanti tinggal edit array ini) â€” yang penting NOOB tetap paling
 // bawah. Skala disesuaikan dgn sistem poin baru (+100/+80 per soal benar,
 // -20 per soal salah), jadi threshold-nya lebih besar dari versi lama.
 const RANK_TIERS = [
@@ -481,7 +468,7 @@ function getRankBadge(poin) {
   return tier || RANK_TIERS[0];
 }
 
-// ===== HALAMAN INFO TINGKATAN RANK — daftar semua tier, dipakai utk track
+// ===== HALAMAN INFO TINGKATAN RANK â€” daftar semua tier, dipakai utk track
 // Solo maupun Duel (lihat renderRankInfoScreen). trackLabel & currentPoin
 // dipakai buat highlight tier yang lagi ditempati user. =====
 function renderRankInfoScreen(trackLabel, currentPoin){
@@ -502,7 +489,7 @@ function renderRankInfoScreen(trackLabel, currentPoin){
           <div class="rankinfo-row-badge" style="background:color-mix(in srgb, ${t.color} 22%, var(--surface-c)); color:${t.color};">${t.rank}</div>
           <div class="rankinfo-row-text">
             <b>${t.rank}</b>
-            <small>${t.maxPoin === Infinity ? `${t.minPoin.toLocaleString('id-ID')}+ Poin` : (t.minPoin <= 0 ? `0 – ${t.maxPoin.toLocaleString('id-ID')} Poin` : `${t.minPoin.toLocaleString('id-ID')} – ${t.maxPoin.toLocaleString('id-ID')} Poin`)}</small>
+            <small>${t.maxPoin === Infinity ? `${t.minPoin.toLocaleString('id-ID')}+ Poin` : (t.minPoin <= 0 ? `0 â€“ ${t.maxPoin.toLocaleString('id-ID')} Poin` : `${t.minPoin.toLocaleString('id-ID')} â€“ ${t.maxPoin.toLocaleString('id-ID')} Poin`)}</small>
           </div>
           ${t.rank === current.rank ? `<span class="rankinfo-row-you">Kamu</span>` : ''}
         </div>
@@ -511,7 +498,7 @@ function renderRankInfoScreen(trackLabel, currentPoin){
   `;
 }
 
-// ===== PROFIL TAB — tampil data user + poin breakdown =====
+// ===== PROFIL TAB â€” tampil data user + poin breakdown =====
 async function renderProfileScreen(){
   const holder = document.getElementById('profileScroll');
   if(!holder) return;
@@ -530,7 +517,7 @@ async function renderProfileScreen(){
       return;
     }
 
-    // Hitung persentase poin solo vs duel (buat breakdown bar) — patokan
+    // Hitung persentase poin solo vs duel (buat breakdown bar) â€” patokan
     // totalPoin tetap dipakai di sini cuma buat proporsi visual bar, BUKAN
     // buat rank (rank sekarang dipisah, lihat blok toggle Solo/Duel di bawah).
     const totalPoin = userProfile.totalPoin || 0;
@@ -633,7 +620,7 @@ async function renderProfileScreen(){
     `;
 
     // Isi jumlah Pengikut/Mengikuti dari data realtime sistem pertemanan
-    // (lihat social.js) — kalau listener-nya belum sempat nyala, ya
+    // (lihat social.js) â€” kalau listener-nya belum sempat nyala, ya
     // ditampilin 0 dulu, nanti update otomatis begitu data datang karena
     // renderProfileScreen() dipanggil ulang tiap kali tab Profil dibuka.
     if (typeof socialState !== 'undefined') {
@@ -677,7 +664,7 @@ async function renderProfileScreen(){
         paintRankDisplay();
       });
     });
-    // "Lihat Tingkatan Rank" dulu tombol teks terpisah — sekarang badge
+    // "Lihat Tingkatan Rank" dulu tombol teks terpisah â€” sekarang badge
     // rank-nya sendiri yang dipencet buat masuk ke halaman info rank,
     // biar hero profil gak menuh-menuhin.
     rankDisplayEl.addEventListener('click', ()=>{
@@ -686,7 +673,7 @@ async function renderProfileScreen(){
 
     if(window.phygoLog) window.phygoLog('PROFILE RENDER', 'selesai, username=' + userProfile.usernameDisplay);
     
-    // Restore opacity setelah render selesai — animasi akan handle fade-in
+    // Restore opacity setelah render selesai â€” animasi akan handle fade-in
     holder.style.opacity = '1';
     holder.style.pointerEvents = 'auto';
 
@@ -699,7 +686,7 @@ async function renderProfileScreen(){
   }
 }
 
-// ===== SETTINGS SCREEN (terpisah dari Profil) — tema + data export/import + privasi =====
+// ===== SETTINGS SCREEN (terpisah dari Profil) â€” tema + data export/import + privasi =====
 async function renderSettingsScreen(){
   const activeTheme = getTheme();
   document.querySelectorAll('#themeGrid .theme-swatch').forEach(el=>{
@@ -817,7 +804,7 @@ function importDataJson(file){
   reader.readAsText(file);
 }
 
-// ===== Halaman "Tentang Aplikasi" â€” halaman penuh (bukan pop-up) =====
+// ===== Halaman "Tentang Aplikasi" Ã¢â‚¬â€ halaman penuh (bukan pop-up) =====
 function renderAppInfo(){
   document.getElementById('appInfoPurpose').textContent = APP_INFO.purpose;
   document.getElementById('appInfoTeam').innerHTML = APP_INFO.team.map(n => `
@@ -832,12 +819,12 @@ function renderAppInfo(){
   repoLink.querySelector('.appinfo-repo-icon').innerHTML = svgIcon('code');
 }
 
-// Tombol "Sakti" â€” satu-satunya pintu masuk untuk melanjutkan progres.
+// Tombol "Sakti" Ã¢â‚¬â€ satu-satunya pintu masuk untuk melanjutkan progres.
 // Karena hasil kalkulasi antar-step (app.calc/app.locked/app.calcChain/
 // app.lastResult) cuma hidup di memory dan ikut hilang kalau app sempat
 // di-close, di sini kita regenerate parameter soal-nya persis seperti saat
 // user pertama kali membuka halaman materi level tsb (lihat renderMateri()).
-// Wizard tetap diarahkan ke step terakhir yang tersimpan â€” dan itu AMAN,
+// Wizard tetap diarahkan ke step terakhir yang tersimpan Ã¢â‚¬â€ dan itu AMAN,
 // karena tiap step renderer di level1/2/3.js sudah otomatis mundur sendiri
 // (wizardGoStep(-1)) kalau ada data hitungan yang belum tersedia, sehingga
 // user tidak akan pernah nyangkut di step yang rusak/kosong maupun harus
@@ -1174,7 +1161,7 @@ function renderWizardStep(isInitial = false){
   for(let i=0;i<count;i++) html += `<div class="step-dot ${i===wizard.step?'current':(i<wizard.step?'done':'')}"></div>`;
   els.wizardProgress.innerHTML = html;
 
-  // Reset pill nyawa mengambang tiap pindah step â€” hanya renderQuizStep yang
+  // Reset pill nyawa mengambang tiap pindah step Ã¢â‚¬â€ hanya renderQuizStep yang
   // akan mengisi & menampilkannya lagi kalau step ini memang kuis.
   if(els.quizLivesFloat){ els.quizLivesFloat.classList.remove('show'); els.quizLivesFloat.innerHTML = ''; }
   
@@ -1182,7 +1169,7 @@ function renderWizardStep(isInitial = false){
     // FIX LAG: matiin semua tween/timeline GSAP yang masih nempel di konten
     // step SEBELUMNYA sebelum kontennya dibuang. Tanpa ini, animasi infinite
     // (repeat:-1) di preview kuis dsb tetap jalan selamanya di background
-    // walau elemennya udah gak ada di layar â€” makin sering pindah step,
+    // walau elemennya udah gak ada di layar Ã¢â‚¬â€ makin sering pindah step,
     // makin numpuk, makin berat. Ini akar masalah "makin lama makin ngelag".
     gsap.killTweensOf(els.wizardBody.querySelectorAll('*'));
     els.wizardBody.innerHTML = '';
