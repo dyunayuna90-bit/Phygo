@@ -37,6 +37,18 @@ const duelMM = {
   searching: false, myUid: null, myProfile: null, startedAt: 0,
   unsubOwnQueue: null, pollTimer: null, giveupTimer: null, matched: false,
   triedUids: new Set(),
+  // FIX BUG "PENCARIAN TETAP JALAN DI BELAKANG WALAU SUDAH DIBATALKAN":
+  // startDuelMatchmaking() & duelAttemptMatchTick() sama-sama ASYNC (ada
+  // beberapa `await` network di tengah jalan). Kalau user pencet "Batalkan"
+  // PAS lagi nunggu salah satu await itu, clearInterval/clearTimeout di
+  // cancelDuelMatchmaking() cuma nyetop timer yang akan datang — kode yang
+  // SUDAH terlanjur jalan (lagi nunggu await) tetap lanjut begitu awaitnya
+  // selesai, seolah-olah gak pernah dibatalkan. `session` ini adalah
+  // "nomor sesi pencarian" yang naik tiap kali mulai/batal — tiap fungsi
+  // async simpan angka ini SEBELUM await, lalu setelah await WAJIB cek
+  // apakah masih sama dengan duelMM.session sekarang; kalau beda, berarti
+  // sudah dibatalkan/digantikan sesi baru selagi nunggu -> langsung stop.
+  session: 0,
 };
 const duelState = {
   duelId: null, myUid: null, opponentUid: null, opponentInfo: null, myInfo: null,
@@ -88,6 +100,7 @@ function renderDuelCard(holder){
 // MATCHMAKING — cari lawan acak (Tugas 4 poin 2)
 // =====================================================================
 async function startDuelMatchmaking(){
+  const mySession = ++duelMM.session; // sesi baru — otomatis membatalkan sesi lama yg mungkin masih nyangkut di await
   duelMM.searching = true;
   duelMM.matched = false;
   duelMM.startedAt = Date.now();
@@ -104,6 +117,7 @@ async function startDuelMatchmaking(){
 
   try{
     const profile = await getCurrentUserProfile();
+    if(mySession !== duelMM.session) return; // dibatalkan selagi nunggu profil
     if(!profile){ navigate('home', {}, true); return; }
     duelMM.myUid = me.uid;
     duelMM.myProfile = profile;
@@ -119,11 +133,18 @@ async function startDuelMatchmaking(){
       matchId: null,
       joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    if(mySession !== duelMM.session){
+      // Dibatalkan PAS/PAS SETELAH nulis ke antrian selesai — bersihin lagi
+      // biar gak ninggalin dokumen antrian nyangkut di server.
+      db.collection('matchmakingQueue').doc(me.uid).delete().catch(()=>{});
+      return;
+    }
 
     // Dengarkan dokumen antrian MILIK SENDIRI — kalau ada HP lain yang
     // berhasil "mencocokkan" kita lewat transaction mereka, statusnya
     // bakal berubah jadi 'matched' di sini.
     duelMM.unsubOwnQueue = db.collection('matchmakingQueue').doc(me.uid).onSnapshot((snap)=>{
+      if(mySession !== duelMM.session) return;
       if(!snap.exists || duelMM.matched) return;
       const d = snap.data();
       if(d.status === 'matched' && d.matchId){
@@ -137,6 +158,7 @@ async function startDuelMatchmaking(){
 
     duelMM.giveupTimer = setTimeout(duelGiveUpSearching, DUEL_GIVEUP_AFTER_MS);
   } catch(e){
+    if(mySession !== duelMM.session) return; // dibatalkan, gak perlu tampilin error apa pun
     console.error('[Phygo] Gagal mulai matchmaking duel:', e);
     Swal.fire({ icon:'error', title:'Gagal Memulai Pencarian', text: e.message, background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--error)' })
       .then(()=> navigate('home', {}, true));
@@ -144,6 +166,7 @@ async function startDuelMatchmaking(){
 }
 
 async function duelAttemptMatchTick(){
+  const mySession = duelMM.session; // catat sesi SEKARANG, dicek ulang tiap habis await di bawah
   if(duelMM.matched || !duelMM.searching) return;
   const elapsed = Date.now() - duelMM.startedAt;
   const widened = elapsed >= DUEL_WIDEN_AFTER_MS;
@@ -153,6 +176,11 @@ async function duelAttemptMatchTick(){
 
   try{
     const snap = await db.collection('matchmakingQueue').where('status', '==', 'waiting').limit(25).get();
+    // FIX: kalau dibatalkan SELAGI query di atas lagi jalan, jangan lanjut
+    // sama sekali — ini inti dari bug "pencarian tetap jalan di belakang
+    // walau sudah dibatalkan".
+    if(mySession !== duelMM.session || duelMM.matched || !duelMM.searching) return;
+
     let candidates = snap.docs
       .filter(d => d.id !== duelMM.myUid && !duelMM.triedUids.has(d.id))
       .map(d => ({ id: d.id, data: d.data() }));
@@ -166,8 +194,15 @@ async function duelAttemptMatchTick(){
     candidates.sort((a,b)=> Math.abs((a.data.rankValue||0)-myRank) - Math.abs((b.data.rankValue||0)-myRank));
 
     for(const cand of candidates){
-      if(duelMM.matched) return;
+      if(mySession !== duelMM.session || duelMM.matched) return;
       const duelId = await duelTryMatchTransaction(cand.id);
+      if(mySession !== duelMM.session){
+        // Dibatalkan PAS transaction-nya lagi jalan. Kalau ternyata transaction
+        // ini SEMPAT sukses (duelId ada), match-nya udah kejadian di server —
+        // gak bisa "dibatalkan" lagi, tapi minimal jangan paksa navigate ke
+        // layar VS-nya karena user udah pindah context duluan.
+        return;
+      }
       if(duelId){
         duelFinalizeMatch(duelId);
         return;
@@ -175,6 +210,7 @@ async function duelAttemptMatchTick(){
       duelMM.triedUids.add(cand.id); // gagal (kemungkinan udah diambil HP lain), jangan dicoba lagi
     }
   } catch(e){
+    if(mySession !== duelMM.session) return; // dibatalkan, abaikan errornya
     console.error('[Phygo] Gagal cek antrian duel:', e);
   }
 }
@@ -247,6 +283,7 @@ function duelStopMatchmakingTimers(){
 
 function cancelDuelMatchmaking(){
   if(duelMM.matched) return; // udah ketemu lawan, jangan dibatalin lagi
+  duelMM.session++; // batal DETIK INI JUGA — semua await yg lagi jalan (tick/transaction) akan berhenti begitu sadar sesinya udah beda
   duelMM.searching = false;
   duelStopMatchmakingTimers();
   if(duelMM.myUid){
