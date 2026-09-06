@@ -56,38 +56,59 @@ function _settleAuthGate() {
 setTimeout(_settleAuthGate, 5000); // jaring pengaman, lihat catatan di atas
 
 // =====================================================================
-// FIX BUG "STUCK DI LOGIN PAS OFFLINE": kalau device lagi OFFLINE dan
-// Firebase belum juga kasih jawaban pasti (watchAuthState belum manggil
-// callback-nya sama sekali) dalam waktu singkat, tapi kita PUNYA catatan
-// bahwa user ini pernah login sebelumnya (lihat rememberLastSession() di
-// auth.js) — langsung saja buka dashboard, jangan nunggu terus. Timer ini
-// SENGAJA jauh lebih pendek dari jaring pengaman 5 detik di atas (yang
-// tugasnya cuma nyembunyiin loader), karena kalau memang offline+ada sesi
-// tersimpan, gak ada gunanya nunggu lama² — Firebase yang beneran nyangkut
-// gak akan tiba-tiba jawab cuma karena ditunggu lebih lama.
+// FIX BUG "STUCK DI LOGIN PAS OFFLINE/GAADA INTERNET": kalau Firebase
+// belum juga kasih jawaban pasti (watchAuthState belum manggil callback-nya
+// sama sekali) dalam waktu tertentu, tapi kita PUNYA catatan bahwa user ini
+// pernah login sebelumnya (lihat rememberLastSession() di auth.js) —
+// langsung saja buka dashboard, jangan nunggu terus.
 //
-// AMAN kalau ternyata tebakan ini salah/kepagian: begitu watchAuthState()
-// akhirnya beneran dapat jawaban (walau telat beberapa detik), jawaban itu
-// tetap diproses seperti biasa di bawah (goToDashboardAfterAuth() lagi itu
-// gak masalah dipanggil dobel; kalau ternyata jawabannya null/logout
-// beneran, resetToAuthScreen() akan mengoreksi balik ke layar login).
+// ADA 2 KASUS BEDA yang perlu ditangani beda cara juga:
 //
-// CATATAN: navigator.onLine cuma heuristik kasar (bisa saja true walau
-// koneksi sebenarnya mati total, misal WiFi tanpa internet) — tapi untuk
-// kasus paling umum (mode pesawat / sinyal benar-benar hilang) ini akurat
-// dan cukup buat kebutuhan fix ini.
+// 1) Radio benar-benar MATI (mode pesawat / WiFi+data seluler dimatikan
+//    manual). `navigator.onLine` BISA mendeteksi ini dengan akurat & cepat
+//    (browser tau radio-nya mati). Makanya untuk kasus ini kita berani
+//    langsung percaya dalam waktu SINGKAT (OFFLINE_GATE_GRACE_MS).
+//
+// 2) Radio NYALA tapi internetnya sendiri gak nyampe (kuota habis, sinyal
+//    lag/lemot banget, nyangkut di captive portal, dll). INI YANG SEBELUMNYA
+//    KELEWAT: `navigator.onLine` cuma ngecek status radio/interface jaringan
+//    di HP, BUKAN ngecek beneran nyampe internet apa nggak — jadi nilainya
+//    tetap `true` walau internetnya sendiri gak jalan sama sekali, dan
+//    fallback offline di atas gak pernah kepicu. Makanya sekarang ADA timer
+//    kedua yang JALAN TERUS TANPA SYARAT navigator.onLine (cuma soal waktu
+//    tunggu lebih panjang, SLOW_GATE_GRACE_MS) — kalau sampai segitu lama
+//    Firebase belum jawab apa-apa, kemungkinan besar ini kasus "radio nyala
+//    tapi internet gak nyampe", jadi tetap masuk dashboard pakai data lokal.
+//
+// AMAN kalau ternyata tebakan ini salah/kepagian di kedua kasus: begitu
+// watchAuthState() akhirnya beneran dapat jawaban (walau telat), jawaban itu
+// tetap diproses seperti biasa di bawah (goToDashboardAfterAuth() dipanggil
+// dobel itu gak masalah; kalau ternyata jawabannya null/logout beneran,
+// resetToAuthScreen() akan mengoreksi balik ke layar login).
 // =====================================================================
-const OFFLINE_GATE_GRACE_MS = 1200;
+const OFFLINE_GATE_GRACE_MS = 1200;  // kasus 1: radio jelas2 mati, cepat yakin
+const SLOW_GATE_GRACE_MS = 3500;     // kasus 2: radio nyala tapi gaada internet/lemot — kasih tenggang lebih, tapi tetap gak lama² amat
 let _authAnswerReceived = false;
-setTimeout(() => {
-  if (_authAnswerReceived) return; // Firebase udah jawab duluan, gak perlu tebak-tebakan lagi
+let _offlineFallbackUsed = false;
+
+function _tryEnterDashboardWithoutFirebase(reasonLabel) {
+  if (_authAnswerReceived || _offlineFallbackUsed) return;
   const hasPriorSession = typeof getRememberedSessionUid === 'function' && !!getRememberedSessionUid();
-  if (navigator.onLine === false && hasPriorSession) {
-    phygoLog('GATE', 'OFFLINE + ada sesi tersimpan, langsung buka dashboard tanpa nunggu Firebase');
-    goToDashboardAfterAuth();
-    _settleAuthGate();
-  }
+  if (!hasPriorSession) return; // gak ada sesi tersimpan sama sekali, ya udah beneran belum login — biarin di layar login
+  _offlineFallbackUsed = true;
+  phygoLog('GATE', reasonLabel + ' — ada sesi tersimpan, langsung buka dashboard tanpa nunggu Firebase');
+  goToDashboardAfterAuth();
+  _settleAuthGate();
+}
+
+setTimeout(() => {
+  if (navigator.onLine === false) _tryEnterDashboardWithoutFirebase('RADIO MATI (offline)');
 }, OFFLINE_GATE_GRACE_MS);
+
+setTimeout(() => {
+  // SENGAJA TANPA cek navigator.onLine di sini — lihat catatan kasus (2) di atas.
+  _tryEnterDashboardWithoutFirebase('Firebase belum jawab setelah ' + SLOW_GATE_GRACE_MS + 'ms (kemungkinan gaada internet walau radio nyala)');
+}, SLOW_GATE_GRACE_MS);
 
 function renderAvatarPicker() {
   const picker = document.getElementById('avatarPicker');
