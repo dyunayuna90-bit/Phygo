@@ -105,6 +105,13 @@ function renderDuelCard(holder){
 // MATCHMAKING — cari lawan acak (Tugas 4 poin 2)
 // =====================================================================
 async function startDuelMatchmaking(){
+  // FIX TAMBAHAN buat bug "udah dibatalkan tapi tetap muncul notif 'tidak
+  // ada lawan'": SEBELUM apa pun, bersih-bersih dulu sisa timer/listener
+  // dari sesi manapun sebelumnya yang mungkin masih nempel (jaga-jaga kalau
+  // ada overlap start/cancel yang bikin duelMM.giveupTimer/pollTimer/
+  // uiTimer ke-timpa sebelum sempat di-clear).
+  duelStopMatchmakingTimers();
+
   const mySession = ++duelMM.session; // sesi baru — otomatis membatalkan sesi lama yg mungkin masih nyangkut di await
   duelMM.searching = true;
   duelMM.matched = false;
@@ -112,13 +119,22 @@ async function startDuelMatchmaking(){
   duelMM.triedUids = new Set();
 
   document.getElementById('duelmatchStatusText').textContent = 'Mencari lawan setara...';
-  document.getElementById('duelmatchStatusChip').classList.remove('duel-match-status-chip-widened');
-  document.getElementById('duelmatchOppLabel').textContent = 'Mencari...';
+  document.getElementById('duelmatchStatusChip').classList.remove('duel-match-status-chip-widened', 'duel-match-status-chip-found');
+  document.getElementById('duelmatchStatusChip').style.width = '';
+  document.getElementById('duelmatchStatusChip').style.height = '';
+  document.getElementById('duelmatchStatusText').style.opacity = '1';
+  const oppLabelInit = document.getElementById('duelmatchOppLabel');
+  oppLabelInit.textContent = 'Mencari...';
+  oppLabelInit.dataset.txt = 'n';
+  oppLabelInit.style.opacity = '1';
   document.getElementById('duelmatchProgressFill').style.width = '0%';
+  document.getElementById('duelmatchProgressFill').classList.remove('widened');
   document.getElementById('duelmatchMyAvatar').innerHTML = '';
   document.getElementById('duelmatchOppAvatar').innerHTML = '?';
   document.getElementById('duelmatchCancelBtn').disabled = false;
+  document.getElementById('duelmatchCancelBtn').style.display = '';
   document.querySelector('#duelmatchCancelBtn .duel-match-cancel-label').textContent = 'Batalkan';
+  document.querySelectorAll('.duel-match-avatar-frame').forEach(f => f.classList.remove('duel-match-frame-found'));
 
   // Gerakin progress bar + teks status tiap 250ms biar mulus (bukan
   // nyentak tiap 3 detik ikut ritme pollTimer/query Firestore).
@@ -169,7 +185,16 @@ async function startDuelMatchmaking(){
     duelMM.pollTimer = setInterval(duelAttemptMatchTick, DUEL_POLL_INTERVAL_MS);
     duelAttemptMatchTick();
 
-    duelMM.giveupTimer = setTimeout(duelGiveUpSearching, DUEL_GIVEUP_AFTER_MS);
+    duelMM.giveupTimer = setTimeout(() => {
+      // FIX: cek ULANG sesi tepat sebelum benar-benar munculin notif "tidak
+      // ada lawan". Ini jaring pengaman TERAKHIR — kalaupun karena alasan
+      // apa pun clearTimeout() di cancelDuelMatchmaking() gagal membatalkan
+      // timer ini (misal timer sempat ke-overwrite sebelum di-clear), guard
+      // di sini memastikan Swal "Lawan Tidak Ditemukan" TETAP TIDAK PERNAH
+      // muncul untuk sesi yang sudah dibatalkan/digantikan sesi baru.
+      if(mySession !== duelMM.session) return;
+      duelGiveUpSearching();
+    }, DUEL_GIVEUP_AFTER_MS);
   } catch(e){
     if(mySession !== duelMM.session) return; // dibatalkan, gak perlu tampilin error apa pun
     console.error('[Phygo] Gagal mulai matchmaking duel:', e);
@@ -191,16 +216,76 @@ function duelUpdateMatchmakingUi(){
   const fill = document.getElementById('duelmatchProgressFill');
   if(fill){ fill.style.width = pct + '%'; fill.classList.toggle('widened', widened); }
 
-  const statusText = document.getElementById('duelmatchStatusText');
-  if(statusText) statusText.textContent = widened
-    ? 'Masih mencari... memperluas kriteria lawan'
-    : 'Mencari lawan setara...';
-
-  const chip = document.getElementById('duelmatchStatusChip');
-  if(chip) chip.classList.toggle('duel-match-status-chip-widened', widened);
+  duelAnimateStatusChipText(
+    widened ? 'Masih mencari... memperluas kriteria lawan' : 'Mencari lawan setara...',
+    widened
+  );
 
   const oppLabel = document.getElementById('duelmatchOppLabel');
-  if(oppLabel) oppLabel.textContent = widened ? 'Memperluas...' : 'Mencari...';
+  if(oppLabel && oppLabel.dataset.txt !== (widened ? 'w' : 'n')){
+    oppLabel.dataset.txt = widened ? 'w' : 'n';
+    oppLabel.style.opacity = '0';
+    setTimeout(()=>{ oppLabel.textContent = widened ? 'Memperluas...' : 'Mencari...'; oppLabel.style.opacity = '1'; }, 150);
+  }
+}
+
+// =====================================================================
+// FIX "TRANSISI CAPSULE STATUS PATAH-PATAH": sebelumnya teks di dalam
+// chip status diganti pakai textContent langsung -> ukuran chip (yang
+// selebar isi tulisannya) langsung LONCAT ke ukuran baru dalam SATU
+// FRAME, dan karena chip ini anggota flex-column, elemen di bawahnya
+// (progress bar, tombol Batal) ikut "nge-flick" terdorong seketika juga.
+//
+// FIX-nya: animasikan lebar & tinggi chip secara eksplisit (dari ukuran
+// SEKARANG ke ukuran TARGET, lewat CSS transition di .duel-match-status-chip)
+// SAMBIL teks-nya di-crossfade (fade out -> ganti isi -> fade in). Karena
+// tinggi/lebar chip berubah secara animasi (bukan loncat instan), reflow
+// elemen-elemen di bawahnya pun ikut mulus mengikuti — bukan nge-flick lagi.
+// =====================================================================
+let _duelChipAnimTimer1 = null, _duelChipAnimTimer2 = null;
+function duelAnimateStatusChipText(newText, widened){
+  const chip = document.getElementById('duelmatchStatusChip');
+  const textEl = document.getElementById('duelmatchStatusText');
+  if(!chip || !textEl) return;
+
+  const isWidenedNow = chip.classList.contains('duel-match-status-chip-widened');
+  if(textEl.textContent === newText && isWidenedNow === widened) return; // gak ada perubahan sama sekali, jangan animasi mubazir tiap 250ms
+
+  clearTimeout(_duelChipAnimTimer1);
+  clearTimeout(_duelChipAnimTimer2);
+
+  // Kunci ukuran SEKARANG sebagai titik AWAL animasi.
+  const startRect = chip.getBoundingClientRect();
+  chip.style.width = startRect.width + 'px';
+  chip.style.height = startRect.height + 'px';
+  void chip.offsetWidth; // paksa browser "commit" ukuran awal ini dulu sebelum lanjut
+
+  textEl.style.opacity = '0';
+
+  _duelChipAnimTimer1 = setTimeout(() => {
+    textEl.textContent = newText;
+    chip.classList.toggle('duel-match-status-chip-widened', widened);
+
+    // Ukur ukuran TARGET (biarin auto sesaat buat ngukur doang).
+    chip.style.width = 'auto';
+    chip.style.height = 'auto';
+    const targetRect = chip.getBoundingClientRect();
+    chip.style.width = startRect.width + 'px';
+    chip.style.height = startRect.height + 'px';
+    void chip.offsetWidth;
+
+    // Sekarang beneran jalanin transisi dari ukuran lama -> ukuran baru.
+    chip.style.width = targetRect.width + 'px';
+    chip.style.height = targetRect.height + 'px';
+    textEl.style.opacity = '1';
+
+    _duelChipAnimTimer2 = setTimeout(() => {
+      // Lepas ukuran fixed setelah animasi kelar, biar tetap responsive
+      // (misal rotate layar / font-scale beda).
+      chip.style.width = '';
+      chip.style.height = '';
+    }, 420);
+  }, 150);
 }
 
 async function duelAttemptMatchTick(){
@@ -306,7 +391,44 @@ function duelFinalizeMatch(duelId){
   duelMM.matched = true;
   duelMM.searching = false;
   duelStopMatchmakingTimers();
-  navigate('duelvs', { duelId });
+  duelPlayMatchFoundAnimation(() => navigate('duelvs', { duelId }));
+}
+
+// =====================================================================
+// ANIMASI "LAWAN DITEMUKAN!" — sebelumnya begitu ketemu lawan, app
+// LANGSUNG lompat ke layar VS tanpa jeda/animasi sama sekali (berasa
+// "tiba-tiba"). Sekarang kasih jeda singkat (~900ms) dengan chip status
+// berubah hijau + centang, kedua bingkai avatar "pop", baru pindah layar.
+// =====================================================================
+function duelPlayMatchFoundAnimation(onDone){
+  const screen = document.getElementById('screen-duelmatch');
+  // Kalau layar ini ternyata udah gak aktif/kelihatan (edge case), langsung
+  // lanjut aja tanpa animasi — gak ada gunanya animasi yang gak keliatan,
+  // dan JANGAN sampai malah nunda navigasi yang seharusnya segera terjadi.
+  if(!screen || !screen.classList.contains('active')){ onDone(); return; }
+
+  duelAnimateStatusChipText('Lawan Ditemukan!', false);
+  const chip = document.getElementById('duelmatchStatusChip');
+  if(chip) chip.classList.add('duel-match-status-chip-found');
+
+  document.querySelectorAll('.duel-match-avatar-frame').forEach(f => f.classList.add('duel-match-frame-found'));
+
+  const oppAvatar = document.getElementById('duelmatchOppAvatar');
+  if(oppAvatar){
+    oppAvatar.innerHTML = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  }
+  const oppLabel = document.getElementById('duelmatchOppLabel');
+  if(oppLabel){
+    oppLabel.style.opacity = '0';
+    setTimeout(()=>{ oppLabel.textContent = 'Siap!'; oppLabel.style.opacity = '1'; }, 150);
+  }
+
+  const progressTrack = document.getElementById('duelmatchProgressFill');
+  if(progressTrack && progressTrack.parentElement) progressTrack.parentElement.style.opacity = '0';
+  const cancelBtn = document.getElementById('duelmatchCancelBtn');
+  if(cancelBtn){ cancelBtn.style.opacity = '0'; cancelBtn.disabled = true; }
+
+  setTimeout(onDone, 900);
 }
 
 function duelStopMatchmakingTimers(){
