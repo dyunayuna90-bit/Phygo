@@ -1969,20 +1969,124 @@ html[data-theme="lime"] .duel-card{
 .duel-card-go { flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 13px 13px 13px 4px; background: rgba(255,255,255,0.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); }
 .duel-card-go svg { width: 19px; height: 19px; }
 
-/* --- Layar Matchmaking --- */
-.duel-match-shell { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 20px; text-align: center; }
-.duel-match-avatars { display: flex; align-items: center; gap: 20px; }
-.duel-match-avatar-box {
-  width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: var(--surface-c-high);
-  display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: var(--on-surface-var);
-  box-shadow: var(--shadow-md);
+/* --- Layar Matchmaking (Material 3 Expressive) --- */
+.duel-match-shell {
+  flex: 1; position: relative; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 28px; padding: 20px; text-align: center; overflow: hidden;
 }
+
+/* Cahaya besar + 2 "blob" warna lembut mengambang di belakang — ciri khas
+   M3 Expressive: layer dekoratif bergerak pelan, bukan sekadar background polos. */
+.duel-match-glow {
+  position: absolute; top: 50%; left: 50%; width: 340px; height: 340px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 30%, transparent) 0%, transparent 68%);
+  filter: blur(6px); animation: duelGlowBreathe 3.4s ease-in-out infinite; pointer-events: none;
+}
+@keyframes duelGlowBreathe { 0%,100%{ opacity:0.55; transform:translate(-50%,-50%) scale(0.92); } 50%{ opacity:1; transform:translate(-50%,-50%) scale(1.08); } }
+
+.duel-match-blob { position: absolute; border-radius: 50%; filter: blur(30px); opacity: 0.35; pointer-events: none; }
+.duel-match-blob-a { width: 180px; height: 180px; top: 12%; left: -8%; background: var(--primary); animation: duelBlobDriftA 9s ease-in-out infinite; }
+.duel-match-blob-b { width: 150px; height: 150px; bottom: 14%; right: -6%; background: var(--fire-2, var(--primary-soft)); animation: duelBlobDriftB 11s ease-in-out infinite; }
+@keyframes duelBlobDriftA { 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(18px,14px) scale(1.15); } }
+@keyframes duelBlobDriftB { 0%,100%{ transform:translate(0,0) scale(1); } 50%{ transform:translate(-16px,-10px) scale(1.12); } }
+
+.duel-match-arena { position: relative; z-index: 1; display: flex; align-items: center; gap: 18px; }
+.duel-match-player { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 92px; }
+.duel-match-player-label { font-size: 12px; font-weight: 800; letter-spacing: 0.3px; color: var(--on-surface-var); }
+
+/* Bingkai squircle (asimetris) — bukan lingkaran polos — konsisten sama
+   bahasa bentuk app ini (lihat .gami-card, .duel-card, dst). */
+.duel-match-avatar-frame {
+  position: relative; width: 92px; height: 92px; border-radius: 30px 30px 30px 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.duel-match-avatar-frame-me {
+  background: linear-gradient(145deg, var(--primary-soft), var(--primary));
+  box-shadow: 0 10px 0 var(--primary-container), 0 10px 18px rgba(0,0,0,0.35), inset 0 3px 6px rgba(255,255,255,0.35);
+  animation: duelMeSettle .5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes duelMeSettle { 0%{ transform:scale(0.6) rotate(-8deg); opacity:0; } 100%{ transform:scale(1) rotate(0); opacity:1; } }
+.duel-match-avatar-box {
+  width: 76px; height: 76px; border-radius: 24px 24px 24px 8px; overflow: hidden;
+  background: var(--surface-c-high); display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 900; color: var(--on-surface-var);
+}
+.duel-match-avatar-frame-me .duel-match-avatar-box { background: transparent; }
 .duel-match-avatar-box svg, .duel-match-avatar-box img { width: 100%; height: 100%; display: block; }
-.duel-match-avatar-searching { border: 2px dashed var(--outline-var); animation: duelPulseBox 1.4s ease-in-out infinite; }
-@keyframes duelPulseBox { 0%,100%{ opacity:0.5; } 50%{ opacity:1; } }
-.duel-match-vs-mark { font-family: var(--font-mono); font-weight: 900; font-size: 18px; color: var(--on-surface-var); }
-.duel-match-spinner { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--surface-c-high); border-top-color: var(--primary); animation: alSpin .8s linear infinite; }
-.duel-match-status { font-size: 14.5px; font-weight: 600; color: var(--on-surface-var); max-width: 280px; }
+
+/* Bingkai lawan: 2 cincin radar yang membesar & memudar bergantian —
+   kesan "lagi nyari sinyal", jauh lebih hidup dibanding border dashed polos. */
+.duel-match-avatar-frame-opp { background: var(--surface-c-high); box-shadow: inset 0 0 0 2px var(--outline-var), var(--shadow-sm); }
+.duel-match-avatar-box-opp { color: var(--outline); animation: duelOppIconPulse 1.6s ease-in-out infinite; }
+@keyframes duelOppIconPulse { 0%,100%{ opacity:0.45; } 50%{ opacity:0.9; } }
+.duel-match-radar-ring {
+  position: absolute; inset: 0; border-radius: 30px 30px 30px 12px;
+  border: 2px solid var(--primary); opacity: 0; animation: duelRadarPing 2.2s cubic-bezier(0.2,0.6,0.4,1) infinite;
+}
+.duel-match-radar-ring-2 { animation-delay: 1.1s; }
+@keyframes duelRadarPing { 0%{ transform:scale(1); opacity:0.65; } 100%{ transform:scale(1.55); opacity:0; } }
+
+/* Badge "VS" — chip gradasi tebal dengan sedikit "goyang" napas, bukan
+   teks polos abu-abu. */
+.duel-match-vs-badge {
+  flex-shrink: 0; width: 44px; height: 44px; border-radius: 16px 16px 16px 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(145deg, var(--duel-grad-2, var(--primary)), var(--duel-grad-1, var(--primary-soft)));
+  box-shadow: 0 4px 0 var(--duel-shadow, var(--primary-container)), 0 6px 12px rgba(0,0,0,0.3);
+  animation: duelVsBreathe 2.6s ease-in-out infinite;
+}
+.duel-match-vs-badge-text { font-family: var(--font-mono); font-weight: 900; font-size: 14px; color: #fff; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+@keyframes duelVsBreathe { 0%,100%{ transform:scale(1) rotate(0deg); } 50%{ transform:scale(1.08) rotate(-4deg); } }
+
+/* Chip status — pil elevated dengan titik "live" berdenyut, gantiin teks
+   polos di tengah layar. */
+.duel-match-status-chip {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 10px;
+  max-width: 300px; padding: 12px 20px; border-radius: var(--r-pill);
+  background: var(--surface-c-high); box-shadow: var(--shadow-sm);
+  border: 1px solid var(--outline-var); transition: background .3s ease, border-color .3s ease;
+}
+.duel-match-status-dot-wrap { position: relative; width: 9px; height: 9px; flex-shrink: 0; }
+.duel-match-status-dot { position: absolute; inset: 0; border-radius: 50%; background: var(--primary); }
+.duel-match-status-dot-ping { position: absolute; inset: 0; border-radius: 50%; background: var(--primary); animation: duelDotPing 1.5s cubic-bezier(0.2,0.6,0.4,1) infinite; }
+@keyframes duelDotPing { 0%{ transform:scale(1); opacity:0.7; } 100%{ transform:scale(2.6); opacity:0; } }
+.duel-match-status { font-size: 13.5px; font-weight: 700; color: var(--on-surface); line-height: 1.35; }
+
+/* Kondisi "kriteria diperluas" (>10 detik) — chip ganti warna jadi aksen
+   fire/hangat, dot ping ikut ganti warna, biar user sadar ada perubahan. */
+.duel-match-status-chip-widened { background: var(--fire-c, var(--secondary-container)); border-color: transparent; }
+.duel-match-status-chip-widened .duel-match-status-dot,
+.duel-match-status-chip-widened .duel-match-status-dot-ping { background: var(--fire-2, var(--primary)); }
+.duel-match-status-chip-widened .duel-match-status { color: var(--fire-on-c, var(--on-secondary-container)); }
+
+/* Progress bar elapsed-time (0 -> 45 detik) — kasih user gambaran seberapa
+   lama lagi sebelum "nyerah", bukan cuma spinner tak berujung. */
+.duel-match-progress-track {
+  position: relative; z-index: 1; width: 100%; max-width: 240px; height: 6px;
+  border-radius: var(--r-pill); background: var(--surface-c-high); overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+.duel-match-progress-fill {
+  height: 100%; width: 0%; border-radius: var(--r-pill);
+  background: linear-gradient(90deg, var(--primary-soft), var(--primary));
+  transition: width .3s linear, background .4s ease;
+}
+.duel-match-status-chip-widened ~ .duel-match-progress-track .duel-match-progress-fill,
+.duel-match-progress-fill.widened { background: linear-gradient(90deg, var(--fire-2, var(--primary-soft)), var(--fire-3, var(--primary))); }
+
+/* Tombol batal — tonal squircle, bukan ghost-button generik. */
+.duel-match-cancel-btn {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 20px 20px 20px 8px; font-size: 14.5px; font-weight: 800;
+  letter-spacing: 0.3px; color: var(--error); background: var(--error-container);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--error) 35%, var(--error-container)), var(--shadow-sm);
+  transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1);
+}
+.duel-match-cancel-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--error) 35%, var(--error-container));
+}
 
 /* --- Layar VS + Countdown --- */
 .duel-vs-shell { flex: 1; display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px; }
