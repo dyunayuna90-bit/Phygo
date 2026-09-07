@@ -37,6 +37,11 @@ const duelMM = {
   searching: false, myUid: null, myProfile: null, startedAt: 0,
   unsubOwnQueue: null, pollTimer: null, giveupTimer: null, matched: false,
   triedUids: new Set(),
+  // Timer UI (lihat duelUpdateMatchmakingUi) — misahin dari pollTimer di
+  // atas karena ini cuma buat gerakin progress bar/teks secara halus tiap
+  // sepersekian detik, BUKAN buat query Firestore (itu tetap tugas
+  // pollTimer/duelAttemptMatchTick, jangan digabung biar gak boros baca).
+  uiTimer: null,
   // FIX BUG "PENCARIAN TETAP JALAN DI BELAKANG WALAU SUDAH DIBATALKAN":
   // startDuelMatchmaking() & duelAttemptMatchTick() sama-sama ASYNC (ada
   // beberapa `await` network di tengah jalan). Kalau user pencet "Batalkan"
@@ -107,10 +112,18 @@ async function startDuelMatchmaking(){
   duelMM.triedUids = new Set();
 
   document.getElementById('duelmatchStatusText').textContent = 'Mencari lawan setara...';
+  document.getElementById('duelmatchStatusChip').classList.remove('duel-match-status-chip-widened');
+  document.getElementById('duelmatchOppLabel').textContent = 'Mencari...';
+  document.getElementById('duelmatchProgressFill').style.width = '0%';
   document.getElementById('duelmatchMyAvatar').innerHTML = '';
   document.getElementById('duelmatchOppAvatar').innerHTML = '?';
   document.getElementById('duelmatchCancelBtn').disabled = false;
-  document.getElementById('duelmatchCancelBtn').textContent = 'Batalkan';
+  document.querySelector('#duelmatchCancelBtn .duel-match-cancel-label').textContent = 'Batalkan';
+
+  // Gerakin progress bar + teks status tiap 250ms biar mulus (bukan
+  // nyentak tiap 3 detik ikut ritme pollTimer/query Firestore).
+  duelMM.uiTimer = setInterval(duelUpdateMatchmakingUi, 250);
+  duelUpdateMatchmakingUi();
 
   const me = fbAuth.currentUser;
   if(!me){ navigate('home', {}, true); return; }
@@ -165,14 +178,36 @@ async function startDuelMatchmaking(){
   }
 }
 
+// Digerakkan tiap 250ms (lihat duelMM.uiTimer) — SEMUA update tampilan
+// yang gak butuh network (progress bar, teks status, chip "diperluas")
+// dipusatkan di sini biar mulus, terpisah dari duelAttemptMatchTick yang
+// tugasnya khusus query Firestore tiap beberapa detik.
+function duelUpdateMatchmakingUi(){
+  if(!duelMM.searching || duelMM.matched) return;
+  const elapsed = Date.now() - duelMM.startedAt;
+  const widened = elapsed >= DUEL_WIDEN_AFTER_MS;
+  const pct = Math.max(0, Math.min(100, (elapsed / DUEL_GIVEUP_AFTER_MS) * 100));
+
+  const fill = document.getElementById('duelmatchProgressFill');
+  if(fill){ fill.style.width = pct + '%'; fill.classList.toggle('widened', widened); }
+
+  const statusText = document.getElementById('duelmatchStatusText');
+  if(statusText) statusText.textContent = widened
+    ? 'Masih mencari... memperluas kriteria lawan'
+    : 'Mencari lawan setara...';
+
+  const chip = document.getElementById('duelmatchStatusChip');
+  if(chip) chip.classList.toggle('duel-match-status-chip-widened', widened);
+
+  const oppLabel = document.getElementById('duelmatchOppLabel');
+  if(oppLabel) oppLabel.textContent = widened ? 'Memperluas...' : 'Mencari...';
+}
+
 async function duelAttemptMatchTick(){
   const mySession = duelMM.session; // catat sesi SEKARANG, dicek ulang tiap habis await di bawah
   if(duelMM.matched || !duelMM.searching) return;
   const elapsed = Date.now() - duelMM.startedAt;
   const widened = elapsed >= DUEL_WIDEN_AFTER_MS;
-  document.getElementById('duelmatchStatusText').textContent = widened
-    ? 'Masih mencari... memperluas kriteria lawan'
-    : 'Mencari lawan setara...';
 
   try{
     const snap = await db.collection('matchmakingQueue').where('status', '==', 'waiting').limit(25).get();
@@ -277,8 +312,9 @@ function duelFinalizeMatch(duelId){
 function duelStopMatchmakingTimers(){
   if(duelMM.pollTimer) clearInterval(duelMM.pollTimer);
   if(duelMM.giveupTimer) clearTimeout(duelMM.giveupTimer);
+  if(duelMM.uiTimer) clearInterval(duelMM.uiTimer);
   if(duelMM.unsubOwnQueue) duelMM.unsubOwnQueue();
-  duelMM.pollTimer = null; duelMM.giveupTimer = null; duelMM.unsubOwnQueue = null;
+  duelMM.pollTimer = null; duelMM.giveupTimer = null; duelMM.uiTimer = null; duelMM.unsubOwnQueue = null;
 }
 
 function cancelDuelMatchmaking(){
