@@ -438,14 +438,48 @@
     <!-- ===== MODE DUEL — Matchmaking ===== -->
     <section class="screen" id="screen-duelmatch">
       <div class="duel-match-shell">
-        <div class="duel-match-avatars">
-          <div class="duel-match-avatar-box" id="duelmatchMyAvatar"></div>
-          <div class="duel-match-vs-mark">VS</div>
-          <div class="duel-match-avatar-box duel-match-avatar-searching" id="duelmatchOppAvatar">?</div>
+        <div class="duel-match-glow" aria-hidden="true"></div>
+        <div class="duel-match-blob duel-match-blob-a" aria-hidden="true"></div>
+        <div class="duel-match-blob duel-match-blob-b" aria-hidden="true"></div>
+
+        <div class="duel-match-arena">
+          <div class="duel-match-player">
+            <div class="duel-match-avatar-frame duel-match-avatar-frame-me">
+              <div class="duel-match-avatar-box" id="duelmatchMyAvatar"></div>
+            </div>
+            <span class="duel-match-player-label">Kamu</span>
+          </div>
+
+          <div class="duel-match-vs-badge">
+            <span class="duel-match-vs-badge-text">VS</span>
+          </div>
+
+          <div class="duel-match-player">
+            <div class="duel-match-avatar-frame duel-match-avatar-frame-opp">
+              <span class="duel-match-radar-ring"></span>
+              <span class="duel-match-radar-ring duel-match-radar-ring-2"></span>
+              <div class="duel-match-avatar-box duel-match-avatar-box-opp" id="duelmatchOppAvatar">?</div>
+            </div>
+            <span class="duel-match-player-label" id="duelmatchOppLabel">Mencari...</span>
+          </div>
         </div>
-        <div class="duel-match-spinner"></div>
-        <p class="duel-match-status" id="duelmatchStatusText">Mencari lawan setara...</p>
-        <button class="btn btn-ghost btn-block ripple-host" id="duelmatchCancelBtn" style="max-width:280px;">Batalkan</button>
+
+        <div class="duel-match-status-chip" id="duelmatchStatusChip">
+          <span class="duel-match-status-dot-wrap">
+            <span class="duel-match-status-dot"></span>
+            <span class="duel-match-status-dot-ping"></span>
+          </span>
+          <p class="duel-match-status" id="duelmatchStatusText">Mencari lawan setara...</p>
+        </div>
+
+        <div class="duel-match-progress-track" aria-hidden="true">
+          <div class="duel-match-progress-fill" id="duelmatchProgressFill"></div>
+        </div>
+
+        <button class="duel-match-cancel-btn ripple-host" id="duelmatchCancelBtn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <span class="duel-match-cancel-label">Batalkan</span>
+        </button>
       </div>
     </section>
 
