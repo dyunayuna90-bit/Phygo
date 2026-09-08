@@ -1822,6 +1822,22 @@ html[data-theme="lime"] .survival-card{
 }
 .m3-modal-body::-webkit-scrollbar { display: none; }
 
+/* FIX BUG "BOTTOM SHEET CARI ORANG NGE-FLICK": .m3-modal sebelumnya cuma
+   punya max-height (bukan height tetap), jadi tinggi sheet ini betul-betul
+   ngikutin BANYAK-SEDIKITNYA hasil pencarian — ketik kata kunci yang gak
+   ketemu -> sheet mendadak pendek (cuma 1 baris pesan kosong), ketik yang
+   ketemu banyak -> sheet mendadak tinggi lagi. Kerasa "flick"/patah-patah
+   tiap kali hasil pencarian berubah. FIX: modal Tambah Teman SEKARANG
+   punya tinggi TETAP (bukan cuma max) — jadi ukuran sheet-nya gak pernah
+   berubah sama sekali selama modal ini kebuka, apa pun hasil pencariannya;
+   yang berubah cukup ISI di dalamnya (scroll internal kalau hasil banyak,
+   atau pesan kosong yang duduk pas di tengah kalau gak ketemu).
+   Modal-modal lain (Inbox/Edit Profil/dst) TIDAK disentuh, masih pakai
+   perilaku auto-height bawaan seperti biasa. */
+#modalAddFriend {
+  height: 72vh;
+}
+
 /* ---------- Baris hasil pencarian (modal Tambah Teman) & baris undangan (modal Inbox) ---------- */
 .social-result-row, .social-inbox-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
