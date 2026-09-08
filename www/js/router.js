@@ -10,6 +10,17 @@ function showScreen(name, opts){
   if(name !== 'history-wizard' && hwEls.body){
     gsap.killTweensOf(hwEls.body.querySelectorAll('*'));
   }
+  // FIX BUG "SURVIVAL MASIH JALAN DI LATAR BELAKANG WALAU UDAH DI-CLOSE":
+  // kalau user PINDAH KELUAR dari layar Survival (lewat tombol back HP —
+  // layar ini sengaja gak punya tombol X sendiri), paksa berhentikan semua
+  // timer sesi Survival yang sedang berjalan (lihat survAbandonGame() di
+  // survival.js). Kalau ternyata ini transisi KEMENANGAN/KEKALAHAN yang
+  // memang wajar (survival -> survivalresult), pemanggilan ini tetap aman
+  // & gak merusak apa-apa — renderSurvivalResultScreen() sendiri sudah
+  // bersih-bersih timer yang sama.
+  if(name !== 'survival' && document.getElementById('screen-survival').classList.contains('active') && typeof survAbandonGame === 'function'){
+    survAbandonGame();
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
 

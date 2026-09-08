@@ -187,7 +187,36 @@ function survGenerateQuestion(lastTopic){
 // HUD — lihat survUpdateRecordBadge()). recordBroken = penanda supaya
 // animasi/efek "pecah rekor" (lihat survCheckRecordBreak()) cuma sekali
 // nyala per sesi, gak berulang tiap poin nambah setelah rekor kelewatan.
-const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false, questionStartedAt: null, recordAtStart: 0, recordBroken: false };
+const survState = { lives: SURV_LIVES_START, score: 0, lastTopic: null, current: null, timeLeft: SURV_QUESTION_TIME, timerId: null, deadline: null, answering: false, questionStartedAt: null, recordAtStart: 0, recordBroken: false, countdownTimerId: null };
+
+// =====================================================================
+// FIX BUG "SURVIVAL MASIH JALAN DI LATAR BELAKANG WALAU UDAH DI-CLOSE":
+// layar Survival sebelumnya TIDAK PUNYA tombol keluar/X sama sekali —
+// satu-satunya cara "menutup" mode ini di tengah permainan adalah tombol
+// back HP. Masalahnya, survStartTimer() jalan pakai setInterval yang DIIKAT
+// ke survState (objek global), BUKAN ke layar Survival itu sendiri — jadi
+// walau user udah pindah ke layar lain (misal Home) lewat tombol back,
+// timer-nya TETAP JALAN TERUS di belakang layar. Begitu waktu abis, alur
+// survTick -> survHandleTimeout -> survLoseLife -> survGameOver tetap
+// berjalan seperti biasa, dan survGameOver() MEMAKSA pindah ke layar hasil
+// (survivalresult) — user yang udah pindah ke Home pun TIBA-TIBA dilempar
+// ke layar "kekalahan" tanpa peringatan sama sekali.
+//
+// FIX: fungsi ini dipanggil dari router.js setiap kali user PINDAH KELUAR
+// dari layar Survival (lihat showScreen() di router.js) — menghentikan
+// semua timer terkait Survival secara paksa, jadi sesi yang ditinggalkan
+// beneran BERHENTI TOTAL, bukan cuma "gak keliatan doang".
+// =====================================================================
+function survAbandonGame(){
+  clearInterval(survState.timerId);
+  survState.timerId = null;
+  survState.deadline = null;
+  survState.answering = true; // cegah proses lanjutan (misal timeout yg lagi diproses) nyelonong lanjut
+
+  if(survState.countdownTimerId){ clearInterval(survState.countdownTimerId); survState.countdownTimerId = null; }
+  const overlay = document.getElementById('survCountdownOverlay');
+  if(overlay) overlay.classList.remove('show');
+}
 
 function renderSurvivalCard(holder){
   if(!holder) return;
@@ -230,10 +259,11 @@ function startSurvivalGame(){
   let i = 0;
   numEl.textContent = seq[0];
   gsap.fromTo(numEl, {scale:0.5, opacity:0}, {scale:1, opacity:1, duration:0.3, ease:'back.out(2)'});
-  const tick = setInterval(()=>{
+  survState.countdownTimerId = setInterval(()=>{
     i++;
     if(i >= seq.length){
-      clearInterval(tick);
+      clearInterval(survState.countdownTimerId);
+      survState.countdownTimerId = null;
       overlay.classList.remove('show');
       survNextQuestion();
       return;

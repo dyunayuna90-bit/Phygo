@@ -204,9 +204,16 @@ async function startDuelMatchmaking(){
 }
 
 // Digerakkan tiap 250ms (lihat duelMM.uiTimer) — SEMUA update tampilan
-// yang gak butuh network (progress bar, teks status, chip "diperluas")
+// yang gak butuh network (progress bar, warna chip "diperluas")
 // dipusatkan di sini biar mulus, terpisah dari duelAttemptMatchTick yang
 // tugasnya khusus query Firestore tiap beberapa detik.
+//
+// CATATAN: teks capsule status SENGAJA gak ganti-ganti lagi jadi "Masih
+// mencari... memperluas kriteria lawan" (dulu ada, dihapus atas
+// permintaan — kepanjangan/ganggu). Sinyal "kriteria udah diperluas"
+// sekarang CUKUP lewat perubahan warna chip & progress bar aja (lihat
+// class duel-match-status-chip-widened / .widened di CSS), teksnya tetap
+// "Mencari lawan setara..." terus dari awal sampai ketemu.
 function duelUpdateMatchmakingUi(){
   if(!duelMM.searching || duelMM.matched) return;
   const elapsed = Date.now() - duelMM.startedAt;
@@ -216,17 +223,10 @@ function duelUpdateMatchmakingUi(){
   const fill = document.getElementById('duelmatchProgressFill');
   if(fill){ fill.style.width = pct + '%'; fill.classList.toggle('widened', widened); }
 
-  duelAnimateStatusChipText(
-    widened ? 'Masih mencari... memperluas kriteria lawan' : 'Mencari lawan setara...',
-    widened
-  );
+  duelAnimateStatusChipText('Mencari lawan setara...', widened);
 
   const oppLabel = document.getElementById('duelmatchOppLabel');
-  if(oppLabel && oppLabel.dataset.txt !== (widened ? 'w' : 'n')){
-    oppLabel.dataset.txt = widened ? 'w' : 'n';
-    oppLabel.style.opacity = '0';
-    setTimeout(()=>{ oppLabel.textContent = widened ? 'Memperluas...' : 'Mencari...'; oppLabel.style.opacity = '1'; }, 150);
-  }
+  if(oppLabel) oppLabel.textContent = 'Mencari...';
 }
 
 // =====================================================================
