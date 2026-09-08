@@ -65,6 +65,7 @@ function svgIcon(name){
     // Dipakai di Halaman Hasil Duel (duel.js) buat kasus Seri — timbangan
     // seimbang, biar beda jelas sama trophy (menang) & cross (kalah).
     scale: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M4 7h16"/><path d="M4 7l-2.5 6a4 4 0 0 0 8 0L7 7"/><path d="M17 7l-2.5 6a4 4 0 0 0 8 0L20 7"/><path d="M8 21h8"/></svg>',
+    clock: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>',
     pencil: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'
   };
   return icons[name] || '';

@@ -159,9 +159,21 @@ function renderLevelMap(){
 
     const lbl = document.createElement('div');
     lbl.className = 'j-node-label';
-    lbl.textContent = `Lvl ${id}: ${L.title.split(' ')[0]}`; 
+    lbl.textContent = `Lvl ${id}: ${L.title.split(' ')[0]}`;
 
-    wrap.appendChild(btn); wrap.appendChild(lbl); mapEl.appendChild(wrap);
+    const statusChip = document.createElement('span');
+    const isUnlockedLockedVisual = app.justUnlockedLevel === id;
+    const statusKey = isUnlockedLockedVisual ? 'locked' : (locked ? 'locked' : (done ? 'done' : 'active'));
+    statusChip.className = `j-node-status j-node-status-${statusKey}`;
+    statusChip.textContent = statusKey === 'done' ? 'Selesai' : (statusKey === 'active' ? 'Berjalan' : 'Terkunci');
+
+    wrap.appendChild(btn);
+    const labelCol = document.createElement('div');
+    labelCol.className = 'j-node-label-col';
+    labelCol.appendChild(lbl);
+    labelCol.appendChild(statusChip);
+    wrap.appendChild(labelCol);
+    mapEl.appendChild(wrap);
     apply3DTilt(btn, 25, 0); 
   });
 
@@ -204,7 +216,7 @@ function buildHistoryCards(){
       <div class="history-card-icon-bg">${svgIcon(L.icon)}</div>
       <p class="history-card-desc">${L.summary}</p>
       <div class="history-card-footer">
-        <span class="history-card-count">${L.arsip.length} Arsip Tercatat</span>
+        <span class="history-card-count">${svgIcon('history')} ${L.arsip.length} Arsip Tercatat</span>
         <span class="history-card-cta">${svgIcon('chevronRight')}</span>
       </div>
     `;
@@ -554,6 +566,7 @@ async function renderProfileScreen(){
             <button class="rank-toggle-btn ripple-host" data-track="duel">Duel</button>
           </div>
           <button class="profile-rank ripple-host" id="profileRankDisplay" style="color: ${rankSolo.color};">
+            ${svgIcon('trophy')}
             <span class="profile-rank-badge">${rankSolo.rank}</span>
             <span class="profile-rank-poin">${poinSolo.toLocaleString('id-ID')} Poin</span>
             ${svgIcon('chevronRight')}
@@ -567,18 +580,22 @@ async function renderProfileScreen(){
 
       <div class="profile-stats-grid">
         <div class="profile-stat-box">
+          <span class="profile-stat-icon">${svgIcon('user')}</span>
           <span class="profile-stat-label">Nama</span>
           <span class="profile-stat-value">${userProfile.name || '-'}</span>
         </div>
         <div class="profile-stat-box">
+          <span class="profile-stat-icon">${svgIcon('users')}</span>
           <span class="profile-stat-label">Gender</span>
           <span class="profile-stat-value">${userProfile.gender || '-'}</span>
         </div>
         <div class="profile-stat-box">
+          <span class="profile-stat-icon">${svgIcon('clock')}</span>
           <span class="profile-stat-label">Umur</span>
           <span class="profile-stat-value">${userProfile.age || '-'} tahun</span>
         </div>
         <div class="profile-stat-box">
+          <span class="profile-stat-icon">${svgIcon('barChart')}</span>
           <span class="profile-stat-label">Musim Ini</span>
           <span class="profile-stat-value">${(userProfile.seasonPoin || 0).toLocaleString('id-ID')}</span>
         </div>
@@ -588,14 +605,14 @@ async function renderProfileScreen(){
         <h3 class="profile-section-title">Breakdown Poin</h3>
         <div class="profile-breakdown">
           <div class="breakdown-row">
-            <span class="breakdown-label">Poin Survival</span>
+            <span class="breakdown-label">${svgIcon('fire')} Poin Survival</span>
             <span class="breakdown-value">${pctSolo}% (${poinSolo.toLocaleString('id-ID')})</span>
           </div>
           <div class="breakdown-bar">
             <div class="breakdown-bar-fill solo" style="width: ${pctSolo}%; background: var(--primary);"></div>
           </div>
           <div class="breakdown-row" style="margin-top: 16px;">
-            <span class="breakdown-label">Poin Duel</span>
+            <span class="breakdown-label">${svgIcon('swords')} Poin Duel</span>
             <span class="breakdown-value">${pctDuel}% (${poinDuel.toLocaleString('id-ID')})</span>
           </div>
           <div class="breakdown-bar">
@@ -608,10 +625,12 @@ async function renderProfileScreen(){
         <h3 class="profile-section-title">Komunitas</h3>
         <div class="profile-social-grid">
           <button class="profile-social-box ripple-host" id="profileFollowersBox">
+            <span class="profile-social-icon">${svgIcon('users')}</span>
             <span class="profile-social-count" id="profileFollowersCount">0</span>
             <span class="profile-social-label">Pengikut</span>
           </button>
           <button class="profile-social-box ripple-host" id="profileFollowingBox">
+            <span class="profile-social-icon">${svgIcon('personAdd')}</span>
             <span class="profile-social-count" id="profileFollowingCount">0</span>
             <span class="profile-social-label">Mengikuti</span>
           </button>
@@ -652,6 +671,7 @@ async function renderProfileScreen(){
       const poin = activeRankTrack === 'solo' ? poinSolo : poinDuel;
       rankDisplayEl.style.color = rank.color;
       rankDisplayEl.innerHTML = `
+        ${svgIcon('trophy')}
         <span class="profile-rank-badge">${rank.rank}</span>
         <span class="profile-rank-poin">${poin.toLocaleString('id-ID')} Poin</span>
         ${svgIcon('chevronRight')}

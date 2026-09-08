@@ -741,22 +741,22 @@ async function openProfileViewModal(uid, fallbackInfo) {
             </div>
           </div>
         </div>
-        <div class="profile-stats-grid" style="padding:0 0 20px;">
-          <div class="profile-stat-box">
-            <span class="profile-stat-label">Nama</span>
-            <span class="profile-stat-value">${escapeHtml(u.name || '-')}</span>
+        <div class="pv-stats-grid" style="padding:0 0 20px;">
+          <div class="pv-stat-box">
+            <span class="pv-stat-label">Nama</span>
+            <span class="pv-stat-value">${escapeHtml(u.name || '-')}</span>
           </div>
-          <div class="profile-stat-box">
-            <span class="profile-stat-label">Gender</span>
-            <span class="profile-stat-value">${escapeHtml(u.gender || '-')}</span>
+          <div class="pv-stat-box">
+            <span class="pv-stat-label">Gender</span>
+            <span class="pv-stat-value">${escapeHtml(u.gender || '-')}</span>
           </div>
-          <div class="profile-stat-box">
-            <span class="profile-stat-label">Umur</span>
-            <span class="profile-stat-value">${u.age || '-'} tahun</span>
+          <div class="pv-stat-box">
+            <span class="pv-stat-label">Umur</span>
+            <span class="pv-stat-value">${u.age || '-'} tahun</span>
           </div>
-          <div class="profile-stat-box">
-            <span class="profile-stat-label">Musim Ini</span>
-            <span class="profile-stat-value">${(u.seasonPoin || 0).toLocaleString('id-ID')}</span>
+          <div class="pv-stat-box">
+            <span class="pv-stat-label">Musim Ini</span>
+            <span class="pv-stat-value">${(u.seasonPoin || 0).toLocaleString('id-ID')}</span>
           </div>
         </div>
         <div class="profile-view-actions" id="profileViewActions"></div>
