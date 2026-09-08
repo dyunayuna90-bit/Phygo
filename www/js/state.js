@@ -25,8 +25,22 @@ const hwEls = {
   primary: document.getElementById('hwPrimary'),
 };
 
+// =====================================================================
+// FIX "PROGRES IKUT NYANGKUT DI DEVICE WALAU GANTI AKUN": completed,
+// lastProgress, dan streak dulu diisi langsung dari localStorage di sini
+// (nempel per-DEVICE, bukan per-AKUN) — jadi kalau logout lalu login pakai
+// akun lain di HP yang sama, progres akun SEBELUMNYA ikut kebawa salah ke
+// akun baru. Sekarang semuanya MULAI KOSONG di sini, dan baru diisi dari
+// Firestore (field completedLevels/lastProgress/streakCount/streakLastDate
+// di dokumen users/{uid}) lewat hydrateAppProgressFromFirestore() di
+// auth.js — dipanggil sekali tiap dashboard dibuka setelah login (lihat
+// goToDashboardAfterAuth di auth-ui.js), jadi datanya selalu sesuai akun
+// yang SEDANG login saat itu, bukan sisa akun sebelumnya.
 const app = {
-  completed: new Set(JSON.parse(localStorage.getItem('phygo_completed') || '[]')),
+  completed: new Set(),
+  survivalHighScore: 0,
+  lastProgress: null,
+  streak: { count: 0, lastDate: null },
   justUnlockedLevel: null,
   // Tab dashboard terakhir (home/level/history/settings) yang aktif — dipakai
   // router.js & screens.js supaya keluar dari mode belajar balik ke tab asal.
@@ -43,29 +57,28 @@ const wizard = { level:1, step:0, previousStep:0 };
 const historyWizard = { level:1, step:0, previousStep:0 };
 
 // ===== "Notifikasi Aktivitas" — mengingat posisi wizard/simulasi terakhir
-// milik level yang BELUM diselesaikan. Disimpan ke localStorage setiap kali
-// user masuk/pindah step wizard (lihat router.js), jadi datanya tetap ada
-// walau app di-close paksa / out tiba-tiba, dan dihapus begitu levelnya
-// resmi diselesaikan (lihat runQuizFbAction di screens.js).
-const LAST_PROGRESS_KEY = 'phygo_last_progress';
-
+// milik level yang BELUM diselesaikan. Sekarang disimpan murni ke Firestore
+// (field lastProgress di dokumen users/{uid}, lihat saveLastProgressToFirestore/
+// clearLastProgressInFirestore di auth.js) setiap kali user masuk/pindah step
+// wizard (lihat router.js) — di-cache di app.lastProgress SELAMA sesi app ini
+// berjalan (bukan localStorage lagi), dan dihapus begitu levelnya resmi
+// diselesaikan (lihat runQuizFbAction di screens.js).
 function saveLastProgress(level, step){
-  try{ localStorage.setItem(LAST_PROGRESS_KEY, JSON.stringify({ level, step, ts: Date.now() })); }catch(e){}
+  app.lastProgress = { level, step };
+  if(typeof saveLastProgressToFirestore === 'function') saveLastProgressToFirestore(level, step);
 }
 function getLastProgress(){
-  try{
-    const raw = localStorage.getItem(LAST_PROGRESS_KEY);
-    if(!raw) return null;
-    const data = JSON.parse(raw);
-    if(!data || typeof data.level !== 'number' || typeof data.step !== 'number') return null;
-    return data;
-  }catch(e){ return null; }
+  return app.lastProgress;
 }
 function clearLastProgress(){
-  try{ localStorage.removeItem(LAST_PROGRESS_KEY); }catch(e){}
+  app.lastProgress = null;
+  if(typeof clearLastProgressInFirestore === 'function') clearLastProgressInFirestore();
 }
 
 // ===== Indeks Kutipan Fisika di Home — berganti tiap app dibuka & tiap naik level =====
+// SENGAJA TETAP di localStorage (bukan per-akun) — ini murni variasi
+// tampilan kutipan, bukan "progres" milik akun, jadi aman dipakai bersama
+// walau device-nya dipakai gonta-ganti akun.
 const QUOTE_CTR_KEY = 'phygo_quote_ctr';
 function getQuoteIndex(){ try{ return parseInt(localStorage.getItem(QUOTE_CTR_KEY) || '0', 10) || 0; }catch(e){ return 0; } }
 function bumpQuoteIndex(){
@@ -77,27 +90,26 @@ function bumpQuoteIndex(){
 // ===== Streak Belajar — menghitung hari berturut-turut user membuka app =====
 // Ditampilkan di header & kartu "Streak" pada Home. Naik +1 kalau hari ini
 // beda dari terakhir kali dibuka DAN kemarin masih tercatat aktif; reset ke 1
-// kalau ada hari yang terlewat, supaya datanya selalu jujur/akurat.
-const STREAK_KEY = 'phygo_streak';
+// kalau ada hari yang terlewat, supaya datanya selalu jujur/akurat. Sekarang
+// disimpan murni ke Firestore (field streakCount/streakLastDate, lihat
+// saveStreakToFirestore di auth.js), di-cache di app.streak selama sesi app
+// ini berjalan — BUKAN localStorage lagi (lihat catatan panjang di atas app).
 function todayStr(){
   const n = new Date();
   return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
 }
 function getStreakData(){
-  try{
-    const raw = localStorage.getItem(STREAK_KEY);
-    const d = raw ? JSON.parse(raw) : null;
-    return (d && typeof d.count === 'number') ? d : {count:0, lastDate:null};
-  }catch(e){ return {count:0, lastDate:null}; }
+  return app.streak;
 }
 function bumpStreak(){
   const t = todayStr();
-  const data = getStreakData();
+  const data = app.streak;
   if(data.lastDate === t) return data.count; // sudah dihitung hari ini
   const y = new Date(); y.setDate(y.getDate()-1);
   const yStr = `${y.getFullYear()}-${String(y.getMonth()+1).padStart(2,'0')}-${String(y.getDate()).padStart(2,'0')}`;
   const count = (data.lastDate === yStr) ? data.count + 1 : 1;
-  try{ localStorage.setItem(STREAK_KEY, JSON.stringify({count, lastDate:t})); }catch(e){}
+  app.streak = { count, lastDate: t };
+  if(typeof saveStreakToFirestore === 'function') saveStreakToFirestore(count, t);
   return count;
 }
-function getStreakCount(){ return getStreakData().count; }
+function getStreakCount(){ return app.streak.count; }

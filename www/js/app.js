@@ -4,11 +4,14 @@
 setTheme(getTheme());
 
 // Kutipan fisika di Home berganti tiap kali aplikasi dibuka (lihat juga
-// bumpQuoteIndex() yang dipanggil tiap naik level, di screens.js)
+// bumpQuoteIndex() yang dipanggil tiap naik level, di screens.js) — ini
+// SENGAJA tetap dipanggil di sini (bukan per-akun, aman dipakai bersama).
 bumpQuoteIndex();
 
-// Hitung streak belajar (hari berturut-turut app dibuka) — dipakai di header & kartu Home
-bumpStreak();
+// CATATAN: bumpStreak() TIDAK lagi dipanggil di sini — sekarang dipanggil
+// dari goToDashboardAfterAuth() (auth-ui.js) SETELAH progres akun yang
+// login berhasil di-hydrate dari Firestore (lihat state.js & auth.js untuk
+// detail lengkapnya kenapa).
 
 // Init tombol exit wizard (butuh els dari state.js + svgIcon dari helpers.js + goToDashboard dari screens.js)
 if(els.wizExit){ els.wizExit.innerHTML = svgIcon('doorExit'); els.wizExit.onclick = goToDashboard; }
@@ -31,16 +34,11 @@ document.getElementById('settingsBackBtn').addEventListener('click', ()=>{
   navigate('profile', {}, false);
 });
 
-document.getElementById('btnExportData').querySelector('.settings-row-icon').innerHTML = svgIcon('download');
-document.getElementById('btnImportData').querySelector('.settings-row-icon').innerHTML = svgIcon('upload');
-document.getElementById('btnResetData').querySelector('.settings-row-icon').innerHTML = svgIcon('trash');
 document.getElementById('btnAppInfo').querySelector('.settings-row-icon').innerHTML = svgIcon('info');
 document.getElementById('btnEditProfile').querySelector('.settings-row-icon').innerHTML = svgIcon('edit');
 document.getElementById('btnLogout').querySelector('.settings-row-icon').innerHTML = svgIcon('logout');
 document.querySelectorAll('.settings-row-chevron').forEach(el => el.innerHTML = svgIcon('chevronRight'));
 
-document.getElementById('btnExportData').addEventListener('click', exportDataJson);
-document.getElementById('btnResetData').addEventListener('click', resetAllData);
 document.getElementById('btnAppInfo').addEventListener('click', ()=> navigate('appinfo', {}, false));
 document.getElementById('btnEditProfile').addEventListener('click', openEditProfileModal);
 document.getElementById('btnLogout').addEventListener('click', confirmLogout);
@@ -61,14 +59,6 @@ document.getElementById('btnAppInfoBack').addEventListener('click', ()=> navigat
 // ===== Halaman "Tingkatan Rank" =====
 document.getElementById('rankInfoBackBtn').innerHTML = svgIcon('arrowBack');
 document.getElementById('rankInfoBackBtn').addEventListener('click', ()=> navigate('profile', {}, false));
-
-const importFileInput = document.getElementById('importFileInput');
-document.getElementById('btnImportData').addEventListener('click', ()=> importFileInput.click());
-importFileInput.addEventListener('change', (e)=>{
-  const file = e.target.files && e.target.files[0];
-  if(file) importDataJson(file);
-  importFileInput.value = '';
-});
 
 // ===== Theme Swatches =====
 document.querySelectorAll('#themeGrid .theme-swatch').forEach(btn=>{

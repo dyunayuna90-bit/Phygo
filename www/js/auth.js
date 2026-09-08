@@ -259,3 +259,77 @@ async function getCurrentUserProfile() {
   const doc = await db.collection("users").doc(user.uid).get();
   return doc.exists ? Object.assign({ uid: user.uid }, doc.data()) : null;
 }
+
+// =====================================================================
+// PIPELINE PROGRES BELAJAR (level selesai / posisi wizard terakhir /
+// streak) — dulu semuanya nyimpen ke localStorage (nempel per-DEVICE,
+// bukan per-AKUN, lihat catatan panjang di state.js). Sekarang murni ke
+// Firestore, per uid, sama seperti awardPoin()/submitSurvivalScore() di
+// atas. Semua fire-and-forget (gagal nulis salah satu ini bukan hal
+// fatal — cuma bikin data itu telat sinkron dikit, in-memory app.* sudah
+// cukup buat sesi yang sedang berjalan).
+// =====================================================================
+function markLevelCompletedInFirestore(level) {
+  const user = fbAuth.currentUser;
+  if (!user) return Promise.resolve();
+  return db.collection('users').doc(user.uid).update({
+    completedLevels: firebase.firestore.FieldValue.arrayUnion(level),
+  }).catch((e) => console.error('[Phygo] Gagal menyimpan level selesai ke Firestore:', e));
+}
+
+function saveLastProgressToFirestore(level, step) {
+  const user = fbAuth.currentUser;
+  if (!user) return Promise.resolve();
+  return db.collection('users').doc(user.uid).update({
+    lastProgress: { level, step },
+  }).catch((e) => console.error('[Phygo] Gagal menyimpan posisi terakhir ke Firestore:', e));
+}
+
+function clearLastProgressInFirestore() {
+  const user = fbAuth.currentUser;
+  if (!user) return Promise.resolve();
+  return db.collection('users').doc(user.uid).update({
+    lastProgress: null,
+  }).catch((e) => console.error('[Phygo] Gagal menghapus posisi terakhir di Firestore:', e));
+}
+
+function saveStreakToFirestore(count, lastDate) {
+  const user = fbAuth.currentUser;
+  if (!user) return Promise.resolve();
+  return db.collection('users').doc(user.uid).update({
+    streakCount: count,
+    streakLastDate: lastDate,
+  }).catch((e) => console.error('[Phygo] Gagal menyimpan streak ke Firestore:', e));
+}
+
+// =====================================================================
+// FIX "PROGRES IKUT NYANGKUT DI DEVICE WALAU GANTI AKUN": dipanggil SEKALI
+// tiap kali dashboard dibuka setelah login berhasil dipastikan (lihat
+// goToDashboardAfterAuth di auth-ui.js) — mengisi app.completed/
+// lastProgress/streak/survivalHighScore dari Firestore MILIK AKUN YANG
+// SEDANG LOGIN saat itu, BUKAN dari localStorage (yang nempel di device,
+// bisa "ketuker" kalau device ini dipakai gonta-ganti akun).
+//
+// Dikasih batas waktu (withTimeout, dari auth-ui.js) supaya kalau lagi
+// offline & dokumen profil ini belum pernah ke-cache sama sekali di device
+// ini, app tetap lanjut jalan (mulai dari progres kosong) daripada nyangkut
+// nunggu selamanya — konsisten dengan filosofi fix "stuck di login pas
+// offline" sebelumnya.
+// =====================================================================
+async function hydrateAppProgressFromFirestore() {
+  try {
+    const profile = await withTimeout(getCurrentUserProfile(), 3000, 'Ambil data progres timeout');
+    if (!profile) return;
+    app.completed = new Set(Array.isArray(profile.completedLevels) ? profile.completedLevels.filter(n => [1,2,3].includes(n)) : []);
+    app.lastProgress = (profile.lastProgress && typeof profile.lastProgress.level === 'number' && typeof profile.lastProgress.step === 'number')
+      ? { level: profile.lastProgress.level, step: profile.lastProgress.step }
+      : null;
+    app.streak = {
+      count: typeof profile.streakCount === 'number' ? profile.streakCount : 0,
+      lastDate: profile.streakLastDate || null,
+    };
+    app.survivalHighScore = typeof profile.poinSolo === 'number' ? profile.poinSolo : 0;
+  } catch (e) {
+    console.error('[Phygo] Gagal ambil progres dari Firestore, mulai dari progres kosong:', e);
+  }
+}

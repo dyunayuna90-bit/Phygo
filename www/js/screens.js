@@ -599,7 +599,7 @@ async function renderProfileScreen(){
             <span class="breakdown-value">${pctDuel}% (${poinDuel.toLocaleString('id-ID')})</span>
           </div>
           <div class="breakdown-bar">
-            <div class="breakdown-bar-fill duel" style="width: ${pctDuel}%; background: var(--secondary);"></div>
+            <div class="breakdown-bar-fill duel" style="width: ${pctDuel}%; background: var(--duel-grad-2, var(--primary));"></div>
           </div>
         </div>
       </div>
@@ -727,81 +727,6 @@ async function savePrivacySetting(isPrivate){
     if(window.phygoLog) window.phygoLog('PRIVACY SAVE ERROR', err.message);
     Swal.fire({ icon:'error', title:'Gagal Menyimpan', text:err.message, background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--error)' });
   }
-}
-
-function resetAllData(){
-  Swal.fire({
-    icon:'warning',
-    title:'Reset Semua Data?',
-    text:'Seluruh pencapaian, skor tertinggi, dan progres yang tersimpan akan dihapus permanen dan tidak bisa dikembalikan.',
-    showCancelButton:true,
-    confirmButtonText:'Ya, Hapus Semua',
-    cancelButtonText:'Batal',
-    background:'#1C2426', color:'#E3E3E6',
-    confirmButtonColor:'var(--error)',
-    cancelButtonColor:'var(--surface-c-high)'
-  }).then(res=>{
-    if(!res.isConfirmed) return;
-    ['phygo_completed','phygo_last_progress','phygo_survival_highscore','phygo_quote_ctr','phygo_streak'].forEach(k=>{
-      try{ localStorage.removeItem(k); }catch(e){}
-    });
-    app.completed = new Set();
-    app.justUnlockedLevel = null;
-    app.params = {}; app.attempts = {1:0,2:0,3:0}; app.calc = {}; app.calcChain = {1:{},2:{},3:{}}; app.locked = {};
-    navigate('home', {}, true);
-    Swal.fire({ icon:'success', title:'Data berhasil direset', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' });
-  });
-}
-
-function exportDataJson(){
-  const data = {
-    version: 1,
-    completed: [...app.completed],
-    lastProgress: getLastProgress(),
-    survivalHighScore: survGetHighScore(),
-    quoteCtr: getQuoteIndex(),
-    streak: getStreakData(),
-    theme: getTheme(),
-    exportedAt: new Date().toISOString()
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'phygo-backup.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=> URL.revokeObjectURL(url), 2000);
-  Swal.fire({ icon:'success', title:'Data berhasil diekspor', text:'File phygo-backup.json telah diunduh.', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' });
-}
-
-function importDataJson(file){
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    try{
-      const data = JSON.parse(e.target.result);
-      if(!data || !Array.isArray(data.completed)) throw new Error('format tidak valid');
-
-      app.completed = new Set(data.completed.filter(n => [1,2,3].includes(n)));
-      try{ localStorage.setItem('phygo_completed', JSON.stringify([...app.completed])); }catch(err){}
-
-      if(data.lastProgress && typeof data.lastProgress.level === 'number' && typeof data.lastProgress.step === 'number'){
-        saveLastProgress(data.lastProgress.level, data.lastProgress.step);
-      } else {
-        clearLastProgress();
-      }
-
-      if(typeof data.survivalHighScore === 'number') survSaveHighScore(data.survivalHighScore);
-      if(typeof data.quoteCtr === 'number'){ try{ localStorage.setItem('phygo_quote_ctr', String(data.quoteCtr)); }catch(err){} }
-      if(data.streak && typeof data.streak.count === 'number'){ try{ localStorage.setItem('phygo_streak', JSON.stringify(data.streak)); }catch(err){} }
-      if(data.theme) setTheme(data.theme);
-
-      Swal.fire({ icon:'success', title:'Data berhasil dipulihkan', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--primary)' })
-        .then(()=>{ renderSettingsScreen(); navigate('home', {}, true); });
-    }catch(err){
-      Swal.fire({ icon:'error', title:'Impor Gagal', text:'File JSON tidak valid atau rusak.', background:'#1C2426', color:'#E3E3E6', confirmButtonColor:'var(--error)' });
-    }
-  };
-  reader.readAsText(file);
 }
 
 // ===== Halaman "Tentang Aplikasi" Ã¢â‚¬â€ halaman penuh (bukan pop-up) =====
@@ -1004,7 +929,12 @@ function runQuizFbAction(pending) {
   if(pending.action === 'next') {
     const wasCompleted = app.completed.has(pending.level);
     app.completed.add(pending.level);
-    localStorage.setItem('phygo_completed', JSON.stringify([...app.completed]));
+    // FIX "PROGRES NYANGKUT DI DEVICE WALAU GANTI AKUN": dulu ditulis ke
+    // localStorage (nempel per-device, bukan per-akun). Sekarang murni ke
+    // Firestore (lihat markLevelCompletedInFirestore di auth.js) — per uid,
+    // fire-and-forget (gagal nulis sekali bukan hal fatal, in-memory
+    // app.completed di atas sudah cukup buat sesi berjalan ini).
+    if(typeof markLevelCompletedInFirestore === 'function') markLevelCompletedInFirestore(pending.level);
     if(!wasCompleted) { app.justUnlockedLevel = pending.level + 1; bumpQuoteIndex(); }
     clearLastProgress();
     navigate(app.activeTab || 'home', {}, false);

@@ -7,7 +7,6 @@
 // v2: skala poin berubah jadi ratusan (dulu cuma +1/soal) — key dibedakan
 // dari versi lama supaya highscore lama (skala kecil) ga nyampur/nyasar
 // jadi kelihatan "kecil" dibanding skala baru.
-const SURV_HS_KEY = 'phygo_survival_highscore_v2';
 const SURV_QUESTION_TIME = 60; // detik per soal
 const SURV_PANIC_AT = 5;       // detik tersisa saat efek panik aktif
 const SURV_LIVES_START = 3;
@@ -27,8 +26,16 @@ function survHitungPoin(isCorrect, waktuJawabDetik){
   return waktuJawabDetik < SURV_BATAS_CEPAT ? SURV_POIN_CEPAT : SURV_POIN_LAMBAT;
 }
 
-function survGetHighScore(){ try{ return parseInt(localStorage.getItem(SURV_HS_KEY) || '0', 10) || 0; }catch(e){ return 0; } }
-function survSaveHighScore(v){ try{ localStorage.setItem(SURV_HS_KEY, String(v)); }catch(e){} }
+// FIX "SKOR SURVIVAL IKUT NYANGKUT DI DEVICE WALAU GANTI AKUN": dulu
+// disimpan ke localStorage (SURV_HS_KEY, nempel per-device). Skor tertinggi
+// yang OTENTIK sebenarnya SUDAH ada di Firestore (field poinSolo, ditulis
+// lewat submitSurvivalScore() di auth.js) — jadi sekarang fungsi ini cuma
+// baca/tulis app.survivalHighScore (in-memory, di-hydrate dari poinSolo
+// Firestore tiap login, lihat hydrateAppProgressFromFirestore di auth.js).
+// TIDAK ada lagi penulisan ke Firestore di sini — itu sudah tugas
+// submitSurvivalScore(), fungsi ini murni buat update tampilan instan.
+function survGetHighScore(){ return app.survivalHighScore || 0; }
+function survSaveHighScore(v){ app.survivalHighScore = v; }
 
 // ===== A. Massive Array Kamus Kata =====
 const SURV_KENDARAAN = ['mobil sport','kereta komuter','truk ekspedisi','skuter listrik','gokart','bus pariwisata','mobil listrik otonom','motor balap','mobil SUV','taksi online','van logistik','becak motor','trem kota','bus rapid transit','mobil patroli','truk kontainer','mobil pickup','mobil hybrid','kereta cepat Whoosh','mobil sedan','ojek pangkalan','mobil pemadam','ambulans','mobil box','traktor ladang','skuter matik','motor trail','mobil jeep','bus sekolah','mobil boks pendingin'];

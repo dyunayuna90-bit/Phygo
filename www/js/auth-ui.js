@@ -212,9 +212,21 @@ function setAuthBusy(btnId, busy, busyLabel, idleLabel) {
   btn.textContent = busy ? busyLabel : idleLabel;
 }
 
-function goToDashboardAfterAuth() {
+async function goToDashboardAfterAuth() {
   phygoLog('DASHBOARD', 'goToDashboardAfterAuth() dipanggil');
   try {
+    // FIX "PROGRES IKUT NYANGKUT DI DEVICE WALAU GANTI AKUN": ambil dulu
+    // progres (level selesai/posisi terakhir/streak/skor survival) MILIK
+    // AKUN INI dari Firestore, SEBELUM dashboard dirender — supaya Home/
+    // Level Map yang muncul pertama kali selalu sudah benar sesuai akun
+    // yang login, bukan sempat kelihatan progres akun lain/kosong dulu.
+    // Lihat catatan panjang di hydrateAppProgressFromFirestore() (auth.js).
+    await hydrateAppProgressFromFirestore();
+    // Streak baru dihitung SETELAH progres di atas ke-hydrate (bukan lagi
+    // di app.js saat script pertama kali dimuat) — karena bumpStreak()
+    // butuh tahu dulu data streak akun ini dari Firestore.
+    bumpStreak();
+
     document.getElementById('screen-auth').classList.remove('active');
     document.getElementById('app').style.display = '';
     history.replaceState({ screen: 'home' }, '', '#home');
