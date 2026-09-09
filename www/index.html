@@ -130,9 +130,11 @@
   <main id="main">
     <!-- ===== HOME ===== -->
     <section class="screen active" id="screen-home">
-      <div class="screen-bg-shape c home-bg-shape h1" aria-hidden="true"></div>
-      <div class="screen-bg-shape sq home-bg-shape h2" aria-hidden="true"></div>
-      <div class="screen-bg-shape hex home-bg-shape h3" aria-hidden="true"></div>
+      <div class="screen-bg-shape-wrap">
+        <div class="screen-bg-shape c home-bg-shape h1" aria-hidden="true"></div>
+        <div class="screen-bg-shape sq home-bg-shape h2" aria-hidden="true"></div>
+        <div class="screen-bg-shape hex home-bg-shape h3" aria-hidden="true"></div>
+      </div>
       <div class="scroll-pane" id="homeScroll">
 
         <!-- Header sapaan + tanggal -->
@@ -158,9 +160,11 @@
 
     <!-- ===== LEVEL (Peta Zig-zag) ===== -->
     <section class="screen" id="screen-level">
-      <div class="screen-bg-shape c level-bg-shape l1" aria-hidden="true"></div>
-      <div class="screen-bg-shape sq level-bg-shape l2" aria-hidden="true"></div>
-      <div class="screen-bg-shape hex level-bg-shape l3" aria-hidden="true"></div>
+      <div class="screen-bg-shape-wrap">
+        <div class="screen-bg-shape c level-bg-shape l1" aria-hidden="true"></div>
+        <div class="screen-bg-shape sq level-bg-shape l2" aria-hidden="true"></div>
+        <div class="screen-bg-shape hex level-bg-shape l3" aria-hidden="true"></div>
+      </div>
       <div class="scroll-pane" id="levelScroll">
         <div class="level-header">
           <h1>Peta Level</h1>
@@ -174,9 +178,11 @@
 
     <!-- ===== SEJARAH (Dashboard Tumpukan Kartu) ===== -->
     <section class="screen" id="screen-history">
-      <div class="screen-bg-shape c history-bg-shape hs1" aria-hidden="true"></div>
-      <div class="screen-bg-shape sq history-bg-shape hs2" aria-hidden="true"></div>
-      <div class="screen-bg-shape hex history-bg-shape hs3" aria-hidden="true"></div>
+      <div class="screen-bg-shape-wrap">
+        <div class="screen-bg-shape c history-bg-shape hs1" aria-hidden="true"></div>
+        <div class="screen-bg-shape sq history-bg-shape hs2" aria-hidden="true"></div>
+        <div class="screen-bg-shape hex history-bg-shape hs3" aria-hidden="true"></div>
+      </div>
       <div class="scroll-pane" id="historyScroll" style="display:flex; flex-direction:column;">
         <div class="level-header">
           <h1>Arsip Sejarah Fisika</h1>
@@ -187,9 +193,11 @@
 
     <!-- ===== PROFIL (Tab ke-4, mengganti Pengaturan lama) ===== -->
     <section class="screen" id="screen-profile">
-      <div class="screen-bg-shape c profile-bg-shape p1" aria-hidden="true"></div>
-      <div class="screen-bg-shape sq profile-bg-shape p2" aria-hidden="true"></div>
-      <div class="screen-bg-shape hex profile-bg-shape p3" aria-hidden="true"></div>
+      <div class="screen-bg-shape-wrap">
+        <div class="screen-bg-shape c profile-bg-shape p1" aria-hidden="true"></div>
+        <div class="screen-bg-shape sq profile-bg-shape p2" aria-hidden="true"></div>
+        <div class="screen-bg-shape hex profile-bg-shape p3" aria-hidden="true"></div>
+      </div>
       <div class="scroll-pane" id="profileScroll">
         <!-- Diisi oleh renderProfileScreen() -->
       </div>
@@ -420,9 +428,11 @@
 
     <!-- ===== MODE DUEL — Matchmaking ===== -->
     <section class="screen" id="screen-duelmatch">
-      <div class="screen-bg-shape c duelmatch-bg-shape d1" aria-hidden="true"></div>
-      <div class="screen-bg-shape sq duelmatch-bg-shape d2" aria-hidden="true"></div>
-      <div class="screen-bg-shape hex duelmatch-bg-shape d3" aria-hidden="true"></div>
+      <div class="screen-bg-shape-wrap">
+        <div class="screen-bg-shape c duelmatch-bg-shape d1" aria-hidden="true"></div>
+        <div class="screen-bg-shape sq duelmatch-bg-shape d2" aria-hidden="true"></div>
+        <div class="screen-bg-shape hex duelmatch-bg-shape d3" aria-hidden="true"></div>
+      </div>
       <div class="duel-match-shell">
         <div class="duel-match-arena">
           <div class="duel-match-player">
@@ -467,9 +477,11 @@
 
     <!-- ===== MODE DUEL — VS + Countdown ===== -->
     <section class="screen" id="screen-duelvs">
-      <div class="screen-bg-shape c duelvs-bg-shape v1" aria-hidden="true"></div>
-      <div class="screen-bg-shape sq duelvs-bg-shape v2" aria-hidden="true"></div>
-      <div class="screen-bg-shape hex duelvs-bg-shape v3" aria-hidden="true"></div>
+      <div class="screen-bg-shape-wrap">
+        <div class="screen-bg-shape c duelvs-bg-shape v1" aria-hidden="true"></div>
+        <div class="screen-bg-shape sq duelvs-bg-shape v2" aria-hidden="true"></div>
+        <div class="screen-bg-shape hex duelvs-bg-shape v3" aria-hidden="true"></div>
+      </div>
       <div class="duel-vs-shell">
         <div class="duel-vs-player">
           <div class="duel-vs-avatar" id="duelvsMyAvatar"></div>
