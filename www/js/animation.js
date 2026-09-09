@@ -19,24 +19,19 @@ function apply3DTilt(element, defaultRotateX = 0, defaultRotateY = 0) {
 
 function animateIn(root){
   if(!root || !root.children || !root.children.length) return;
-  // M3 Expressive: entrance sedikit "scale up" dibarengin slide+fade, bukan
-  // cuma slide+fade polos -- kesan lebih hidup/"spring" khas komponen
-  // Material 3 Expressive, tanpa nambah blur atau elemen dekoratif baru.
+  // FIX LAG PARAH: sebelumnya tween ini pakai scale (0.96->1) dibarengin
+  // GSAP stagger. Kelihatan sepele, TAPI #screen-home .scroll-pane dan
+  // .journey-map (Level) sama-sama punya perspective:1200px di CSS-nya
+  // (buat efek 3D di tempat lain) -- begitu ada transform SCALE jalan di
+  // DALAM context perspective itu, browser kepaksa promosiin elemennya ke
+  // 3D compositing yang jauh lebih berat daripada transform 2D biasa,
+  // apalagi pas BEBERAPA elemen animasi bareng (staggered). Itu penyebab
+  // lag "minta ampun" pas transisi tab, terutama Home & Level. Baliin ke
+  // opacity+translateY doang (2D murni, ringan), tanpa scale.
   gsap.fromTo(root.children,
-    {opacity:0, y:22, scale:0.96},
-    {opacity:1, y:0, scale:1, duration:0.62, stagger:0.07, ease:'back.out(1.5)', clearProps:'transform,opacity'}
+    {opacity:0, y:18},
+    {opacity:1, y:0, duration:0.5, stagger:0.06, ease:'power2.out', clearProps:'transform,opacity'}
   );
-  // Kalau salah satu blok utama itu sendiri adalah grid/bento berisi
-  // beberapa kartu (mis. .home-bento di Home), kartu-kartu di DALAMNYA
-  // ikut di-stagger sendiri sesaat setelahnya -- biar gak "kaku" gerak
-  // bareng sebagai satu blok doang.
-  root.querySelectorAll(':scope > .home-bento, :scope > .rankinfo-list, :scope > .ach-lvl-row, :scope .profile-stats-grid, :scope .profile-social-grid').forEach(grid=>{
-    if(!grid.children.length) return;
-    gsap.fromTo(grid.children,
-      {opacity:0, y:14, scale:0.94},
-      {opacity:1, y:0, scale:1, duration:0.5, stagger:0.06, delay:0.16, ease:'back.out(1.6)', clearProps:'transform,opacity'}
-    );
-  });
 }
 
 function smoothUpdate(container, updateCallback) {

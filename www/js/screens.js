@@ -193,7 +193,7 @@ function renderHistoryDashboard(){
   const holder = document.getElementById('historyStackHolder');
   if(!holder) return;
   if(!historyCardEls) buildHistoryCards();
-  layoutHistoryStack(false);
+  animateHistoryStackIn();
 }
 
 function buildHistoryCards(){
@@ -261,6 +261,34 @@ function layoutHistoryStack(animate){
     } else {
       gsap.set(card, { y, scale, opacity:1, rotate:0 });
     }
+  });
+}
+
+// Entrance khusus tiap kali tab Arsip Sejarah DIBUKA (dipanggil dari
+// renderHistoryDashboard() setiap navigasi, bukan cuma sekali) -- kartu
+// dijatuhin dari atas layar satu-satu, kartu TERDEPAN duluan (idx 0),
+// baru nyusul kartu-kartu di belakangnya. Bukan di dalam context
+// perspective manapun (aman pakai scale, gak nyumbang lag kayak kasus
+// Home/Level).
+function animateHistoryStackIn(){
+  if(!historyCardEls || !app.history) return;
+  const order = app.history.order;
+  const maxDepth = order.length - 1;
+  order.forEach((id, idx)=>{
+    const card = historyCardEls[id];
+    if(!card) return;
+    card.style.display = '';
+    const y = (maxDepth - idx) * HIST_PEEK;
+    const scale = 1 - idx * HIST_SCALE_STEP;
+    card.style.zIndex = 30 - idx;
+    card.style.pointerEvents = idx === 0 ? 'auto' : 'none';
+    card.classList.toggle('is-front', idx === 0);
+    gsap.killTweensOf(card);
+    gsap.set(card, { y: y - 260, scale, opacity: 0, rotate: idx % 2 === 0 ? -3 : 3 });
+    gsap.to(card, {
+      y, opacity: 1, rotate: 0, duration: 0.6, ease: 'back.out(1.4)',
+      delay: idx * 0.09, overwrite: 'auto'
+    });
   });
 }
 
