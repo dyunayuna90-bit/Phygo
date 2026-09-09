@@ -684,12 +684,20 @@ input{ font-family:inherit; }
    Coklat TIDAK kena masalah ini (fire-1 mereka udah cukup gelap/jenuh buat
    kontras teks putih) — makanya SENGAJA cuma di-override utk Cyan & Lime
    di sini, bukan ubah rule .survival-card di atas (biar Pink/Coklat gak
-   ikut berubah). Caranya: geser stop tengahnya lebih awal, jadi porsi
-   warna terang (fire-1) mengecil & warna gelap (fire-3) jadi lebih dominan
-   menutupi area teks. */
-html[data-theme="cyan"] .survival-card,
+   ikut berubah).
+   UPDATE: geser stop doang (0%/28%/100%) ternyata MASIH kurang gelap --
+   dicek pakai rasio kontras WCAG, --fire-1 & --fire-2 di kedua tema ini
+   masih di bawah 3:1 vs putih (cyan fire-2 cuma ~2:1, lime fire-2 malah
+   ~1.5:1). Sekarang --fire-1 DAN --fire-2 dibuang total dari kartu ini,
+   diganti gradasi tipis di sekitar --fire-3 doang (warna paling gelap di
+   masing-masing tema) yang di-mix ke arah putih/hitam dikit buat variasi
+   -- dicek manual, kontras di titik paling terangnya pun tetap >=3:1
+   (cukup buat teks bold 17.5px kayak judul "Mode Survival"). */
+html[data-theme="cyan"] .survival-card{
+  background: linear-gradient(150deg, color-mix(in srgb, var(--fire-3) 88%, white 12%) 0%, color-mix(in srgb, var(--fire-3) 78%, black 22%) 100%);
+}
 html[data-theme="lime"] .survival-card{
-  background: linear-gradient(150deg, var(--fire-1) 0%, var(--fire-2) 28%, var(--fire-3) 100%);
+  background: linear-gradient(150deg, var(--fire-3) 0%, color-mix(in srgb, var(--fire-3) 72%, black 28%) 100%);
 }
 .survival-card .home-card-icon-bg{ color:#fff; opacity:0.14; }
 .survival-icon-box{ width:52px; height:52px; border-radius:16px; background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(0,0,0,0.06)); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.4), 0 4px 10px rgba(0,0,0,0.22); }
@@ -1009,11 +1017,17 @@ html[data-theme="lime"] .survival-card{
    .auth-scroll di halaman login, dipasang sekali di sini biar otomatis
    berlaku ke SEMUA layar yang pakai sistem dekorasi ini. Warnanya ngikut
    var(--primary) tema aktif, jadi ganti tema ganti juga wash-nya. */
-#screen-home, #screen-level, #screen-profile, #screen-history, #screen-duelmatch, #screen-duelvs {
-  background:
-    radial-gradient(760px 380px at 100% -6%, color-mix(in srgb, var(--primary) 9%, transparent) 0%, transparent 60%),
-    radial-gradient(620px 340px at -8% 108%, color-mix(in srgb, var(--primary) 6%, transparent) 0%, transparent 55%);
-}
+/* FIX "masih kek ada frame di kiri-kanan": wash radial-gradient di sini
+   sengaja DICABUT lagi. Analisis piksel foto user gak nunjukin garis
+   kliping tegas di mana pun (dites: warna berubah HALUS, gak ada seam) --
+   ternyata ini efek VIGNETTE optik: gradientnya nempel di 2 sudut
+   diagonal doang (kanan-atas & kiri-bawah), ukurannya PAS buat halaman
+   login yang pendek, tapi di Home/Level/dst yang boxnya jauh lebih
+   tinggi, area TENGAH-TEPI kiri/kanan (jauh dari kedua sudut) jadi gak
+   ke-cover gradient sama sekali -- kontras sama sudut yang lebih terang,
+   itu yang keliatan kayak "bingkai gelap" di kiri-kanan. Cukup andalkan
+   bentuk-bentuk dekoratif (.screen-bg-shape) buat atmosfernya, tanpa
+   wash tambahan yang malah bikin vignette gak rata begini. */
 
 /* Pastikan konten tiap layar (yg pakai sistem dekorasi di atas) selalu
    mengambang di ATAS bentuk dekoratifnya -- baik yg discroll (.scroll-pane)
