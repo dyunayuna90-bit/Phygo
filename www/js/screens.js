@@ -177,7 +177,7 @@ function renderLevelMap(){
     apply3DTilt(btn, 25, 0); 
   });
 
-  setTimeout(drawJourneyLines, 50);
+  setTimeout(()=>drawJourneyLines(true), 50);
 }
 
 // ===================================================================
@@ -783,7 +783,7 @@ function resumeLastActivity(){
   navigate('simulasi', { level: lp.level, step: lp.step });
 }
 
-function drawJourneyLines() {
+function drawJourneyLines(animateEntrance) {
   const svg = document.getElementById('jPathSvg');
   if(!svg) return;
   const nodes = Array.from(document.querySelectorAll('.j-node-wrap')).reverse(); 
@@ -804,8 +804,12 @@ function drawJourneyLines() {
     
     const d = `M ${x1},${y1} Q ${(x1+x2)/2},${(y1+y2)/2 + 30} ${x2},${y2}`; 
     
-    pathsHTML += `<path d="${d}" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="26" stroke-linecap="round" transform="translate(0, 10)"/>`;
-    pathsHTML += `<path d="${d}" fill="none" stroke="var(--surface-c)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>`;
+    // data-seg="i" nempel di ke-3 layer path segmen ini (bayangan, jalur
+    // dasar, jalur warna) -- dipakai buat ngambil grup path per-segmen
+    // sesudah di-insert ke DOM (lihat animasi "jalur nyambung dari Lvl 1"
+    // di bawah), TANPA ubah tampilan statisnya sama sekali (cuma atribut).
+    pathsHTML += `<path data-seg="${i}" d="${d}" fill="none" stroke="rgba(0,0,0,0.28)" stroke-width="26" stroke-linecap="round" transform="translate(0, 10)"/>`;
+    pathsHTML += `<path data-seg="${i}" d="${d}" fill="none" stroke="var(--surface-c)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>`;
     
     const targetLevel = parseInt(nodes[i+1].dataset.id);
     let extraStyle = '', animClass = '';
@@ -817,10 +821,39 @@ function drawJourneyLines() {
        extraStyle = ''; 
     } else { extraStyle = 'display: none;'; }
 
-    pathsHTML += `<path class="${animClass}" d="${d}" fill="none" stroke="var(--primary)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9; ${extraStyle}"/>`;
+    pathsHTML += `<path data-seg="${i}" class="${animClass}" d="${d}" fill="none" stroke="var(--primary)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9; ${extraStyle}"/>`;
   }
   
   svg.innerHTML = pathsHTML;
+
+  // Entrance "jalur nyambung dari Lvl 1 ke atas" -- HANYA pas render awal
+  // (renderLevelMap() manggil dengan animateEntrance=true), BUKAN pas
+  // window resize manggil ulang fungsi ini (resize tetap statis kayak
+  // dulu, biar gak ngetrigger animasi tambahan tiap kali keyboard HP
+  // muncul/ilang dsb -- itu salah satu sumber "kadang berat"-nya).
+  // Juga di-skip total kalau ini momen animasi "baru buka kunci level"
+  // (app.justUnlockedLevel) -- animasi khusus itu udah ditangani sendiri
+  // di bawah, jangan sampai numpuk dua animasi jalur sekaligus.
+  if(animateEntrance && !app.justUnlockedLevel){
+    const segCount = nodes.length - 1;
+    for(let i=0; i<segCount; i++){
+      const segPaths = Array.from(svg.querySelectorAll(`path[data-seg="${i}"]`)).filter(p=>getComputedStyle(p).display !== 'none');
+      if(!segPaths.length) continue;
+      segPaths.forEach(p=>{
+        const len = p.getTotalLength();
+        gsap.set(p, {strokeDasharray: len, strokeDashoffset: len});
+      });
+      // Segmen ke-0 = sambungan Lvl1->Lvl2 (paling bawah/duluan), segmen
+      // ke-1 = Lvl2->Lvl3, dst -- urut nyambung dari bawah, delay makin
+      // lama tiap segmen berikutnya biar keliatan "jalur beneran lagi
+      // digambar" satu-satu, bukan langsung semua kelar bareng.
+      gsap.to(segPaths, {
+        strokeDashoffset: 0, duration: 0.65, ease: 'power2.out',
+        delay: 0.55 + i * 0.4,
+        onComplete: ()=>{ segPaths.forEach(p=> p.style.strokeDasharray = 'none'); }
+      });
+    }
+  }
 
   if (app.justUnlockedLevel) {
      const targetLvl = app.justUnlockedLevel;
@@ -851,7 +884,7 @@ function drawJourneyLines() {
      app.justUnlockedLevel = null; 
   }
 }
-window.addEventListener('resize', drawJourneyLines, {passive: true});
+window.addEventListener('resize', ()=>drawJourneyLines(false), {passive: true});
 
 function renderMateri(id){
   const L = LEVELS[id];
