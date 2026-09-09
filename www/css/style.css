@@ -305,6 +305,23 @@ input{ font-family:inherit; }
 .j-node-wrap.left { align-self: flex-start; margin-left: 12%; flex-direction: row; }
 .j-node-wrap.right { align-self: flex-end; margin-right: 12%; flex-direction: row-reverse; }
 
+/* Entrance masuk satu-satu per node (bukan cuma peta-nya doang yang fade
+   sebagai satu blok) -- setiap kali #screen-level jadi aktif (display:none
+   -> flex mereset animasi CSS otomatis) ATAU renderLevelMap() bikin ulang
+   node-node ini dari nol, jadi selalu keputer ulang. */
+.j-node-wrap{ animation: jNodePopIn .55s cubic-bezier(0.34,1.56,0.64,1) both; }
+.j-node-wrap:nth-child(1){ animation-delay: .05s; }
+.j-node-wrap:nth-child(2){ animation-delay: .14s; }
+.j-node-wrap:nth-child(3){ animation-delay: .23s; }
+.j-node-wrap:nth-child(4){ animation-delay: .32s; }
+.j-node-wrap:nth-child(5){ animation-delay: .41s; }
+.j-node-wrap:nth-child(6){ animation-delay: .50s; }
+.j-node-wrap:nth-child(n+7){ animation-delay: .58s; }
+@keyframes jNodePopIn{
+  0%{ opacity:0; transform:scale(0.7) translateY(18px); }
+  100%{ opacity:1; transform:scale(1) translateY(0); }
+}
+
 .j-node { width: 84px; height: 84px; border-radius: 30px 30px 30px 12px; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: #fff; z-index: 3; transform: rotateX(25deg); border: 4px solid rgba(255,255,255,0.1); }
 .j-node svg { width: 38px; height: 38px; }
 /* Beda dari cek benar/salah kuis (yang tetap pakai --success universal),
@@ -891,6 +908,66 @@ html[data-theme="lime"] .survival-card{
 .auth-bg-shape.s2{ top:26%; left:-20px; width:64px; height:64px; border-radius:20px; background:var(--primary); opacity:0.14; animation:homeShapeFloat2 8s ease-in-out infinite; }
 .auth-bg-shape.s3{ bottom:6%; right:6%; width:42px; height:42px; border-radius:14px; background:var(--secondary-container); opacity:0.6; animation:homeShapeFloat2 11s ease-in-out infinite reverse; }
 
+/* FIX: dua keyframes ini dulu DIPAKAI (lihat .auth-bg-shape di atas) tapi
+   gak pernah DIDEFINISIKAN di mana pun -- efeknya bentuk dekoratif login
+   sama sekali gak "melayang" (statis diam), padahal komentarnya bilang
+   harusnya melayang pelan. Sekarang didefinisikan beneran: gerak translate
+   + rotate halus, flat/tanpa blur, dipakai bareng oleh SEMUA bentuk
+   dekoratif latar (login, home, level, profil, matchmaking, VS duel). */
+@keyframes homeShapeFloat{
+  0%,100%{ transform:translate(0,0) rotate(0deg); }
+  50%{ transform:translate(-8px,14px) rotate(8deg); }
+}
+@keyframes homeShapeFloat2{
+  0%,100%{ transform:translate(0,0) rotate(0deg); }
+  50%{ transform:translate(10px,-10px) rotate(-10deg); }
+}
+@keyframes homeShapeFloat3{
+  0%,100%{ transform:translate(0,0) rotate(0deg) scale(1); }
+  50%{ transform:translate(-6px,-12px) rotate(6deg) scale(1.05); }
+}
+
+/* =====================================================================
+   SISTEM DEKORASI LATAR (dipakai di Home, Level, Profil, Matchmaking,
+   VS Duel) -- pola PERSIS sama seperti #screen-auth: bentuk flat-color
+   jadi anak LANGSUNG dari .screen (BUKAN di dalam .scroll-pane), supaya
+   posisinya TETAP diam (gak ikut discroll) dan gak pernah kepotong aneh
+   di batas scroll. .screen sendiri sudah overflow:hidden lewat
+   .screen.active, jadi bentuknya otomatis kekunci gak pernah nembus
+   keluar layar. Tanpa blur, warna solid flat, opacity rendah supaya gak
+   ganggu keterbacaan konten di atasnya. */
+.screen-bg-shape{ position:absolute; pointer-events:none; z-index:0; }
+.screen-bg-shape.c{ border-radius:50%; }
+.screen-bg-shape.sq{ border-radius:24px; }
+.screen-bg-shape.hex{ border-radius:16px; }
+
+.home-bg-shape.h1{ top:-4%; right:-12%; width:180px; height:180px; background:var(--primary-container); opacity:0.35; animation:homeShapeFloat 12s ease-in-out infinite; }
+.home-bg-shape.h2{ top:34%; left:-14%; width:110px; height:110px; background:var(--secondary-container); opacity:0.28; animation:homeShapeFloat2 9.5s ease-in-out infinite; }
+.home-bg-shape.h3{ bottom:8%; right:4%; width:56px; height:56px; background:var(--primary); opacity:0.10; animation:homeShapeFloat3 8s ease-in-out infinite; }
+
+.level-bg-shape.l1{ top:2%; left:-10%; width:150px; height:150px; background:var(--secondary-container); opacity:0.3; animation:homeShapeFloat2 11s ease-in-out infinite; }
+.level-bg-shape.l2{ top:42%; right:-12%; width:120px; height:120px; background:var(--primary-container); opacity:0.28; animation:homeShapeFloat 10s ease-in-out infinite; }
+.level-bg-shape.l3{ bottom:12%; left:6%; width:64px; height:64px; background:var(--primary); opacity:0.10; animation:homeShapeFloat3 9s ease-in-out infinite; }
+
+.profile-bg-shape.p1{ top:-6%; right:-14%; width:170px; height:170px; background:var(--primary-container); opacity:0.32; animation:homeShapeFloat 13s ease-in-out infinite; }
+.profile-bg-shape.p2{ top:30%; left:-12%; width:96px; height:96px; background:var(--secondary-container); opacity:0.26; animation:homeShapeFloat2 9s ease-in-out infinite; }
+.profile-bg-shape.p3{ bottom:6%; right:10%; width:50px; height:50px; background:var(--primary); opacity:0.12; animation:homeShapeFloat3 7.5s ease-in-out infinite; }
+
+.duelmatch-bg-shape.d1{ top:6%; left:-14%; width:150px; height:150px; background:var(--primary-container); opacity:0.26; animation:homeShapeFloat 14s ease-in-out infinite; }
+.duelmatch-bg-shape.d2{ bottom:8%; right:-12%; width:130px; height:130px; background:var(--secondary-container); opacity:0.24; animation:homeShapeFloat2 11s ease-in-out infinite; }
+.duelmatch-bg-shape.d3{ top:48%; right:8%; width:46px; height:46px; background:var(--primary); opacity:0.12; animation:homeShapeFloat3 8s ease-in-out infinite; }
+
+.duelvs-bg-shape.v1{ top:-8%; right:-14%; width:160px; height:160px; background:var(--secondary-container); opacity:0.24; animation:homeShapeFloat 12s ease-in-out infinite; }
+.duelvs-bg-shape.v2{ bottom:-6%; left:-12%; width:140px; height:140px; background:var(--primary-container); opacity:0.26; animation:homeShapeFloat2 10s ease-in-out infinite; }
+.duelvs-bg-shape.v3{ top:40%; left:4%; width:40px; height:40px; background:var(--primary); opacity:0.12; animation:homeShapeFloat3 7s ease-in-out infinite; }
+
+/* Pastikan konten tiap layar (yg pakai sistem dekorasi di atas) selalu
+   mengambang di ATAS bentuk dekoratifnya -- baik yg discroll (.scroll-pane)
+   maupun yg statis (mis. .duel-match-shell, .duel-vs-shell). */
+.screen{ position:relative; }
+.scroll-pane{ position:relative; z-index:1; }
+.duel-vs-shell{ position:relative; z-index:1; }
+
 /* --- Hero: eyebrow pill + wordmark dgn "mark" kotak asimetris (pengganti
    logo teks polos lama, biar berasa app-icon expressive) --- */
 .auth-hero{ position:relative; z-index:1; text-align:center; margin-bottom:22px; }
@@ -1091,6 +1168,22 @@ html[data-theme="lime"] .survival-card{
   box-shadow: 0 6px 0 var(--primary-container), 0 8px 16px rgba(0,0,0,0.3), inset 0 3px 6px rgba(255,255,255,0.3);
 }
 
+/* Micro-entrance avatar & rank pill -- muter ulang tiap kali tab Profil
+   dibuka (section-nya toggle display:none/flex lewat router, browser
+   otomatis restart animasi CSS begitu balik ke display:flex). Dikasih
+   delay dikit di belakang animateIn() (GSAP, yg gerakin .profile-hero
+   sebagai satu blok) biar kerasa "susulan", bukan numpuk bareng. */
+.profile-avatar { animation: profileAvatarPop .5s cubic-bezier(0.34,1.56,0.64,1) .12s both; }
+@keyframes profileAvatarPop{
+  0%{ opacity:0; transform:scale(0.5) rotate(-12deg); }
+  100%{ opacity:1; transform:scale(1) rotate(0deg); }
+}
+.profile-rank { animation: profileRankSlideIn .5s cubic-bezier(0.22,1,0.36,1) .2s both; }
+@keyframes profileRankSlideIn{
+  0%{ opacity:0; transform:translateX(-14px); }
+  100%{ opacity:1; transform:translateX(0); }
+}
+
 .profile-avatar-edit-btn {
   position: absolute; right: -6px; bottom: -6px;
   width: 32px; height: 32px; border-radius: 12px 12px 12px 5px;
@@ -1121,10 +1214,21 @@ html[data-theme="lime"] .survival-card{
    masuk ke halaman "Tingkatan Rank", gantiin link teks terpisah). Sekarang
    dibungkus jadi satu chip pill utuh (bukan cuma badge kecil + teks lepas
    di sampingnya), dengan ikon trofi biar jelas ini elemen "achievement". */
+/* FIX "pfp tumpang tindih sama capsule rank": .profile-rank dulu gak
+   punya batas lebar sama sekali (inline-flex bebas selebar isinya), jadi
+   kalau nama rank + jumlah poin gabungan panjang (mis. "Grandmaster" +
+   "125.000 Poin"), pill-nya melebar ngelewatin batas .profile-user-info
+   dan visual-nya nembus/numpuk ke avatar di sebelah kanan (overflow:visible
+   default). Sekarang pill dikunci max-width:100% relatif ke kolom kiri
+   (.profile-user-info, flex:1 + min-width:0), dan teks poin (bagian paling
+   mungkin panjang) di-ellipsis kalau kepepet -- badge rank tetap utuh
+   penuh (flex-shrink:0) karena itu identitas utamanya. */
 .profile-rank {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
+  box-sizing: border-box;
   background: var(--surface-c);
   border: 1px solid var(--outline-var);
   padding: 8px 14px 8px 10px;
@@ -1149,6 +1253,11 @@ html[data-theme="lime"] .survival-card{
   padding: 4px 12px;
   border-radius: var(--r-pill);
   display: inline-block;
+  flex-shrink: 0;
+  max-width: 132px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile-rank-poin {
@@ -1157,6 +1266,11 @@ html[data-theme="lime"] .survival-card{
   color: var(--on-surface-var);
   border-left: 1px solid var(--outline-var);
   padding-left: 8px;
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* --- Stats Grid: Nama, Gender, Umur, Musim Ini --- */
@@ -2055,7 +2169,7 @@ html[data-theme="lime"] .duel-card{
 
 /* --- Layar Matchmaking (Material 3 Expressive) --- */
 .duel-match-shell {
-  flex: 1; position: relative; display: flex; flex-direction: column; align-items: center;
+  flex: 1; position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 28px; padding: 20px; text-align: center; overflow: hidden;
 }
 
@@ -2085,7 +2199,7 @@ html[data-theme="lime"] .duel-card{
 
 /* Bingkai lawan: 2 cincin radar yang membesar & memudar bergantian —
    kesan "lagi nyari sinyal", jauh lebih hidup dibanding border dashed polos. */
-.duel-match-avatar-frame-opp { background: var(--surface-c-high); box-shadow: inset 0 0 0 2px var(--outline-var), var(--shadow-sm); }
+.duel-match-avatar-frame-opp { background: var(--surface-c-high); box-shadow: inset 0 0 0 2px var(--outline-var), var(--shadow-sm); animation: duelMeSettle .5s cubic-bezier(0.34,1.56,0.64,1) .1s both; }
 .duel-match-avatar-box-opp { color: var(--outline); animation: duelOppIconPulse 1.6s ease-in-out infinite; }
 @keyframes duelOppIconPulse { 0%,100%{ opacity:0.45; } 50%{ opacity:0.9; } }
 .duel-match-radar-ring {
@@ -2107,6 +2221,16 @@ html[data-theme="lime"] .duel-card{
 .duel-match-vs-badge-text { font-family: var(--font-mono); font-weight: 900; font-size: 14px; color: #fff; letter-spacing: 0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 @keyframes duelVsBreathe { 0%,100%{ transform:scale(1) rotate(0deg); } 50%{ transform:scale(1.08) rotate(-4deg); } }
 
+/* Entrance cascade bersama dipakai buat elemen-elemen matchmaking yg
+   sebelumnya nongol instan tanpa animasi (chip status, progress bar,
+   tombol batal, badge VS) -- sekarang masuk berurutan (staggered delay
+   di tiap rule pemakainya) tiap kali layar ini jadi aktif. */
+@keyframes duelCascadeIn{
+  0%{ opacity:0; transform:translateY(16px) scale(0.94); }
+  100%{ opacity:1; transform:translateY(0) scale(1); }
+}
+.duel-match-vs-badge{ animation: duelVsBreathe 2.6s ease-in-out infinite, duelCascadeIn .5s cubic-bezier(0.34,1.56,0.64,1) .05s both; }
+
 /* Chip status — pil elevated dengan titik "live" berdenyut, gantiin teks
    polos di tengah layar. */
 .duel-match-status-chip {
@@ -2119,6 +2243,7 @@ html[data-theme="lime"] .duel-card{
      ukurannya mulus, dan reflow elemen di bawahnya (progress bar, tombol
      Batal) ikut mulus juga — bukan flick instan lagi. */
   transition: width .38s cubic-bezier(0.34,1.56,0.64,1), height .38s cubic-bezier(0.34,1.56,0.64,1), background .3s ease, border-color .3s ease;
+  animation: duelCascadeIn .5s cubic-bezier(0.22,1,0.36,1) .3s both;
 }
 .duel-match-status-dot-wrap { position: relative; width: 9px; height: 9px; flex-shrink: 0; }
 .duel-match-status-dot { position: absolute; inset: 0; border-radius: 50%; background: var(--primary); transition: background .3s ease; }
@@ -2147,6 +2272,7 @@ html[data-theme="lime"] .duel-card{
   position: relative; z-index: 1; width: 100%; max-width: 240px; height: 6px;
   border-radius: var(--r-pill); background: var(--surface-c-high); overflow: hidden;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); transition: opacity .25s ease;
+  animation: duelCascadeIn .5s cubic-bezier(0.22,1,0.36,1) .38s both;
 }
 .duel-match-progress-fill {
   height: 100%; width: 0%; border-radius: var(--r-pill);
@@ -2162,6 +2288,7 @@ html[data-theme="lime"] .duel-card{
   letter-spacing: 0.3px; color: var(--error); background: var(--error-container);
   box-shadow: 0 4px 0 color-mix(in srgb, var(--error) 35%, var(--error-container)), var(--shadow-sm);
   transition: transform .16s cubic-bezier(0.34,1.56,0.64,1), box-shadow .16s cubic-bezier(0.34,1.56,0.64,1), opacity .25s ease;
+  animation: duelCascadeIn .5s cubic-bezier(0.22,1,0.36,1) .46s both;
 }
 .duel-match-cancel-btn:active {
   transform: translateY(3px);
@@ -2181,11 +2308,28 @@ html[data-theme="lime"] .duel-card{
 /* --- Layar VS + Countdown --- */
 .duel-vs-shell { flex: 1; display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px; }
 .duel-vs-player { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; max-width: 140px; }
-.duel-vs-avatar { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; background: var(--surface-c-high); box-shadow: var(--shadow-lg); }
+.duel-vs-avatar {
+  width: 88px; height: 88px; border-radius: 30px 30px 30px 12px; overflow: hidden;
+  background: linear-gradient(145deg, var(--surface-c-high), var(--surface-c));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent), var(--shadow-lg);
+}
 .duel-vs-avatar svg { width: 100%; height: 100%; display: block; }
 .duel-vs-player h3 { font-size: 15px; font-weight: 800; color: var(--on-surface); text-align: center; word-break: break-word; }
 .duel-vs-rank { font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: var(--r-pill); background: var(--primary-container); color: var(--primary); }
-.duel-vs-mark { font-family: var(--font-mono); font-weight: 900; font-size: 30px; color: var(--error); flex-shrink: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
+/* Badge "VS" — dikasih ledakan cincin flat (bukan blur/glow radial) sesaat
+   pas muncul, kesan "benturan" khas duel, tanpa nambah elemen dekoratif
+   baru di HTML (murni pseudo-element). */
+.duel-vs-mark { position: relative; font-family: var(--font-mono); font-weight: 900; font-size: 30px; color: var(--error); flex-shrink: 0; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.duel-vs-mark::after {
+  content: ''; position: absolute; inset: -22px; border-radius: 50%;
+  border: 3px solid var(--error); opacity: 0;
+  animation: duelVsMarkBurst .6s cubic-bezier(0.2,0.6,0.4,1) .35s both;
+}
+@keyframes duelVsMarkBurst{
+  0%{ transform: scale(0.3); opacity: 0.7; }
+  100%{ transform: scale(1.6); opacity: 0; }
+}
 
 /* --- HUD Gameplay Duel (mirip Survival + sisi lawan) --- */
 .duel-hud-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 4px 16px 18px; flex-shrink: 0; gap: 8px; }
