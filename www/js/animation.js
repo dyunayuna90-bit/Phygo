@@ -19,7 +19,24 @@ function apply3DTilt(element, defaultRotateX = 0, defaultRotateY = 0) {
 
 function animateIn(root){
   if(!root || !root.children || !root.children.length) return;
-  gsap.fromTo(root.children, {opacity:0, y:20}, {opacity:1, y:0, duration:0.6, stagger:0.08, ease:'back.out(1.2)', clearProps:'transform,opacity'});
+  // M3 Expressive: entrance sedikit "scale up" dibarengin slide+fade, bukan
+  // cuma slide+fade polos -- kesan lebih hidup/"spring" khas komponen
+  // Material 3 Expressive, tanpa nambah blur atau elemen dekoratif baru.
+  gsap.fromTo(root.children,
+    {opacity:0, y:22, scale:0.96},
+    {opacity:1, y:0, scale:1, duration:0.62, stagger:0.07, ease:'back.out(1.5)', clearProps:'transform,opacity'}
+  );
+  // Kalau salah satu blok utama itu sendiri adalah grid/bento berisi
+  // beberapa kartu (mis. .home-bento di Home), kartu-kartu di DALAMNYA
+  // ikut di-stagger sendiri sesaat setelahnya -- biar gak "kaku" gerak
+  // bareng sebagai satu blok doang.
+  root.querySelectorAll(':scope > .home-bento, :scope > .rankinfo-list, :scope > .ach-lvl-row, :scope .profile-stats-grid, :scope .profile-social-grid').forEach(grid=>{
+    if(!grid.children.length) return;
+    gsap.fromTo(grid.children,
+      {opacity:0, y:14, scale:0.94},
+      {opacity:1, y:0, scale:1, duration:0.5, stagger:0.06, delay:0.16, ease:'back.out(1.6)', clearProps:'transform,opacity'}
+    );
+  });
 }
 
 function smoothUpdate(container, updateCallback) {
