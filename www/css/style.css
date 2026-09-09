@@ -308,18 +308,23 @@ input{ font-family:inherit; }
 /* Entrance masuk satu-satu per node (bukan cuma peta-nya doang yang fade
    sebagai satu blok) -- setiap kali #screen-level jadi aktif (display:none
    -> flex mereset animasi CSS otomatis) ATAU renderLevelMap() bikin ulang
-   node-node ini dari nol, jadi selalu keputer ulang. */
-.j-node-wrap{ animation: jNodePopIn .55s cubic-bezier(0.34,1.56,0.64,1) both; }
+   node-node ini dari nol, jadi selalu keputer ulang.
+   CATATAN PERF: sengaja TANPA scale -- .journey-map (bapaknya node ini)
+   punya perspective:1200px, dan transform scale di dalam context
+   perspective bikin browser mahal ngerender (3D compositing), penyebab
+   lag pas buka tab Level. translateY doang (2D) tetep kasih efek "pop"
+   yang kerasa tapi ringan. */
+.j-node-wrap{ animation: jNodePopIn .45s ease-out both; }
 .j-node-wrap:nth-child(1){ animation-delay: .05s; }
-.j-node-wrap:nth-child(2){ animation-delay: .14s; }
-.j-node-wrap:nth-child(3){ animation-delay: .23s; }
-.j-node-wrap:nth-child(4){ animation-delay: .32s; }
-.j-node-wrap:nth-child(5){ animation-delay: .41s; }
-.j-node-wrap:nth-child(6){ animation-delay: .50s; }
-.j-node-wrap:nth-child(n+7){ animation-delay: .58s; }
+.j-node-wrap:nth-child(2){ animation-delay: .12s; }
+.j-node-wrap:nth-child(3){ animation-delay: .19s; }
+.j-node-wrap:nth-child(4){ animation-delay: .26s; }
+.j-node-wrap:nth-child(5){ animation-delay: .33s; }
+.j-node-wrap:nth-child(6){ animation-delay: .40s; }
+.j-node-wrap:nth-child(n+7){ animation-delay: .46s; }
 @keyframes jNodePopIn{
-  0%{ opacity:0; transform:scale(0.7) translateY(18px); }
-  100%{ opacity:1; transform:scale(1) translateY(0); }
+  0%{ opacity:0; transform:translateY(16px); }
+  100%{ opacity:1; transform:translateY(0); }
 }
 
 .j-node { width: 84px; height: 84px; border-radius: 30px 30px 30px 12px; display: flex; align-items: center; justify-content: center; position: relative; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); color: #fff; z-index: 3; transform: rotateX(25deg); border: 4px solid rgba(255,255,255,0.1); }
@@ -936,6 +941,25 @@ html[data-theme="lime"] .survival-card{
    .screen.active, jadi bentuknya otomatis kekunci gak pernah nembus
    keluar layar. Tanpa blur, warna solid flat, opacity rendah supaya gak
    ganggu keterbacaan konten di atasnya. */
+/* FIX "masih ke-frame, kiri-kanan kosong": biang keroknya BUKAN ukuran/
+   offset shape lagi, tapi #main{ padding:0 14px; } -- itu bikin KOTAK
+   .screen sendiri (tempat shape nempel & ke-clip) udah keinset 14px dari
+   tepi layar SUNGGUHAN, jadi overflow:hidden punya .screen motong shape
+   14px LEBIH AWAL dari tepi asli -- gak peduli offset shape-nya diapain,
+   dia gak akan pernah bisa ngisi 14px paling pinggir itu karena emang di
+   luar kotak .screen. Dibuktiin lewat getBoundingClientRect(): kotak
+   .screen di HP mulai dari x=14, bukan x=0.
+   Solusinya: shape-shape dibungkus 1 wrapper baru yang position:FIXED
+   (nempel ke VIEWPORT asli, ngelewatin batasan padding #main & 
+   overflow:hidden .screen sekaligus -- ini perilaku standar CSS,
+   position:fixed emang didesain buat "kabur" dari overflow:hidden nenek
+   moyangnya selama gak ada transform/filter di antaranya, dan di app ini
+   emang gak ada). Dikasih max-width:900px + margin:0 auto biar match
+   persis sama batas kotak #app (biar di browser lebar/desktop tetep
+   rapi, gak bocor ke luar "frame HP"-nya). Wrapper ini masih anak dari
+   .screen, jadi tetep otomatis ke-hide pas .screen lagi display:none. */
+.screen{ position:relative; z-index:0; }
+.screen-bg-shape-wrap{ position:fixed; inset:0; max-width:900px; margin:0 auto; overflow:hidden; pointer-events:none; z-index:0; }
 .screen-bg-shape{ position:absolute; pointer-events:none; z-index:0; will-change:transform; }
 .screen-bg-shape.c{ border-radius:50%; }
 .screen-bg-shape.sq{ border-radius:24px; }
@@ -994,7 +1018,6 @@ html[data-theme="lime"] .survival-card{
 /* Pastikan konten tiap layar (yg pakai sistem dekorasi di atas) selalu
    mengambang di ATAS bentuk dekoratifnya -- baik yg discroll (.scroll-pane)
    maupun yg statis (mis. .duel-match-shell, .duel-vs-shell). */
-.screen{ position:relative; }
 .scroll-pane{ position:relative; z-index:1; }
 .duel-vs-shell{ position:relative; z-index:1; }
 
