@@ -73,3 +73,5 @@ Pengguna mengerjakan soal secara bertahap dengan sistem nyawa dan tantangan wakt
 Pengguna dapat menantang pengguna lain dalam mengerjakan soal, mengumpulkan skor, dan berkompetisi untuk meraih kemenangan.
 
 ---
+
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/639efc02-ad6e-4833-9dee-0dbb5b8cbba1" />
