@@ -1,5 +1,13 @@
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/639efc02-ad6e-4833-9dee-0dbb5b8cbba1" />
 
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/029e8f87-58a3-4521-b625-83815821d3d1" />
+
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/5cb0fbad-5a7f-41fe-b730-da71e1e94a38" />
+
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/8a6a058d-d745-40ae-8e57-832917378a10" />
+
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/f6146237-f33f-46be-9542-ab89ac223dd5" />
+
 #  PHYGO: Media Pembelajaran Interaktif Berbasis PWA pada Materi Kinematika Gerak Lurus dengan Pendekatan STEM
 
 **PHYGO** adalah aplikasi media pembelajaran interaktif berbasis *Progressive Web App* (PWA) yang mengintegrasikan pendekatan **STEM** (*Science, Technology, Engineering, and Mathematics*). Aplikasi ini dirancang untuk membantu siswa memahami konsep dasar Kinematika Gerak Lurus melalui pembelajaran berbasis level, simulasi interaktif, kalkulasi rumus, dan tantangan soal.
