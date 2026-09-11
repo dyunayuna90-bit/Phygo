@@ -14,7 +14,9 @@
   - 📖 **Materi Singkat & Rumus:** Penjelasan teori dasar fisika.
   - 🧮 **Perhitungan & Simulasi:** Simulasi visual interaktif untuk membuktikan persamaan fisika.
   - 📝 **Contoh Soal:** Latihan dan tantangan untuk menguji pemahaman.
-
+  - 🌏 **Mode Sejarah:** Menyajikan perjalanan dan perkembangan ilmu fisika melalui konten sejarah yang interaktif untuk menambah wawasan pengguna.
+  - 👥 **Mode Duel:** Fitur kompetisi yang memungkinkan pengguna menantang pengguna lain dalam mengerjakan soal dan membandingkan skor untuk menentukan pemenang.
+  
 ---
 
 ## Alur Pembelajaran (Leveling)
@@ -61,5 +63,13 @@ Aplikasi ini dibangun menggunakan teknologi web murni tanpa *framework* tambahan
    Menjawab soal evaluasi dengan sistem nyawa; jawaban langsung diberi umpan balik.
 6. **Level Tuntas**  
    Pengguna kembali ke Dashboard dengan progres terbaru dan level berikutnya otomatis terbuka.
+6. **Jelajahi Sejarah**  
+Pengguna dapat mengakses Mode Sejarah untuk mengenal perkembangan dan perjalanan ilmu fisika melalui konten sejarah yang disajikan secara interaktif.
+
+8. **Mode Survival**  
+Pengguna mengerjakan soal secara bertahap dengan sistem nyawa dan tantangan waktu untuk menguji pemahaman serta kecepatan dalam menjawab soal.
+
+9. **Mode Duel**  
+Pengguna dapat menantang pengguna lain dalam mengerjakan soal, mengumpulkan skor, dan berkompetisi untuk meraih kemenangan.
 
 ---
